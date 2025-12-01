@@ -1,0 +1,14 @@
+diff --git a/frontend/app/contexts/DataContext.tsx b/frontend/app/contexts/DataContext.tsx
+index b6b9995..7ae2a6a 100644
+--- a/frontend/app/contexts/DataContext.tsx
++++ b/frontend/app/contexts/DataContext.tsx
+@@ -103,6 +103,9 @@ const defaultState: AppState = {
+     nationality: '',
+     phone: '',
+     email: '',
++    whatsapp: '',
++    telegram: '',
++    meet: '',
+     address: '',
+     city: '',
+     country: '',
