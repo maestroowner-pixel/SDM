@@ -16,6 +16,7 @@ import { FormInput } from '../components/FormInput';
 import { FormSelect } from '../components/FormSelect';
 import { Button } from '../components/Button';
 import { vesselTypes, positions } from '../utils/helpers';
+import { playSuccessSound } from '../utils/sound';
 
 export const PersonalScreen: React.FC = () => {
   const { state, updatePersonal } = useData();
