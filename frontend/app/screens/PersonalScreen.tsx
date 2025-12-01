@@ -46,7 +46,7 @@ export const PersonalScreen: React.FC = () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect: [35, 45],
       quality: 0.5,
       base64: true,
     });
@@ -149,50 +149,42 @@ export const PersonalScreen: React.FC = () => {
           label="First Name"
           value={form.firstName}
           onChangeText={(v) => setForm({ ...form, firstName: v })}
-          placeholder="John"
         />
         <FormInput
           label="Middle Name"
           value={form.middleName}
           onChangeText={(v) => setForm({ ...form, middleName: v })}
-          placeholder="William"
         />
         <FormInput
           label="Last Name"
           value={form.lastName}
           onChangeText={(v) => setForm({ ...form, lastName: v })}
-          placeholder="Smith"
         />
         <FormInput
           label="Date of Birth (YYYY-MM-DD)"
           value={form.birthDate}
           onChangeText={(v) => setForm({ ...form, birthDate: v })}
-          placeholder="1990-01-15"
         />
         <FormInput
           label="Place of Birth"
           value={form.birthPlace}
           onChangeText={(v) => setForm({ ...form, birthPlace: v })}
-          placeholder="Manila, Philippines"
         />
         <FormInput
           label="Nationality"
           value={form.nationality}
           onChangeText={(v) => setForm({ ...form, nationality: v })}
-          placeholder="Filipino"
         />
         <FormInput
           label="Phone"
           value={form.phone}
           onChangeText={(v) => setForm({ ...form, phone: v })}
-          placeholder="+63 912 345 6789"
           keyboardType="phone-pad"
         />
         <FormInput
           label="Email"
           value={form.email}
           onChangeText={(v) => setForm({ ...form, email: v })}
-          placeholder="john.smith@email.com"
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -200,43 +192,36 @@ export const PersonalScreen: React.FC = () => {
           label="Address"
           value={form.address}
           onChangeText={(v) => setForm({ ...form, address: v })}
-          placeholder="123 Main Street"
         />
         <FormInput
           label="City"
           value={form.city}
           onChangeText={(v) => setForm({ ...form, city: v })}
-          placeholder="Manila"
         />
         <FormInput
           label="Country"
           value={form.country}
           onChangeText={(v) => setForm({ ...form, country: v })}
-          placeholder="Philippines"
         />
         <FormInput
           label="Postal Code"
           value={form.postalCode}
           onChangeText={(v) => setForm({ ...form, postalCode: v })}
-          placeholder="1234"
         />
         <FormInput
           label="USA Visa"
           value={form.visaUSA}
           onChangeText={(v) => setForm({ ...form, visaUSA: v })}
-          placeholder="C1/D, B1/B2, etc."
         />
         <FormInput
           label="Schengen Visa"
           value={form.visaSchengen}
           onChangeText={(v) => setForm({ ...form, visaSchengen: v })}
-          placeholder="Yes/No/Applied"
         />
         <FormInput
           label="Australia Visa"
           value={form.visaAustralia}
           onChangeText={(v) => setForm({ ...form, visaAustralia: v })}
-          placeholder="MCV, etc."
         />
         <FormSelect
           label="Applied Position"
@@ -271,14 +256,14 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   photo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 105,
+    height: 135,
+    borderRadius: 8,
   },
   photoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 105,
+    height: 135,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -290,8 +275,8 @@ const styles = StyleSheet.create({
   },
   photoOverlay: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: -10,
+    right: -10,
     backgroundColor: '#1976d2',
     width: 36,
     height: 36,

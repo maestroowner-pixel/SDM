@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData, Document } from '../contexts/DataContext';
-import { GradientBackground } from '../components/GradientBackground';
 import { Card } from '../components/Card';
 import { FormModal } from '../components/FormModal';
 import { FormInput } from '../components/FormInput';
@@ -88,16 +87,33 @@ export const DocumentsScreen: React.FC = () => {
     }).length;
   };
 
+  const getCriticalCount = () => {
+    return state.documents.filter(d => {
+      const days = getDaysUntilExpiry(d.expiryDate);
+      return days >= 0 && days <= 30;
+    }).length;
+  };
+
+  const sortDocumentsByExpiry = (docs: Document[]) => {
+    return [...docs].sort((a, b) => {
+      const daysA = getDaysUntilExpiry(a.expiryDate);
+      const daysB = getDaysUntilExpiry(b.expiryDate);
+      return daysA - daysB;
+    });
+  };
+
   const renderCategory = (categoryId: string, categoryName: string) => {
     const docs = state.documents.filter(d => d.category === categoryId);
     if (docs.length === 0) return null;
+
+    const sortedDocs = sortDocumentsByExpiry(docs);
 
     return (
       <View key={categoryId} style={styles.category}>
         <Text style={[styles.categoryTitle, isDark ? styles.textLight : styles.textDark]}>
           {categoryName}
         </Text>
-        {docs.map(doc => {
+        {sortedDocs.map(doc => {
           const days = getDaysUntilExpiry(doc.expiryDate);
           const status = getExpiryStatus(days);
           return (
@@ -113,9 +129,14 @@ export const DocumentsScreen: React.FC = () => {
               <Text style={[styles.docInfo, isDark ? styles.textMuted : styles.textMutedLight]}>
                 {doc.number || 'No number'} • Expires: {formatDate(doc.expiryDate)}
               </Text>
-              {days >= 0 && days <= 90 && (
-                <Text style={[styles.expiryWarning, { color: getStatusColor(status) }]}>
-                  {days === 0 ? 'Expires today!' : `${days} days left`}
+              {days >= 0 && days <= 30 && (
+                <Text style={[styles.expiryWarning, { color: '#F44336' }]}>
+                  {days === 0 ? 'Expires today!' : `${days} days left - URGENT!`}
+                </Text>
+              )}
+              {days > 30 && days <= 90 && (
+                <Text style={[styles.expiryWarning, { color: '#FFEB3B' }]}>
+                  {`${days} days left`}
                 </Text>
               )}
               {days < 0 && (
@@ -130,11 +151,19 @@ export const DocumentsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {getExpiringCount() > 0 && (
-        <View style={styles.alert}>
-          <Ionicons name="warning" size={20} color="#FF9800" />
-          <Text style={styles.alertText}>
-            {getExpiringCount()} document(s) expiring within 90 days
+      {getCriticalCount() > 0 && (
+        <View style={[styles.alert, styles.alertCritical]}>
+          <Ionicons name="alert-circle" size={20} color="#F44336" />
+          <Text style={[styles.alertText, { color: '#F44336' }]}>
+            {getCriticalCount()} document(s) expiring within 30 days!
+          </Text>
+        </View>
+      )}
+      {getExpiringCount() > getCriticalCount() && (
+        <View style={[styles.alert, styles.alertWarning]}>
+          <Ionicons name="warning" size={20} color="#FFC107" />
+          <Text style={[styles.alertText, { color: '#FFC107' }]}>
+            {getExpiringCount() - getCriticalCount()} document(s) expiring within 90 days
           </Text>
         </View>
       )}
@@ -176,38 +205,32 @@ export const DocumentsScreen: React.FC = () => {
           label="Document Name"
           value={form.name || ''}
           onChangeText={(v) => setForm({ ...form, name: v })}
-          placeholder="e.g., Passport"
           required
         />
         <FormInput
           label="Document Number"
           value={form.number || ''}
           onChangeText={(v) => setForm({ ...form, number: v })}
-          placeholder="e.g., AB1234567"
         />
         <FormInput
           label="Issue Date (YYYY-MM-DD)"
           value={form.issueDate || ''}
           onChangeText={(v) => setForm({ ...form, issueDate: v })}
-          placeholder="2023-01-15"
         />
         <FormInput
           label="Expiry Date (YYYY-MM-DD)"
           value={form.expiryDate || ''}
           onChangeText={(v) => setForm({ ...form, expiryDate: v })}
-          placeholder="2033-01-15"
         />
         <FormInput
           label="Place of Issue"
           value={form.issuePlace || ''}
           onChangeText={(v) => setForm({ ...form, issuePlace: v })}
-          placeholder="e.g., Manila, Philippines"
         />
         <FormInput
           label="Notes"
           value={form.notes || ''}
           onChangeText={(v) => setForm({ ...form, notes: v })}
-          placeholder="Additional notes..."
           multiline
           numberOfLines={3}
         />
@@ -226,7 +249,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   alert: {
-    backgroundColor: 'rgba(255, 152, 0, 0.2)',
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
@@ -235,8 +257,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 10,
   },
+  alertWarning: {
+    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+  },
+  alertCritical: {
+    backgroundColor: 'rgba(244, 67, 54, 0.2)',
+  },
   alertText: {
-    color: '#FF9800',
     fontWeight: '600',
   },
   category: {
@@ -276,7 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
-    color: '#F44336',
+    color: '#9E9E9E',
   },
   empty: {
     alignItems: 'center',

@@ -10,7 +10,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useData } from '../contexts/DataContext';
 import { Button } from '../components/Button';
-import { formatDate } from '../utils/helpers';
+import { formatDate, formatDateForFilename } from '../utils/helpers';
 import { Ionicons } from '@expo/vector-icons';
 
 export const CVScreen: React.FC = () => {
@@ -22,6 +22,12 @@ export const CVScreen: React.FC = () => {
     const { personal, biometrics, education, seaService, documents } = state;
     const fullName = `${personal.firstName} ${personal.lastName}`.trim() || 'Seafarer';
 
+    const photoHtml = personal.photo ? `
+      <div style="float: right; margin-left: 20px; margin-bottom: 10px;">
+        <img src="${personal.photo}" style="width: 70px; height: 90px; object-fit: cover; border-radius: 4px;" />
+      </div>
+    ` : '';
+
     return `
 <!DOCTYPE html>
 <html>
@@ -31,7 +37,7 @@ export const CVScreen: React.FC = () => {
     body { font-family: Arial, sans-serif; margin: 40px; color: #333; font-size: 12px; }
     h1 { color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px; }
     h2 { color: #1976d2; margin-top: 25px; font-size: 14px; }
-    .header { margin-bottom: 20px; }
+    .header { margin-bottom: 20px; overflow: hidden; }
     .contact-info { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px; }
     .contact-item { margin-right: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -44,6 +50,7 @@ export const CVScreen: React.FC = () => {
 </head>
 <body>
   <div class="header">
+    ${photoHtml}
     <h1>${fullName}</h1>
     <div class="contact-info">
       ${personal.phone ? `<span class="contact-item">Phone: ${personal.phone}</span>` : ''}
@@ -152,10 +159,15 @@ export const CVScreen: React.FC = () => {
       const html = generateHTML();
       const { uri } = await Print.printToFileAsync({ html });
       
+      const dateStr = formatDateForFilename(new Date());
+      const firstName = state.personal.firstName || 'Name';
+      const lastName = state.personal.lastName || 'Surname';
+      const fileName = `${dateStr}-CV_${firstName}_${lastName}.pdf`;
+      
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'application/pdf',
-          dialogTitle: 'Share CV',
+          dialogTitle: fileName,
           UTI: 'com.adobe.pdf',
         });
       } else {
