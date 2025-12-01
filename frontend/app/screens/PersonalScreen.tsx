@@ -121,7 +121,7 @@ export const PersonalScreen: React.FC = () => {
           <InfoRow label="Email" value={state.personal.email} />
           <InfoRow label="WhatsApp" value={state.personal.whatsapp} />
           <InfoRow label="Telegram" value={state.personal.telegram} />
-          <InfoRow label="Google Meet" value={state.personal.meet} />
+          <InfoRow label="MS Teams" value={state.personal.teams} />
           <InfoRow label="Address" value={state.personal.address} />
           <InfoRow label="City" value={state.personal.city} />
           <InfoRow label="Country" value={state.personal.country} />
