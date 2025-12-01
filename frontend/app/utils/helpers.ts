@@ -10,17 +10,19 @@ export const getDaysUntilExpiry = (expiryDate: string): number => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-export const getExpiryStatus = (days: number): 'valid' | 'expiring' | 'expired' => {
+export const getExpiryStatus = (days: number): 'valid' | 'expiring' | 'expired' | 'critical' => {
   if (days < 0) return 'expired';
+  if (days <= 30) return 'critical';
   if (days <= 90) return 'expiring';
   return 'valid';
 };
 
-export const getStatusColor = (status: 'valid' | 'expiring' | 'expired'): string => {
+export const getStatusColor = (status: 'valid' | 'expiring' | 'expired' | 'critical'): string => {
   switch (status) {
     case 'valid': return '#4CAF50';
-    case 'expiring': return '#FF9800';
-    case 'expired': return '#F44336';
+    case 'expiring': return '#FFEB3B';
+    case 'critical': return '#F44336';
+    case 'expired': return '#9E9E9E';
   }
 };
 
@@ -32,6 +34,13 @@ export const formatDate = (dateString: string): string => {
     month: 'short',
     year: 'numeric'
   });
+};
+
+export const formatDateForFilename = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
 };
 
 export const documentCategories = [
