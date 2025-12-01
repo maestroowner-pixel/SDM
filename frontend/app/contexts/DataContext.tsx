@@ -105,7 +105,7 @@ const defaultState: AppState = {
     email: '',
     whatsapp: '',
     telegram: '',
-    meet: '',
+    teams: '',
     address: '',
     city: '',
     country: '',
