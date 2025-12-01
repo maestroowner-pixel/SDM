@@ -171,7 +171,9 @@ export const CVScreen: React.FC = () => {
           dialogTitle: fileName,
           UTI: 'com.adobe.pdf',
         });
+        playSuccessSound();
       } else {
+        playSuccessSound();
         Alert.alert('Success', 'PDF generated successfully');
       }
     } catch (error) {
