@@ -6,6 +6,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { playSuccessSound } from '../utils/sound';
 
 const { width } = Dimensions.get('window');
 
@@ -15,6 +16,9 @@ interface Props {
 
 export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
   useEffect(() => {
+    // Play welcome sound
+    playSuccessSound();
+    
     const timer = setTimeout(() => {
       onFinish();
     }, 2500);
