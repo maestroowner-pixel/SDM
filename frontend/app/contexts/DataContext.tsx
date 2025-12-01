@@ -38,6 +38,9 @@ export interface PersonalInfo {
   nationality: string;
   phone: string;
   email: string;
+  whatsapp: string;
+  telegram: string;
+  meet: string;
   address: string;
   city: string;
   country: string;
