@@ -192,6 +192,24 @@ export const PersonalScreen: React.FC = () => {
           autoCapitalize="none"
         />
         <FormInput
+          label="WhatsApp"
+          value={form.whatsapp}
+          onChangeText={(v) => setForm({ ...form, whatsapp: v })}
+          keyboardType="phone-pad"
+        />
+        <FormInput
+          label="Telegram"
+          value={form.telegram}
+          onChangeText={(v) => setForm({ ...form, telegram: v })}
+        />
+        <FormInput
+          label="Google Meet"
+          value={form.meet}
+          onChangeText={(v) => setForm({ ...form, meet: v })}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <FormInput
           label="Address"
           value={form.address}
           onChangeText={(v) => setForm({ ...form, address: v })}
