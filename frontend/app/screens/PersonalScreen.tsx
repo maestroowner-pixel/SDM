@@ -34,6 +34,7 @@ export const PersonalScreen: React.FC = () => {
 
   const handleSave = () => {
     updatePersonal(form);
+    playSuccessSound();
     setModalVisible(false);
   };
 
