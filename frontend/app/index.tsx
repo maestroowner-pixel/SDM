@@ -34,9 +34,9 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
+  { id: 'personal', icon: 'person', label: 'Personal' },
   { id: 'documents', icon: 'document-text', label: 'Documents' },
   { id: 'seaService', icon: 'boat', label: 'Sea Service' },
-  { id: 'personal', icon: 'person', label: 'Personal' },
   { id: 'biometrics', icon: 'body', label: 'Biometrics' },
   { id: 'education', icon: 'school', label: 'Education' },
   { id: 'nextOfKin', icon: 'people', label: 'Next of Kin' },
