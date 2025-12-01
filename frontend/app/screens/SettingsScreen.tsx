@@ -14,6 +14,7 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { useData } from '../contexts/DataContext';
 import { Button } from '../components/Button';
+import { playSuccessSound } from '../utils/sound';
 
 export const SettingsScreen: React.FC = () => {
   const { state, setTheme, exportData, importData, clearAllData } = useData();
