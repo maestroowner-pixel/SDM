@@ -176,8 +176,8 @@ export const SettingsScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark]}>About</Text>
           <SettingRow
             icon="information-circle"
-            title="Seafarer Documents Manager by Mykhaylo Osypov"
-            subtitle="Version 0.1.3"
+            title="Seafarer Documents Manager"
+            subtitle={"by Mykhaylo Osypov\nVersion 0.1.3"}
           />
         </View>
 
