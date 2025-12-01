@@ -203,9 +203,9 @@ export const PersonalScreen: React.FC = () => {
           onChangeText={(v) => setForm({ ...form, telegram: v })}
         />
         <FormInput
-          label="Google Meet"
-          value={form.meet}
-          onChangeText={(v) => setForm({ ...form, meet: v })}
+          label="MS Teams"
+          value={form.teams}
+          onChangeText={(v) => setForm({ ...form, teams: v })}
           keyboardType="email-address"
           autoCapitalize="none"
         />
