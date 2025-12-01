@@ -35,7 +35,9 @@ export const SettingsScreen: React.FC = () => {
           mimeType: 'application/json',
           dialogTitle: 'Export Backup',
         });
+        playSuccessSound();
       } else {
+        playSuccessSound();
         Alert.alert('Success', 'Backup file created');
       }
     } catch (error) {
