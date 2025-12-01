@@ -60,6 +60,7 @@ export const SettingsScreen: React.FC = () => {
         const success = importData(content);
         
         if (success) {
+          playSuccessSound();
           Alert.alert('Success', 'Data restored successfully');
         } else {
           Alert.alert('Error', 'Invalid backup file');
