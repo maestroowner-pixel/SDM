@@ -1,30 +1,235 @@
-import { Text, View, StyleSheet, Image } from "react-native";
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { DataProvider, useData } from './contexts/DataContext';
+import { DocumentsScreen } from './screens/DocumentsScreen';
+import { SeaServiceScreen } from './screens/SeaServiceScreen';
+import { PersonalScreen } from './screens/PersonalScreen';
+import { BiometricsScreen } from './screens/BiometricsScreen';
+import { EducationScreen } from './screens/EducationScreen';
+import { NextOfKinScreen } from './screens/NextOfKinScreen';
+import { NotesScreen } from './screens/NotesScreen';
+import { QRScreen } from './screens/QRScreen';
+import { CVScreen } from './screens/CVScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
-const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const { width } = Dimensions.get('window');
 
-export default function Index() {
-  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
+type TabType = 'documents' | 'seaService' | 'personal' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'settings';
+
+interface Tab {
+  id: TabType;
+  icon: string;
+  label: string;
+}
+
+const tabs: Tab[] = [
+  { id: 'documents', icon: 'document-text', label: 'Documents' },
+  { id: 'seaService', icon: 'boat', label: 'Sea Service' },
+  { id: 'personal', icon: 'person', label: 'Personal' },
+  { id: 'biometrics', icon: 'body', label: 'Biometrics' },
+  { id: 'education', icon: 'school', label: 'Education' },
+  { id: 'nextOfKin', icon: 'people', label: 'Next of Kin' },
+  { id: 'notes', icon: 'create', label: 'Notes' },
+  { id: 'qr', icon: 'qr-code', label: 'QR Code' },
+  { id: 'cv', icon: 'document', label: 'CV' },
+  { id: 'settings', icon: 'settings', label: 'Settings' },
+];
+
+const MainApp: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>('documents');
+  const { state } = useData();
+  const insets = useSafeAreaInsets();
+  const isDark = state.theme === 'dark';
+
+  const getTabTitle = () => {
+    const tab = tabs.find(t => t.id === activeTab);
+    return tab?.label || 'Seafarer Documents';
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'documents': return <DocumentsScreen />;
+      case 'seaService': return <SeaServiceScreen />;
+      case 'personal': return <PersonalScreen />;
+      case 'biometrics': return <BiometricsScreen />;
+      case 'education': return <EducationScreen />;
+      case 'nextOfKin': return <NextOfKinScreen />;
+      case 'notes': return <NotesScreen />;
+      case 'qr': return <QRScreen />;
+      case 'cv': return <CVScreen />;
+      case 'settings': return <SettingsScreen />;
+      default: return <DocumentsScreen />;
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/app-image.png")}
-        style={styles.image}
-      />
-    </View>
+    <LinearGradient
+      colors={isDark 
+        ? ['#0a1628', '#1a2a4a', '#0d1a2d']
+        : ['#e8f4fc', '#d4e8f5', '#c0dced']
+      }
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+        <LinearGradient
+          colors={isDark 
+            ? ['rgba(26, 42, 74, 0.95)', 'rgba(26, 42, 74, 0.8)']
+            : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.8)']
+          }
+          style={styles.headerGradient}
+        >
+          <Text style={[styles.headerTitle, isDark ? styles.textLight : styles.textDark]}>
+            {getTabTitle()}
+          </Text>
+        </LinearGradient>
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {renderContent()}
+      </View>
+
+      {/* Bottom Navigation */}
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 8 }]}>
+        <LinearGradient
+          colors={isDark 
+            ? ['rgba(26, 42, 74, 0.95)', 'rgba(26, 42, 74, 0.98)']
+            : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.98)']
+          }
+          style={styles.navGradient}
+        >
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.navContent}
+          >
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[
+                    styles.navItem,
+                    isActive && (isDark ? styles.navItemActiveDark : styles.navItemActiveLight)
+                  ]}
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  <Ionicons
+                    name={tab.icon as any}
+                    size={22}
+                    color={isActive 
+                      ? (isDark ? '#64b5f6' : '#1976d2')
+                      : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)')
+                    }
+                  />
+                  <Text style={[
+                    styles.navLabel,
+                    isActive 
+                      ? (isDark ? styles.navLabelActiveDark : styles.navLabelActiveLight)
+                      : (isDark ? styles.navLabelDark : styles.navLabelLight)
+                  ]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </LinearGradient>
+      </View>
+    </LinearGradient>
+  );
+};
+
+export default function Index() {
+  return (
+    <DataProvider>
+      <MainApp />
+    </DataProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0c0c0c",
-    alignItems: "center",
-    justifyContent: "center",
   },
-  image: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
+  header: {
+    zIndex: 10,
+  },
+  headerGradient: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  content: {
+    flex: 1,
+  },
+  bottomNav: {
+    zIndex: 10,
+  },
+  navGradient: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 8,
+  },
+  navContent: {
+    paddingHorizontal: 12,
+    gap: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    minWidth: 70,
+  },
+  navItemActiveDark: {
+    backgroundColor: 'rgba(100, 181, 246, 0.15)',
+  },
+  navItemActiveLight: {
+    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+  },
+  navLabel: {
+    fontSize: 11,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  navLabelDark: {
+    color: 'rgba(255,255,255,0.5)',
+  },
+  navLabelLight: {
+    color: 'rgba(0,0,0,0.4)',
+  },
+  navLabelActiveDark: {
+    color: '#64b5f6',
+  },
+  navLabelActiveLight: {
+    color: '#1976d2',
+  },
+  textLight: {
+    color: '#fff',
+  },
+  textDark: {
+    color: '#333',
   },
 });
