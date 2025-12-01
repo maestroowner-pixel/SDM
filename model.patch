@@ -1,14 +1,32 @@
-diff --git a/frontend/app/contexts/DataContext.tsx b/frontend/app/contexts/DataContext.tsx
-index b6b9995..7ae2a6a 100644
---- a/frontend/app/contexts/DataContext.tsx
-+++ b/frontend/app/contexts/DataContext.tsx
-@@ -103,6 +103,9 @@ const defaultState: AppState = {
-     nationality: '',
-     phone: '',
-     email: '',
-+    whatsapp: '',
-+    telegram: '',
-+    meet: '',
-     address: '',
-     city: '',
-     country: '',
+diff --git a/frontend/app/screens/PersonalScreen.tsx b/frontend/app/screens/PersonalScreen.tsx
+index f207998..bab7b43 100644
+--- a/frontend/app/screens/PersonalScreen.tsx
++++ b/frontend/app/screens/PersonalScreen.tsx
+@@ -121,7 +121,7 @@ export const PersonalScreen: React.FC = () => {
+           <InfoRow label="Email" value={state.personal.email} />
+           <InfoRow label="WhatsApp" value={state.personal.whatsapp} />
+           <InfoRow label="Telegram" value={state.personal.telegram} />
+-          <InfoRow label="MS Teams" value={state.personal.teams} />
++          <InfoRow label="Google Meet" value={state.personal.meet} />
+           <InfoRow label="Address" value={state.personal.address} />
+           <InfoRow label="City" value={state.personal.city} />
+           <InfoRow label="Country" value={state.personal.country} />
+diff --git a/model.patch b/model.patch
+index 9c6439c..e69de29 100644
+--- a/model.patch
++++ b/model.patch
+@@ -1,14 +0,0 @@
+-diff --git a/frontend/app/contexts/DataContext.tsx b/frontend/app/contexts/DataContext.tsx
+-index b6b9995..7ae2a6a 100644
+---- a/frontend/app/contexts/DataContext.tsx
+-+++ b/frontend/app/contexts/DataContext.tsx
+-@@ -103,6 +103,9 @@ const defaultState: AppState = {
+-     nationality: '',
+-     phone: '',
+-     email: '',
+-+    whatsapp: '',
+-+    telegram: '',
+-+    meet: '',
+-     address: '',
+-     city: '',
+-     country: '',
