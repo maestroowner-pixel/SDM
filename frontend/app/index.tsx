@@ -47,7 +47,7 @@ const tabs: Tab[] = [
 ];
 
 const MainApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('documents');
+  const [activeTab, setActiveTab] = useState<TabType>('personal');
   const { state } = useData();
   const insets = useSafeAreaInsets();
   const isDark = state.theme === 'dark';
