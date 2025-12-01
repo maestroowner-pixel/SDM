@@ -12,6 +12,7 @@ import { useData } from '../contexts/DataContext';
 import { Button } from '../components/Button';
 import { formatDate, formatDateForFilename } from '../utils/helpers';
 import { Ionicons } from '@expo/vector-icons';
+import { playSuccessSound } from '../utils/sound';
 
 export const CVScreen: React.FC = () => {
   const { state } = useData();
