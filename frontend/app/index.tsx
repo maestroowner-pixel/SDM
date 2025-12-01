@@ -7,7 +7,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,10 +22,11 @@ import { NotesScreen } from './screens/NotesScreen';
 import { QRScreen } from './screens/QRScreen';
 import { CVScreen } from './screens/CVScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { SplashScreen } from './screens/SplashScreen';
 
 const { width } = Dimensions.get('window');
 
-type TabType = 'documents' | 'seaService' | 'personal' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'settings';
+type TabType = 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'settings';
 
 interface Tab {
   id: TabType;
@@ -48,9 +49,14 @@ const tabs: Tab[] = [
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [showSplash, setShowSplash] = useState(true);
   const { state } = useData();
   const insets = useSafeAreaInsets();
   const isDark = state.theme === 'dark';
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
 
   const getTabTitle = () => {
     const tab = tabs.find(t => t.id === activeTab);
@@ -59,9 +65,9 @@ const MainApp: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'personal': return <PersonalScreen />;
       case 'documents': return <DocumentsScreen />;
       case 'seaService': return <SeaServiceScreen />;
-      case 'personal': return <PersonalScreen />;
       case 'biometrics': return <BiometricsScreen />;
       case 'education': return <EducationScreen />;
       case 'nextOfKin': return <NextOfKinScreen />;
@@ -69,7 +75,7 @@ const MainApp: React.FC = () => {
       case 'qr': return <QRScreen />;
       case 'cv': return <CVScreen />;
       case 'settings': return <SettingsScreen />;
-      default: return <DocumentsScreen />;
+      default: return <PersonalScreen />;
     }
   };
 
@@ -134,8 +140,8 @@ const MainApp: React.FC = () => {
                     name={tab.icon as any}
                     size={22}
                     color={isActive 
-                      ? (isDark ? '#64b5f6' : '#1976d2')
-                      : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)')
+                      ? (isDark ? '#90caf9' : '#0d47a1')
+                      : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)')
                     }
                   />
                   <Text style={[
@@ -204,10 +210,10 @@ const styles = StyleSheet.create({
     minWidth: 70,
   },
   navItemActiveDark: {
-    backgroundColor: 'rgba(100, 181, 246, 0.15)',
+    backgroundColor: 'rgba(144, 202, 249, 0.2)',
   },
   navItemActiveLight: {
-    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+    backgroundColor: 'rgba(13, 71, 161, 0.15)',
   },
   navLabel: {
     fontSize: 11,
@@ -215,16 +221,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   navLabelDark: {
-    color: 'rgba(255,255,255,0.5)',
+    color: 'rgba(255,255,255,0.4)',
   },
   navLabelLight: {
-    color: 'rgba(0,0,0,0.4)',
+    color: 'rgba(0,0,0,0.35)',
   },
   navLabelActiveDark: {
-    color: '#64b5f6',
+    color: '#90caf9',
   },
   navLabelActiveLight: {
-    color: '#1976d2',
+    color: '#0d47a1',
   },
   textLight: {
     color: '#fff',
