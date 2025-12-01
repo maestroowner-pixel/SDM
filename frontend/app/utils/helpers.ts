@@ -53,5 +53,6 @@ export const positions = [
   'Master', 'Chief Officer', '2nd Officer', '3rd Officer', 'Deck Cadet',
   'Chief Engineer', '2nd Engineer', '3rd Engineer', '4th Engineer', 'Engine Cadet',
   'Electrician', 'ETO', 'Bosun', 'AB', 'OS', 'Motorman', 'Oiler', 'Wiper',
-  'Chief Cook', 'Cook', 'Steward', 'Messman'
+  'Chief Cook', 'Cook', 'Steward', 'Messman',
+  'CO SDPO', 'SDPO', 'MASTER SDPO', '2O SDPO', '2O DPO'
 ];
