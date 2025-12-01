@@ -40,7 +40,7 @@ export interface PersonalInfo {
   email: string;
   whatsapp: string;
   telegram: string;
-  meet: string;
+  teams: string;
   address: string;
   city: string;
   country: string;
