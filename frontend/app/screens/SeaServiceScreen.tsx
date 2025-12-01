@@ -153,7 +153,6 @@ export const SeaServiceScreen: React.FC = () => {
           label="Vessel Name"
           value={form.vesselName || ''}
           onChangeText={(v) => setForm({ ...form, vesselName: v })}
-          placeholder="e.g., MV Pacific Star"
           required
         />
         <FormSelect
@@ -173,63 +172,53 @@ export const SeaServiceScreen: React.FC = () => {
           label="Flag"
           value={form.flag || ''}
           onChangeText={(v) => setForm({ ...form, flag: v })}
-          placeholder="e.g., Panama"
         />
         <FormInput
           label="Gross Tonnage"
           value={form.grossTonnage || ''}
           onChangeText={(v) => setForm({ ...form, grossTonnage: v })}
-          placeholder="e.g., 45000"
           keyboardType="numeric"
         />
         <FormInput
           label="Engine Type"
           value={form.engineType || ''}
           onChangeText={(v) => setForm({ ...form, engineType: v })}
-          placeholder="e.g., MAN B&W"
         />
         <FormInput
           label="Engine Power (kW)"
           value={form.enginePower || ''}
           onChangeText={(v) => setForm({ ...form, enginePower: v })}
-          placeholder="e.g., 12000"
           keyboardType="numeric"
         />
         <FormInput
           label="Sign On Date (YYYY-MM-DD)"
           value={form.signOn || ''}
           onChangeText={(v) => setForm({ ...form, signOn: v })}
-          placeholder="2023-01-15"
         />
         <FormInput
           label="Sign Off Date (YYYY-MM-DD)"
           value={form.signOff || ''}
           onChangeText={(v) => setForm({ ...form, signOff: v })}
-          placeholder="2023-07-15"
         />
         <FormInput
           label="Company"
           value={form.company || ''}
           onChangeText={(v) => setForm({ ...form, company: v })}
-          placeholder="e.g., ABC Shipping Ltd."
         />
         <FormInput
           label="DP Class"
           value={form.dpClass || ''}
           onChangeText={(v) => setForm({ ...form, dpClass: v })}
-          placeholder="e.g., DP2"
         />
         <FormInput
           label="DP System"
           value={form.dpSystem || ''}
           onChangeText={(v) => setForm({ ...form, dpSystem: v })}
-          placeholder="e.g., Kongsberg"
         />
         <FormInput
           label="Comments"
           value={form.comments || ''}
           onChangeText={(v) => setForm({ ...form, comments: v })}
-          placeholder="Additional comments..."
           multiline
           numberOfLines={3}
         />

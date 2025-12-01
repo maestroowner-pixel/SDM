@@ -58,26 +58,22 @@ export const NextOfKinScreen: React.FC = () => {
           label="Full Name"
           value={form.name}
           onChangeText={(v) => setForm({ ...form, name: v })}
-          placeholder="Jane Smith"
         />
         <FormInput
           label="Relationship"
           value={form.relationship}
           onChangeText={(v) => setForm({ ...form, relationship: v })}
-          placeholder="Spouse, Parent, Sibling, etc."
         />
         <FormInput
           label="Phone"
           value={form.phone}
           onChangeText={(v) => setForm({ ...form, phone: v })}
-          placeholder="+63 912 345 6789"
           keyboardType="phone-pad"
         />
         <FormInput
           label="Email"
           value={form.email}
           onChangeText={(v) => setForm({ ...form, email: v })}
-          placeholder="jane.smith@email.com"
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -85,7 +81,6 @@ export const NextOfKinScreen: React.FC = () => {
           label="Address"
           value={form.address}
           onChangeText={(v) => setForm({ ...form, address: v })}
-          placeholder="123 Main Street, City, Country"
           multiline
           numberOfLines={2}
         />

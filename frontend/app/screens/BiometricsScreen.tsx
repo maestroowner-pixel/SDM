@@ -67,27 +67,23 @@ export const BiometricsScreen: React.FC = () => {
           label="Height (cm)"
           value={form.height}
           onChangeText={(v) => setForm({ ...form, height: v })}
-          placeholder="175"
           keyboardType="numeric"
         />
         <FormInput
           label="Weight (kg)"
           value={form.weight}
           onChangeText={(v) => setForm({ ...form, weight: v })}
-          placeholder="75"
           keyboardType="numeric"
         />
         <FormInput
           label="Shoe Size (EU)"
           value={form.shoeSize}
           onChangeText={(v) => setForm({ ...form, shoeSize: v })}
-          placeholder="42"
         />
         <FormInput
           label="Overall Size"
           value={form.overallSize}
           onChangeText={(v) => setForm({ ...form, overallSize: v })}
-          placeholder="M, L, XL, etc."
         />
         <FormSelect
           label="Eye Color"

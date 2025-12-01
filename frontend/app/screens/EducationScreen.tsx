@@ -63,32 +63,27 @@ export const EducationScreen: React.FC = () => {
           label="Institution"
           value={form.institution}
           onChangeText={(v) => setForm({ ...form, institution: v })}
-          placeholder="Maritime Academy of..."
         />
         <FormInput
           label="Degree"
           value={form.degree}
           onChangeText={(v) => setForm({ ...form, degree: v })}
-          placeholder="Bachelor of Science in Marine Transportation"
         />
         <FormInput
           label="Specialization"
           value={form.specialization}
           onChangeText={(v) => setForm({ ...form, specialization: v })}
-          placeholder="Navigation, Engineering, etc."
         />
         <FormInput
           label="Graduation Year"
           value={form.graduationYear}
           onChangeText={(v) => setForm({ ...form, graduationYear: v })}
-          placeholder="2015"
           keyboardType="numeric"
         />
         <FormInput
           label="Additional Skills"
           value={form.additionalSkills}
           onChangeText={(v) => setForm({ ...form, additionalSkills: v })}
-          placeholder="DP certification, ECDIS, etc."
           multiline
           numberOfLines={3}
         />
@@ -96,7 +91,6 @@ export const EducationScreen: React.FC = () => {
           label="Languages"
           value={form.languages}
           onChangeText={(v) => setForm({ ...form, languages: v })}
-          placeholder="English (Fluent), Filipino (Native)"
           multiline
           numberOfLines={2}
         />
