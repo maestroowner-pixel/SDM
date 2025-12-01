@@ -177,7 +177,7 @@ export const SettingsScreen: React.FC = () => {
           <SettingRow
             icon="information-circle"
             title="Seafarer Documents Manager"
-            subtitle="Version 1.0.0"
+            subtitle="Version 0.1.3 by Mykhaylo Osypov"
           />
         </View>
 
