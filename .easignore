@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+.expo/
+.expo-shared/
+dist/
+build/
+*.log
+
+# iOS
+ios/Pods/
+ios/build/
+ios/DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+
+# Git
+.git/
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+*.DS_Store
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# Large media (если есть)
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Documentation (если большие)
+docs/
+documentation/
+
+# Старые бэкапы
+*.backup
+*.bak
+*backup*

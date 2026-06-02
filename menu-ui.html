@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDM Build Menu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600&display=swap');
+
+  :root {
+    --bg:        #080F1E;
+    --bg2:       #0B1525;
+    --bg3:       #0E1C30;
+    --panel:     #0D1A2E;
+    --border:    rgba(0,200,255,0.12);
+    --border2:   rgba(0,200,255,0.06);
+    --cyan:      #00C8FF;
+    --cyan-dim:  rgba(0,200,255,0.18);
+    --cyan-glow: rgba(0,200,255,0.06);
+    --green:     #00FF9D;
+    --yellow:    #FFD600;
+    --red:       #FF4466;
+    --magenta:   #CC66FF;
+    --text:      #C8E0F0;
+    --text-dim:  #4A6680;
+    --text-mid:  #7A9AB8;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Space Grotesk', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+
+  /* ─── SCANLINE OVERLAY ─────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── LAYOUT ───────────────────────────────────────────── */
+  .app {
+    display: grid;
+    grid-template-rows: 52px 1fr;
+    grid-template-columns: 300px 1fr;
+    height: 100vh;
+    gap: 0;
+  }
+
+  /* ─── HEADER ───────────────────────────────────────────── */
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(0,200,255,0.5);
+  }
+
+  .logo span { color: var(--text-mid); font-weight: 300; }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .meta-badge {
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .meta-badge.version { border-color: rgba(0,200,255,0.3); color: var(--cyan); }
+  .meta-badge.mode-prod { border-color: rgba(0,255,157,0.3); color: var(--green); }
+  .meta-badge.mode-dev { border-color: rgba(255,214,0,0.3); color: var(--yellow); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.running {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ─── SIDEBAR ──────────────────────────────────────────── */
+  .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section {
+    padding: 0;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .section-title {
+    padding: 10px 16px 8px;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 16px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+
+  .btn:hover {
+    background: var(--cyan-dim);
+    color: #fff;
+  }
+
+  .btn:hover .btn-num { color: var(--cyan); }
+
+  .btn:active { background: rgba(0,200,255,0.25); }
+
+  .btn-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    min-width: 18px;
+    transition: color 0.15s;
+  }
+
+  .btn-icon {
+    font-size: 14px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .btn.danger { color: #FF6680; }
+  .btn.danger:hover { background: rgba(255,68,102,0.15); color: var(--red); }
+
+  .btn.accent { color: var(--cyan); }
+  .btn.accent:hover { background: rgba(0,200,255,0.15); }
+
+  .btn.success-color { color: var(--green); }
+  .btn.success-color:hover { background: rgba(0,255,157,0.1); }
+
+  .btn.special { color: var(--magenta); }
+  .btn.special:hover { background: rgba(204,102,255,0.12); }
+
+  /* ─── TERMINAL ─────────────────────────────────────────── */
+  .terminal-wrap {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    min-height: 0;
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    height: 36px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    flex-shrink: 0;
+  }
+
+  .terminal-dots {
+    display: flex; gap: 6px;
+  }
+  .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .dot:hover { opacity: 0.7; }
+  .dot.red    { background: #FF5F57; }
+  .dot.yellow { background: #FEBC2E; }
+  .dot.green  { background: #28C840; }
+
+  .terminal-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: 4px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-kill {
+    padding: 3px 10px;
+    background: none;
+    border: 1px solid rgba(255,68,102,0.3);
+    color: #FF6680;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .btn-kill.visible { opacity: 1; pointer-events: all; }
+  .btn-kill:hover { background: rgba(255,68,102,0.15); border-color: var(--red); color: var(--red); }
+
+  .btn-clear {
+    padding: 3px 10px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-clear:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .terminal {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    min-height: 0;
+  }
+
+  .terminal::-webkit-scrollbar { width: 4px; }
+  .terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ANSI-like classes */
+  .t-cmd    { color: var(--cyan); font-weight: 700; }
+  .t-ok     { color: var(--green); }
+  .t-err    { color: var(--red); }
+  .t-warn   { color: var(--yellow); }
+  .t-dim    { color: var(--text-dim); }
+
+  /* Render ANSI escape codes */
+  .ansi-bold   { font-weight: 700; }
+  .ansi-green  { color: var(--green); }
+  .ansi-cyan   { color: var(--cyan); }
+  .ansi-yellow { color: var(--yellow); }
+  .ansi-red    { color: var(--red); }
+  .ansi-magenta{ color: var(--magenta); }
+  .ansi-dim    { color: var(--text-dim); }
+  .ansi-white  { color: #fff; }
+
+  /* Input area */
+  .input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    border-top: 1px solid var(--border2);
+    background: var(--bg2);
+    flex-shrink: 0;
+  }
+
+  .input-prompt {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cyan);
+  }
+
+  .input-cmd {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    outline: none;
+    caret-color: var(--cyan);
+  }
+  .input-cmd::placeholder { color: var(--text-dim); }
+
+  .btn-run-cmd {
+    padding: 4px 14px;
+    background: var(--cyan-dim);
+    border: 1px solid rgba(0,200,255,0.3);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 11px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-run-cmd:hover { background: rgba(0,200,255,0.3); }
+
+  /* ─── CONN STATUS ──────────────────────────────────────── */
+  .conn-banner {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    padding: 8px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+  .conn-banner.show { opacity: 1; }
+  .conn-banner.disconnected { border-color: rgba(255,68,102,0.4); color: var(--red); }
+  .conn-banner.connected { border-color: rgba(0,255,157,0.3); color: var(--green); }
+
+  /* ─── CONFIRM DIALOG ───────────────────────────────────── */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(8,15,30,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay.show { display: flex; }
+
+  .dialog {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 32px;
+    min-width: 340px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8);
+  }
+  .dialog h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cyan);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .dialog p {
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+  .dialog-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .dialog-btn {
+    padding: 7px 20px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+  }
+  .dialog-btn.cancel { background: none; border-color: var(--border); color: var(--text-dim); }
+  .dialog-btn.cancel:hover { border-color: var(--text-mid); color: var(--text); }
+  .dialog-btn.confirm { background: var(--cyan-dim); border-color: rgba(0,200,255,0.4); color: var(--cyan); }
+  .dialog-btn.confirm:hover { background: rgba(0,200,255,0.3); }
+  .dialog-btn.confirm.danger-btn { background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.4); color: var(--red); }
+  .dialog-btn.confirm.danger-btn:hover { background: rgba(255,68,102,0.2); }
+
+  /* Scrollbar global */
+  * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">SDM <span>/</span> Build Menu</div>
+    <div class="header-meta">
+      <span id="badge-version" class="meta-badge version" style="display:none"></span>
+      <span id="badge-mode" class="meta-badge" style="display:none"></span>
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text" style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">IDLE</span>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+
+    <div class="section">
+      <div class="section-title">Version</div>
+      <button class="btn" onclick="run('npm run bump')">
+        <span class="btn-num">1</span><span class="btn-icon">⬆</span>Bump version (patch +1)
+      </button>
+      <button class="btn" onclick="promptVersion()">
+        <span class="btn-num">2</span><span class="btn-icon">✎</span>Set specific version
+      </button>
+      <button class="btn" onclick="run('npm run check:structure')">
+        <span class="btn-num">3</span><span class="btn-icon">◉</span>Show current versions
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Production Android</div>
+      <button class="btn success-color" onclick="confirm2('Build AAB (Production) — Google Play?', 'npm run build:aab:production')">
+        <span class="btn-num">4</span><span class="btn-icon">▲</span>Build AAB — Google Play
+      </button>
+      <button class="btn success-color" onclick="confirm2('Build APK (Production)?', 'npm run build:apk:production')">
+        <span class="btn-num">5</span><span class="btn-icon">▲</span>Build APK — Direct install
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">iOS App Store</div>
+      <button class="btn special" onclick="confirm2('Submit to TestFlight/App Store via EAS?', 'npx eas build --platform ios --auto-submit')">
+        <span class="btn-num">19</span><span class="btn-icon"></span>Build & Submit (EAS)
+      </button>
+      <button class="btn special" onclick="run('npx expo run:ios --configuration Release')">
+        <span class="btn-num">20</span><span class="btn-icon"></span>Build local iOS Release
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Dev / Testing</div>
+      <button class="btn" onclick="run('npm run build:apk:dev')">
+        <span class="btn-num">6</span><span class="btn-icon">⚙</span>Build APK Dev
+      </button>
+      <button class="btn" onclick="run('npm run build:apk')">
+        <span class="btn-num">7</span><span class="btn-icon">⚙</span>Build APK Preview
+      </button>
+      <button class="btn" onclick="run('npm run build:aab')">
+        <span class="btn-num">8</span><span class="btn-icon">⚙</span>Build AAB Preview
+      </button>
+      <button class="btn" onclick="run('npm run android')">
+        <span class="btn-num">9</span><span class="btn-icon">▶</span>Run on Android device
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Tools & Keys</div>
+      <button class="btn" onclick="run('npm run clean:android')">
+        <span class="btn-num">10</span><span class="btn-icon">✕</span>Clean Android build
+      </button>
+      <button class="btn" onclick="run('npm run clean:outputs')">
+        <span class="btn-num">11</span><span class="btn-icon">✕</span>Clean outputs folder
+      </button>
+      <button class="btn" onclick="run('npm install')">
+        <span class="btn-num">12</span><span class="btn-icon">↓</span>Install dependencies
+      </button>
+      <button class="btn accent" onclick="run('keytool -list -v -keystore @osypov_m__seafarer-docs.jks -alias $MYAPP_UPLOAD_KEY_ALIAS -storepass $MYAPP_UPLOAD_STORE_PASSWORD -keypass $MYAPP_UPLOAD_KEY_PASSWORD')">
+        <span class="btn-num">13</span><span class="btn-icon">🔑</span>Check Google Keys (SHA1)
+      </button>
+      <button class="btn special" onclick="confirm2('Запустить expo prebuild --clean и применить патч ключей?', 'node google-key-run.js', true)">
+        <span class="btn-num">21</span><span class="btn-icon">🔧</span>Prebuild + patch keys
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Environment</div>
+      <button class="btn" onclick="run('npm run env:preview')">
+        <span class="btn-num">14</span><span class="btn-icon">○</span>Switch to Preview
+      </button>
+      <button class="btn" onclick="run('npm run env:production')">
+        <span class="btn-num">15</span><span class="btn-icon">●</span>Switch to Production
+      </button>
+      <button class="btn" onclick="run('npm run env:show')">
+        <span class="btn-num">16</span><span class="btn-icon">◈</span>Show environment
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Quick Actions</div>
+      <button class="btn success-color" onclick="confirm2('Bump version + Build AAB?', 'npm run release')">
+        <span class="btn-num">17</span><span class="btn-icon">🚀</span>Release (bump + AAB)
+      </button>
+      <button class="btn success-color" onclick="confirm2('Submit to Google Play?', 'npm run submit:production')">
+        <span class="btn-num">18</span><span class="btn-icon">☁</span>Submit to Google Play
+      </button>
+    </div>
+
+    <div class="section" style="border-bottom:none">
+      <div class="section-title">Danger</div>
+      <button class="btn danger" onclick="confirm2('Удалить android/ и node_modules, затем npm install?', 'rm -rf android/.gradle android/app/.cxx android/app/build android/build && npm install --legacy-peer-deps', true)">
+        <span class="btn-num">—</span><span class="btn-icon">☠</span>Full clean (android + cache)
+      </button>
+    </div>
+
+  </nav>
+
+  <!-- TERMINAL -->
+  <div class="terminal-wrap">
+    <div class="terminal-bar">
+      <div class="terminal-dots">
+        <div class="dot red" onclick="clearTerminal()" title="Clear"></div>
+        <div class="dot yellow" title="Minimize"></div>
+        <div class="dot green" title=""></div>
+      </div>
+      <span class="terminal-label" id="terminal-label">terminal</span>
+      <button class="btn-kill" id="btn-kill" onclick="killProcess()">■ STOP</button>
+      <button class="btn-clear" onclick="clearTerminal()">CLEAR</button>
+    </div>
+
+    <div class="terminal" id="terminal">
+      <span class="t-dim">╔══════════════════════════════════════════╗
+║        SDM Build Menu — Web Terminal     ║
+╚══════════════════════════════════════════╝
+
+</span><span class="t-dim">Выберите действие из меню слева
+или введите команду внизу.
+
+</span>
+    </div>
+
+    <div class="input-bar">
+      <span class="input-prompt">$</span>
+      <input class="input-cmd" id="input-cmd" placeholder="введите команду..." autocomplete="off" spellcheck="false">
+      <button class="btn-run-cmd" onclick="runFromInput()">RUN</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="overlay" id="overlay">
+  <div class="dialog">
+    <h3 id="dialog-title">ПОДТВЕРЖДЕНИЕ</h3>
+    <p id="dialog-body"></p>
+    <div class="dialog-actions">
+      <button class="dialog-btn cancel" onclick="closeDialog()">Отмена</button>
+      <button class="dialog-btn confirm" id="dialog-confirm" onclick="confirmAction()">Выполнить</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERSION INPUT DIALOG -->
+<div class="overlay" id="overlay-ver">
+  <div class="dialog">
+    <h3>УСТАНОВИТЬ ВЕРСИЮ</h3>
+    <p>Введите версию в формате X.Y.Z</p>
+    <input class="input-cmd" id="ver-input" placeholder="3.1.2"
+      style="border:1px solid var(--border);padding:8px 12px;border-radius:3px;margin-bottom:18px;width:100%">
+    <div class="dialog-actions">
+      <button class="dialog-btn cancel" onclick="closeVerDialog()">Отмена</button>
+      <button class="dialog-btn confirm" onclick="setVersion()">Применить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONNECTION BANNER -->
+<div class="conn-banner" id="conn-banner"></div>
+
+<script>
+  // ─── WebSocket ──────────────────────────────────────────────────────────────
+  let ws = null;
+  let reconnectTimer = null;
+  let pendingCmd = null;
+  let isRunning = false;
+
+  function connect() {
+    ws = new WebSocket('ws://localhost:7420');
+
+    ws.onopen = () => {
+      showBanner('● CONNECTED', 'connected');
+      ws.send(JSON.stringify({ type: 'get_status' }));
+    };
+
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      handleMsg(msg);
+    };
+
+    ws.onclose = () => {
+      showBanner('◌ DISCONNECTED — reconnecting...', 'disconnected');
+      reconnectTimer = setTimeout(connect, 2500);
+    };
+
+    ws.onerror = () => {};
+  }
+
+  function handleMsg(msg) {
+    if (msg.type === 'output') {
+      appendOutput(msg.text, msg.class);
+    } else if (msg.type === 'running') {
+      setRunning(msg.value);
+    } else if (msg.type === 'clear') {
+      document.getElementById('terminal').innerHTML = '';
+    } else if (msg.type === 'status') {
+      updateStatus(msg);
+    } else if (msg.type === 'refresh_version') {
+      fetchStatus();
+    }
+  }
+
+  function fetchStatus() {
+    fetch('/status').then(r => r.json()).then(updateStatus).catch(() => {});
+  }
+
+  function updateStatus(s) {
+    const vb = document.getElementById('badge-version');
+    const mb = document.getElementById('badge-mode');
+    if (s.version) {
+      vb.textContent = `v${s.version.name} · ${s.version.code}`;
+      vb.style.display = '';
+    } else {
+      vb.style.display = 'none';
+    }
+    if (s.mode) {
+      mb.textContent = s.mode.toUpperCase();
+      mb.className = 'meta-badge ' + (s.mode === 'production' ? 'mode-prod' : 'mode-dev');
+      mb.style.display = '';
+    } else {
+      mb.style.display = 'none';
+    }
+    if (s.running !== undefined) setRunning(s.running);
+  }
+
+  function setRunning(val) {
+    isRunning = val;
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    const kill = document.getElementById('btn-kill');
+    const lbl = document.getElementById('terminal-label');
+    dot.className = 'status-dot' + (val ? ' running' : '');
+    txt.textContent = val ? 'RUNNING' : 'IDLE';
+    txt.style.color = val ? 'var(--green)' : 'var(--text-dim)';
+    kill.className = 'btn-kill' + (val ? ' visible' : '');
+    lbl.textContent = val ? 'terminal — running...' : 'terminal';
+  }
+
+  // ─── Terminal output ────────────────────────────────────────────────────────
+  const ANSI_MAP = {
+    '1': 'ansi-bold',
+    '32': 'ansi-green', '92': 'ansi-green',
+    '36': 'ansi-cyan',  '96': 'ansi-cyan',
+    '33': 'ansi-yellow','93': 'ansi-yellow',
+    '31': 'ansi-red',   '91': 'ansi-red',
+    '35': 'ansi-magenta','95': 'ansi-magenta',
+    '37': 'ansi-white', '97': 'ansi-white',
+    '2':  'ansi-dim',   '90': 'ansi-dim',
+  };
+
+  function ansiToHtml(text) {
+    let result = '';
+    let stack = [];
+    const parts = text.split(/\x1b\[([0-9;]*)m/);
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        result += escapeHtml(parts[i]);
+      } else {
+        const codes = parts[i].split(';');
+        if (codes[0] === '0' || codes[0] === '') {
+          if (stack.length) { result += '</span>'.repeat(stack.length); stack = []; }
+        } else {
+          codes.forEach(code => {
+            const cls = ANSI_MAP[code];
+            if (cls) { result += `<span class="${cls}">`; stack.push(cls); }
+          });
+        }
+      }
+    }
+    if (stack.length) result += '</span>'.repeat(stack.length);
+    return result;
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function appendOutput(text, cls) {
+    const term = document.getElementById('terminal');
+    const html = ansiToHtml(text);
+    if (cls === 'cmd') {
+      term.innerHTML += `<span class="t-cmd">${html}</span>`;
+    } else if (cls === 'err') {
+      term.innerHTML += `<span class="t-err">${html}</span>`;
+    } else if (cls === 'ok') {
+      term.innerHTML += `<span class="t-ok">${html}</span>`;
+    } else if (cls === 'warn') {
+      term.innerHTML += `<span class="t-warn">${html}</span>`;
+    } else {
+      term.innerHTML += html;
+    }
+    term.scrollTop = term.scrollHeight;
+  }
+
+  function clearTerminal() {
+    document.getElementById('terminal').innerHTML = '';
+  }
+
+  // ─── Commands ───────────────────────────────────────────────────────────────
+  function run(cmd) {
+    if (!ws || ws.readyState !== 1) {
+      appendOutput('\r\n⚠️  Нет соединения с сервером\r\n', 'warn'); return;
+    }
+    ws.send(JSON.stringify({ type: 'run', cmd }));
+  }
+
+  function killProcess() {
+    if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'kill' }));
+  }
+
+  function runFromInput() {
+    const inp = document.getElementById('input-cmd');
+    const cmd = inp.value.trim();
+    if (!cmd) return;
+    inp.value = '';
+    run(cmd);
+  }
+
+  document.getElementById('input-cmd').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') runFromInput();
+  });
+
+  // ─── Confirm dialog ─────────────────────────────────────────────────────────
+  let dialogCmd = null;
+
+  function confirm2(title, cmd, isDanger = false) {
+    dialogCmd = cmd;
+    document.getElementById('dialog-body').textContent = title;
+    const btn = document.getElementById('dialog-confirm');
+    btn.className = 'dialog-btn confirm' + (isDanger ? ' danger-btn' : '');
+    document.getElementById('overlay').classList.add('show');
+  }
+
+  function closeDialog() {
+    document.getElementById('overlay').classList.remove('show');
+    dialogCmd = null;
+  }
+
+  function confirmAction() {
+    if (dialogCmd) run(dialogCmd);
+    closeDialog();
+  }
+
+  document.getElementById('overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeDialog();
+  });
+
+  // ─── Version dialog ─────────────────────────────────────────────────────────
+  function promptVersion() {
+    document.getElementById('overlay-ver').classList.add('show');
+    setTimeout(() => document.getElementById('ver-input').focus(), 50);
+  }
+
+  function closeVerDialog() {
+    document.getElementById('overlay-ver').classList.remove('show');
+  }
+
+  function setVersion() {
+    const v = document.getElementById('ver-input').value.trim();
+    if (v) run(`npm run set:version ${v}`);
+    closeVerDialog();
+  }
+
+  document.getElementById('overlay-ver').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeVerDialog();
+  });
+  document.getElementById('ver-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') setVersion();
+    if (e.key === 'Escape') closeVerDialog();
+  });
+
+  // ─── Banner ─────────────────────────────────────────────────────────────────
+  let bannerTimer = null;
+  function showBanner(text, cls) {
+    const b = document.getElementById('conn-banner');
+    b.textContent = text;
+    b.className = 'conn-banner show ' + (cls || '');
+    clearTimeout(bannerTimer);
+    if (cls === 'connected') bannerTimer = setTimeout(() => b.classList.remove('show'), 2000);
+  }
+
+  // ─── Init ────────────────────────────────────────────────────────────────────
+  connect();
+  fetchStatus();
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "Seafarer Documents Manager",
+    "slug": "seafarer.documents.manager",
+    "version": "3.1.5",
+    "orientation": "all",
+    "icon": "./assets/images/icon.png",
+    "scheme": "seafarer-docs",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "seafarer.documents.manager",
+      "deploymentTarget": "16.4",
+      "buildNumber": "301040",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
+        "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SDM uses your location in the background to automatically record your vessel's midnight position for the Midnight Position Check log. This runs once daily at 00:00 London time.",
+        "NSLocationAlwaysUsageDescription": "SDM uses your location in the background to automatically record your vessel's midnight position for the Midnight Position Check log."
+      }
+    },
+    "android": {
+      "package": "seafarer.documents.manager"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-octopus.png",
+          "imageWidth": 400,
+          "resizeMode": "contain",
+          "backgroundColor": "#FAFAFA"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.1.20",
+            "kspVersion": "2.1.20-1.0.32",
+            "newArchEnabled": true,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "usePrecompiledModules": false
+          }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SDM uses your location to check if the vessel is inside or outside UK territorial waters (12nm) for the Midnight Position Check log.",
+          "locationAlwaysAndWhenInUsePermission": "SDM uses your location in the background to automatically record your vessel's midnight position at 00:00 London time.",
+          "locationAlwaysPermission": "SDM uses your location in the background to automatically record your vessel's midnight position at 00:00 London time.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/kuka.png",
+          "color": "#002147",
+          "sounds": []
+        }
+      ],
+      "./plugins/remove-audio-boot-receivers",
+      "./plugins/android-signing",
+      "./plugins/ios-fix-codegen-cycle"
+    ]
+  }
+}
