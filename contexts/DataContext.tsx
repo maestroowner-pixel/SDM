@@ -13,7 +13,7 @@ const getNotificationService = async () => {
       // module.NotificationService - если именованный экспорт
       // module.default - если export default
       // module - если экспортировано через module.exports
-      const service = module.NotificationService || module.default || module;
+      const service: any = module.NotificationService || (module as any).default || module;
 
       // .bind(service) critical: static methods use `this` internally
       NotificationServiceModule = {
@@ -156,6 +156,9 @@ export interface DPDayRecord {
 
 export interface DPScreenInfo {
   company: string;
+  fullName: string;
+  dob: string;
+  rank: string;
   vesselName: string;
   grt: string;
   imo: string;
@@ -188,7 +191,7 @@ const defaultState: AppState = {
   showMPCScreen: false,
   dpDays: [],
   dpInfo: {
-    company: '', vesselName: '', grt: '', imo: '', dpClass: '',
+    company: '', fullName: '', dob: '', rank: '', vesselName: '', grt: '', imo: '', dpClass: '',
     contractStart: '', contractEnd: '',
     signatoryName: '', signatoryRank: '', companyContacts: '',
   },

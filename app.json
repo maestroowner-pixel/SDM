@@ -20,14 +20,15 @@
       }
     },
     "android": {
-      "package": "seafarer.documents.manager"
+      "package": "seafarer.documents.manager",
+      "versionCode": 301052
     },
     "plugins": [
       [
         "expo-splash-screen",
         {
           "image": "./assets/splash-octopus.png",
-          "imageWidth": 400,
+          "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#FAFAFA"
         }
@@ -41,7 +42,10 @@
             "newArchEnabled": true,
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
-            "buildToolsVersion": "35.0.0"
+            "buildToolsVersion": "35.0.0",
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.reactnativepdf.** { *; }\n-keep class com.ReactNativeBlobUtil.** { *; }\n-keep class com.google.mlkit.** { *; }\n-dontwarn com.google.mlkit.**\n-keep class com.revenuecat.purchases.** { *; }\n-keep class com.swmansion.reanimated.** { *; }\n-keep class com.swmansion.rnscreens.** { *; }\n-keep class com.horcrux.svg.** { *; }"
           },
           "ios": {
             "usePrecompiledModules": false
@@ -68,7 +72,8 @@
       ],
       "./plugins/remove-audio-boot-receivers",
       "./plugins/android-signing",
-      "./plugins/ios-fix-codegen-cycle"
+      "./plugins/ios-fix-codegen-cycle",
+      "./plugins/android-large-screen-fix"
     ]
   }
 }

@@ -178,7 +178,18 @@
     "cameraScan": "कैमरा स्कैन",
     "scanCreated": "स्कैन सहेजा गया",
     "scanFailed": "स्कैन बनाने में विफल",
-    "cameraPermissionDenied": "कैमरा एक्सेस अस्वीकृत। इसे सेटिंग्स में सक्षम करें।"
+    "cameraPermissionDenied": "कैमरा एक्सेस अस्वीकृत। इसे सेटिंग्स में सक्षम करें।",
+    "previewFailed": "फ़ाइल नहीं खोली जा सकी",
+    "renameTitle": "स्कैन का नाम बदलें",
+    "renamePlaceholder": "फ़ाइल का नाम",
+    "renameExists": "इस नाम की फ़ाइल पहले से मौजूद है",
+    "renameFailed": "नाम बदलने में विफल",
+    "addPageTitle": "एक और पेज जोड़ें?",
+    "pagesSoFar": "अब तक पेज",
+    "savePdf": "PDF सहेजें",
+    "addPage": "पेज जोड़ें",
+    "pages": "पेज",
+    "pageOne": "पेज"
   },
   "documents": {
     "title": "दस्तावेज़",
@@ -655,5 +666,14 @@
     "disclosureDecline": "अस्वीकार",
     "disclosureAllow": "अनुमति दें",
     "iosBackgroundHint": "iPhone पर मध्यरात्रि ऑटो-रिकॉर्ड के लिए बैकग्राउंड ऐप रिफ्रेश सक्षम करें: सेटिंग्स → सामान्य → बैकग्राउंड ऐप रिफ्रेश"
+  },
+  "attach": {
+    "title": "फ़ाइल संलग्न करें",
+    "fromScans": "मेरे स्कैन से",
+    "fromFiles": "फ़ोन फ़ाइलों से",
+    "camera": "कैमरे से स्कैन करें",
+    "noScans": "अभी तक कोई सहेजा गया स्कैन नहीं। Scans स्क्रीन पर + बटन से बनाएं।",
+    "pickerTitle": "एक स्कैन चुनें",
+    "attachFailed": "फ़ाइल संलग्न करने में विफल"
   }
 }

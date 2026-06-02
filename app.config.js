@@ -31,9 +31,10 @@ export default ({ config }) => {
     
     ios: {
       ...config.ios,
-      bundleIdentifier: isProduction
-        ? 'seafarer.documents.manager'
-        : `seafarer.documents.manager.${variant}`,
+      // iOS всегда использует production bundle id — в App Store Connect одно
+      // приложение (seafarer.documents.manager). Вариантные суффиксы (.development/.preview)
+      // остаются только для Android (package), чтобы не плодить iOS App ID.
+      bundleIdentifier: 'seafarer.documents.manager',
       buildNumber: config.ios?.buildNumber || '1',
       supportsTablet: true,
     },

@@ -178,7 +178,18 @@
     "cameraScan": "Camera Scan",
     "scanCreated": "Na-save ang scan",
     "scanFailed": "Nabigong gumawa ng scan",
-    "cameraPermissionDenied": "Tinanggihan ang access sa camera. I-enable ito sa Settings."
+    "cameraPermissionDenied": "Tinanggihan ang access sa camera. I-enable ito sa Settings.",
+    "previewFailed": "Hindi mabuksan ang file",
+    "renameTitle": "Palitan ang pangalan ng scan",
+    "renamePlaceholder": "Pangalan ng file",
+    "renameExists": "May file na ng pangalang ito",
+    "renameFailed": "Nabigong palitan ang pangalan",
+    "addPageTitle": "Magdagdag pa ng pahina?",
+    "pagesSoFar": "Mga pahina",
+    "savePdf": "I-save ang PDF",
+    "addPage": "Magdagdag ng pahina",
+    "pages": "pahina",
+    "pageOne": "pahina"
   },
   "documents": {
     "title": "Mga Dokumento",
@@ -655,5 +666,14 @@
     "disclosureDecline": "Tanggihan",
     "disclosureAllow": "Payagan",
     "iosBackgroundHint": "Para gumana ang awtomatikong pagtatala sa hatinggabi sa iPhone, i-enable ang Background App Refresh: Settings → General → Background App Refresh"
+  },
+  "attach": {
+    "title": "Maglakip ng file",
+    "fromScans": "Mula sa aking mga scan",
+    "fromFiles": "Mula sa mga file ng telepono",
+    "camera": "I-scan gamit ang camera",
+    "noScans": "Wala pang naka-save na scan. Gamitin ang + button sa Scans screen para gumawa.",
+    "pickerTitle": "Pumili ng scan",
+    "attachFailed": "Nabigong ilakip ang file"
   }
 }

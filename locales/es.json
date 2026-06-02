@@ -128,7 +128,18 @@
     "cameraScan": "Escaneo con cámara",
     "scanCreated": "Escaneo guardado",
     "scanFailed": "No se pudo crear el escaneo",
-    "cameraPermissionDenied": "Acceso a la cámara denegado. Actívalo en Ajustes."
+    "cameraPermissionDenied": "Acceso a la cámara denegado. Actívalo en Ajustes.",
+    "previewFailed": "No se pudo abrir el archivo",
+    "renameTitle": "Renombrar escaneo",
+    "renamePlaceholder": "Nombre del archivo",
+    "renameExists": "Ya existe un archivo con ese nombre",
+    "renameFailed": "No se pudo renombrar",
+    "addPageTitle": "¿Añadir otra página?",
+    "pagesSoFar": "Páginas hasta ahora",
+    "savePdf": "Guardar PDF",
+    "addPage": "Añadir página",
+    "pages": "págs.",
+    "pageOne": "pág."
   },
   "documents": {
     "documents.form.noExpiryDate": "Sin Fecha de Vencimiento",
@@ -643,5 +654,14 @@
     "disclosureDecline": "Rechazar",
     "disclosureAllow": "Permitir",
     "iosBackgroundHint": "Para que el registro automático de medianoche funcione en iPhone, activa la actualización en segundo plano: Ajustes → General → Actualización en segundo plano"
+  },
+  "attach": {
+    "title": "Adjuntar archivo",
+    "fromScans": "De mis escaneos",
+    "fromFiles": "De archivos del teléfono",
+    "camera": "Escanear con cámara",
+    "noScans": "Aún no hay escaneos guardados. Usa el botón + en la pantalla Scans para crear uno.",
+    "pickerTitle": "Elige un escaneo",
+    "attachFailed": "No se pudo adjuntar el archivo"
   }
 }

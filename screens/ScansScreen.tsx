@@ -12,6 +12,9 @@ import {
   Animated,
   ActivityIndicator,
   Image,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +25,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as Print from 'expo-print';
 import JSZip from 'jszip';
+import Pdf from 'react-native-pdf';
+import { captureScanImage, buildPdfFromImages, ScanImage } from '../utils/scanUtils';
 import { useData } from '../contexts/DataContext';
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
@@ -99,6 +104,9 @@ export const ScansScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [archiving, setArchiving] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<ScanFile | null>(null);
+  const [renameText, setRenameText] = useState('');
+  const [previewFile, setPreviewFile] = useState<ScanFile | null>(null);
 
   useEffect(() => {
     loadScans();
@@ -319,68 +327,127 @@ export const ScansScreen: React.FC = () => {
     return `SDM_scan_${p(d.getDate())}${p(d.getMonth() + 1)}${d.getFullYear()}_${p(d.getHours())}${p(d.getMinutes())}.pdf`;
   };
 
-  // Снять фото камерой → сжать → сохранить компактным PDF
+  // Спросить: добавить ещё страницу или сохранить готовый PDF
+  const confirmAddPage = (count: number): Promise<boolean> =>
+    new Promise((resolve) => {
+      Alert.alert(
+        t('scans.addPageTitle'),
+        `${t('scans.pagesSoFar')}: ${count}`,
+        [
+          { text: t('scans.savePdf'), style: 'cancel', onPress: () => resolve(false) },
+          { text: t('scans.addPage'), onPress: () => resolve(true) },
+        ],
+        { cancelable: false }
+      );
+    });
+
+  // Снять документ камерой (одна или несколько страниц) → один PDF
   const handleCameraScan = async () => {
     try {
-      const perm = await ImagePicker.requestCameraPermissionsAsync();
-      if (!perm.granted) {
-        Alert.alert(t('common.error'), t('scans.cameraPermissionDenied'));
-        return;
+      const first = await captureScanImage();
+      if (!first) return;
+
+      const images: ScanImage[] = [first];
+      let addMore = await confirmAddPage(images.length);
+      while (addMore) {
+        const next = await captureScanImage();
+        if (next) images.push(next);
+        addMore = next ? await confirmAddPage(images.length) : false;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ['images'],
-        quality: 1,
-        allowsEditing: true, // нативный кроп после съёмки (обрезать лишнее)
-      });
-      if (result.canceled || !result.assets?.length) return;
-
       setScanning(true);
-
-      // Сжатие: ресайз до 1500px по ширине + JPEG q=0.5 → маленький PDF
-      const compressed = await ImageManipulator.manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 1500 } }],
-        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
-
-      // Размер PDF-страницы = пропорции фото → изображение занимает ровно одну
-      // страницу (нет разрыва страниц и тёмной полосы на стыке).
-      const imgW = compressed.width || 1500;
-      const imgH = compressed.height || 2000;
-      const pageW = 595; // ширина A4 в pt
-      const pageH = Math.max(1, Math.round((pageW * imgH) / imgW));
-      const html = `<html><head><meta charset="utf-8"/><style>@page{size:${pageW}pt ${pageH}pt;margin:0}html,body{margin:0;padding:0}img{width:100%;display:block}</style></head><body><img src="data:image/jpeg;base64,${compressed.base64}"/></body></html>`;
-      const { uri: tmpPdf } = await Print.printToFileAsync({ html, width: pageW, height: pageH, base64: false });
-
       const fileName = buildScanFileName();
-      const destUri = `${FileSystem.documentDirectory}${fileName}`;
-      await FileSystem.deleteAsync(destUri, { idempotent: true });
-      await FileSystem.moveAsync({ from: tmpPdf, to: destUri });
+      const f = await buildPdfFromImages(FileSystem.documentDirectory as string, images, fileName);
+      if (!f) return;
 
-      const info = await FileSystem.getInfoAsync(destUri);
-
-      // Сохраняем в общий список сканов (отдельная корзина standalone_scans)
+      // Сохраняем в общий список сканов (корзина standalone_scans)
       const stored = await AsyncStorage.getItem('document_attachments');
       const attachments = stored ? JSON.parse(stored) : {};
       const BUCKET = 'standalone_scans';
       if (!attachments[BUCKET]) attachments[BUCKET] = [];
       attachments[BUCKET].push({
-        fileName,
-        uri: destUri,
-        size: (info as any).size || 0,
-        uploadDate: new Date().toISOString(),
+        fileName: f.fileName,
+        uri: f.uri,
+        size: f.size,
+        uploadDate: f.uploadDate,
         documentName: t('scans.cameraScan'),
       });
       await AsyncStorage.setItem('document_attachments', JSON.stringify(attachments));
 
       await loadScans();
-      Alert.alert(t('common.success'), `${t('scans.scanCreated')}\n${fileName}`);
-    } catch (error) {
-      console.error('Camera scan failed:', error);
-      Alert.alert(t('common.error'), t('scans.scanFailed'));
+      const pagesWord = images.length > 1 ? t('scans.pages') : t('scans.pageOne');
+      Alert.alert(t('common.success'), `${t('scans.scanCreated')}\n${f.fileName} — ${images.length} ${pagesWord}`);
+    } catch (error: any) {
+      if (error?.message === 'camera-permission-denied') {
+        Alert.alert(t('common.error'), t('scans.cameraPermissionDenied'));
+      } else {
+        console.error('Camera scan failed:', error);
+        Alert.alert(t('common.error'), t('scans.scanFailed'));
+      }
     } finally {
       setScanning(false);
+    }
+  };
+
+  // Предпросмотр PDF прямо в приложении (модалка)
+  const previewScan = (scan: ScanFile) => setPreviewFile(scan);
+
+  // Открыть/поделиться во внешнем приложении
+  const shareScan = async (scan: ScanFile) => {
+    try {
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(scan.uri, {
+          mimeType: 'application/pdf',
+          UTI: 'com.adobe.pdf',
+          dialogTitle: scan.fileName,
+        });
+      }
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
+  };
+
+  const openRename = (scan: ScanFile) => {
+    setRenameText(scan.fileName.replace(/\.pdf$/i, ''));
+    setRenameTarget(scan);
+  };
+
+  // Обновить запись скана (uri+имя) в обоих хранилищах вложений
+  const updateScanInStores = async (oldUri: string, fileName: string, uri: string) => {
+    for (const key of ['document_attachments', 'service_attachments']) {
+      const stored = await AsyncStorage.getItem(key);
+      if (!stored) continue;
+      const att = JSON.parse(stored);
+      let changed = false;
+      for (const id of Object.keys(att)) {
+        att[id] = att[id].map((f: any) => {
+          if (f.uri === oldUri) { changed = true; return { ...f, fileName, uri }; }
+          return f;
+        });
+      }
+      if (changed) await AsyncStorage.setItem(key, JSON.stringify(att));
+    }
+  };
+
+  const confirmRename = async () => {
+    if (!renameTarget) return;
+    const clean = renameText.trim().replace(/[\/\\:*?"<>|]/g, '').replace(/\.pdf$/i, '');
+    if (!clean) { setRenameTarget(null); return; }
+    const newName = `${clean}.pdf`;
+    const dir = renameTarget.uri.substring(0, renameTarget.uri.lastIndexOf('/') + 1);
+    const newUri = `${dir}${newName}`;
+    try {
+      if (newUri !== renameTarget.uri) {
+        const exists = await FileSystem.getInfoAsync(newUri);
+        if (exists.exists) { Alert.alert(t('common.error'), t('scans.renameExists')); return; }
+        await FileSystem.moveAsync({ from: renameTarget.uri, to: newUri });
+        await updateScanInStores(renameTarget.uri, newName, newUri);
+      }
+      setRenameTarget(null);
+      await loadScans();
+    } catch (error) {
+      console.error('Rename failed:', error);
+      Alert.alert(t('common.error'), t('scans.renameFailed'));
     }
   };
 
@@ -503,6 +570,22 @@ export const ScansScreen: React.FC = () => {
                     </Text>
                   </View>
                 </View>
+                <View style={styles.scanActions}>
+                  <TouchableOpacity
+                    style={styles.scanActionBtn}
+                    onPress={() => previewScan(scan)}
+                    hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                  >
+                    <Ionicons name="eye-outline" size={20} color={isDark ? '#90caf9' : '#1976d2'} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.scanActionBtn}
+                    onPress={() => openRename(scan)}
+                    hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                  >
+                    <Ionicons name="create-outline" size={20} color={isDark ? '#90caf9' : '#1976d2'} />
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
             ))}
             </View>
@@ -544,6 +627,68 @@ export const ScansScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Переименование скана */}
+        <Modal visible={!!renameTarget} transparent animationType="fade" onRequestClose={() => setRenameTarget(null)}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.renameOverlay}
+          >
+            <View style={[styles.renameBox, { backgroundColor: isDark ? '#10233b' : '#fff' }]}>
+              <Text style={[styles.renameTitle, isDark ? styles.textLight : styles.textDark]}>
+                {t('scans.renameTitle')}
+              </Text>
+              <View style={styles.renameInputRow}>
+                <TextInput
+                  style={[styles.renameInput, isDark ? styles.renameInputDark : styles.renameInputLight]}
+                  value={renameText}
+                  onChangeText={setRenameText}
+                  placeholder={t('scans.renamePlaceholder')}
+                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                  autoFocus
+                  selectTextOnFocus
+                  returnKeyType="done"
+                  onSubmitEditing={confirmRename}
+                />
+                <Text style={[styles.renameExt, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }]}>.pdf</Text>
+              </View>
+              <View style={styles.renameButtons}>
+                <TouchableOpacity style={styles.renameBtn} onPress={() => setRenameTarget(null)}>
+                  <Text style={[styles.renameBtnText, { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }]}>
+                    {t('common.cancel')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.renameBtn, styles.renameBtnSave]} onPress={confirmRename}>
+                  <Text style={[styles.renameBtnText, { color: '#fff', fontWeight: '700' }]}>{t('common.save')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Предпросмотр PDF прямо в приложении */}
+        <Modal visible={!!previewFile} animationType="slide" onRequestClose={() => setPreviewFile(null)}>
+          <SafeAreaView style={[styles.previewContainer, { backgroundColor: isDark ? '#0a1628' : '#fff' }]}>
+            <View style={[styles.previewHeader, { borderBottomColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)' }]}>
+              <TouchableOpacity onPress={() => setPreviewFile(null)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" size={26} color={isDark ? '#fff' : '#1a1a1a'} />
+              </TouchableOpacity>
+              <Text numberOfLines={1} style={[styles.previewTitle, isDark ? styles.textLight : styles.textDark]}>
+                {previewFile?.fileName}
+              </Text>
+              <TouchableOpacity onPress={() => previewFile && shareScan(previewFile)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="share-outline" size={24} color={isDark ? '#90caf9' : '#1976d2'} />
+              </TouchableOpacity>
+            </View>
+            {previewFile && (
+              <Pdf
+                source={{ uri: previewFile.uri }}
+                style={styles.pdf}
+                onError={(error) => { console.log('PDF preview error:', error); }}
+              />
+            )}
+          </SafeAreaView>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -703,6 +848,98 @@ const styles = StyleSheet.create({
   },
   scanMetaText: {
     fontSize: 12,
+  },
+  scanActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  scanActionBtn: {
+    width: 34,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  renameOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+  },
+  renameBox: {
+    borderRadius: 16,
+    padding: 20,
+  },
+  renameTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 14,
+  },
+  renameInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 18,
+  },
+  renameInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    fontSize: 15,
+  },
+  renameInputDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.15)',
+    color: '#fff',
+  },
+  renameInputLight: {
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderColor: 'rgba(0,0,0,0.12)',
+    color: '#1a1a1a',
+  },
+  renameExt: {
+    fontSize: 14,
+  },
+  renameButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  renameBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+  },
+  renameBtnSave: {
+    backgroundColor: '#1976d2',
+  },
+  renameBtnText: {
+    fontSize: 15,
+  },
+  previewContainer: {
+    flex: 1,
+  },
+  previewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  previewTitle: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginHorizontal: 12,
+  },
+  pdf: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: 'transparent',
   },
   bottomBar: {
     flexDirection: 'row',

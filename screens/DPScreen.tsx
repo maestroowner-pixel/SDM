@@ -531,7 +531,7 @@ ${scheme === 'new' ? '<p class="note"><b>NOTE:</b> For revalidation applications
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={{ padding: 20 }}>
-            <SimpleDatePicker label="Select Date" value={newDate} onChange={setNewDate} />
+            <SimpleDatePicker label="Select Date" value={newDate} onChange={setNewDate} isDark={isDark} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -691,9 +691,9 @@ ${scheme === 'new' ? '<p class="note"><b>NOTE:</b> For revalidation applications
             <Text style={[s.sectionLabel, { color: tc.accent }]}>Contract Period</Text>
             <View style={[s.infoBlock, { backgroundColor: tc.sectionBg }]}>
               <SimpleDatePicker label="Contract Start" value={info.contractStart || todayStr()}
-                onChange={v => setInfo(p => ({ ...p, contractStart: v }))} />
+                onChange={v => setInfo(p => ({ ...p, contractStart: v }))} isDark={isDark} />
               <SimpleDatePicker label="Contract End" value={info.contractEnd || todayStr()}
-                onChange={v => setInfo(p => ({ ...p, contractEnd: v }))} />
+                onChange={v => setInfo(p => ({ ...p, contractEnd: v }))} isDark={isDark} />
             </View>
 
             {/* Подписант */}

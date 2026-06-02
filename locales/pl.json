@@ -178,7 +178,18 @@
     "cameraScan": "Skan z aparatu",
     "scanCreated": "Skan zapisany",
     "scanFailed": "Nie udało się utworzyć skanu",
-    "cameraPermissionDenied": "Brak dostępu do aparatu. Włącz go w Ustawieniach."
+    "cameraPermissionDenied": "Brak dostępu do aparatu. Włącz go w Ustawieniach.",
+    "previewFailed": "Nie można otworzyć pliku",
+    "renameTitle": "Zmień nazwę skanu",
+    "renamePlaceholder": "Nazwa pliku",
+    "renameExists": "Plik o tej nazwie już istnieje",
+    "renameFailed": "Nie udało się zmienić nazwy",
+    "addPageTitle": "Dodać kolejną stronę?",
+    "pagesSoFar": "Stron dotychczas",
+    "savePdf": "Zapisz PDF",
+    "addPage": "Dodaj stronę",
+    "pages": "str.",
+    "pageOne": "str."
   },
   "documents": {
     "title": "Dokumenty",
@@ -655,5 +666,14 @@
     "disclosureDecline": "Odrzuć",
     "disclosureAllow": "Zezwól",
     "iosBackgroundHint": "Aby automatyczny zapis o północy działał na iPhonie, włącz odświeżanie w tle: Ustawienia → Ogólne → Odświeżanie w tle"
+  },
+  "attach": {
+    "title": "Załącz plik",
+    "fromScans": "Z moich skanów",
+    "fromFiles": "Z plików telefonu",
+    "camera": "Skanuj aparatem",
+    "noScans": "Brak zapisanych skanów. Utwórz je przyciskiem + na ekranie Scans.",
+    "pickerTitle": "Wybierz skan",
+    "attachFailed": "Nie udało się załączyć pliku"
   }
 }

@@ -130,7 +130,18 @@
     "cameraScan": "相机扫描",
     "scanCreated": "扫描已保存",
     "scanFailed": "创建扫描失败",
-    "cameraPermissionDenied": "相机访问被拒绝。请在设置中开启。"
+    "cameraPermissionDenied": "相机访问被拒绝。请在设置中开启。",
+    "previewFailed": "无法打开文件",
+    "renameTitle": "重命名扫描件",
+    "renamePlaceholder": "文件名",
+    "renameExists": "已存在同名文件",
+    "renameFailed": "重命名失败",
+    "addPageTitle": "再添加一页？",
+    "pagesSoFar": "已添加页数",
+    "savePdf": "保存 PDF",
+    "addPage": "添加页面",
+    "pages": "页",
+    "pageOne": "页"
   },
   "documents": {
     "title": "文件",
@@ -607,5 +618,14 @@
     "disclosureDecline": "拒绝",
     "disclosureAllow": "允许",
     "iosBackgroundHint": "要在 iPhone 上启用午夜自动记录，请开启后台应用刷新：设置 → 通用 → 后台应用刷新"
+  },
+  "attach": {
+    "title": "附加文件",
+    "fromScans": "从我的扫描件",
+    "fromFiles": "从手机文件",
+    "camera": "用相机扫描",
+    "noScans": "还没有已保存的扫描件。请在 Scans 界面用 + 按钮创建。",
+    "pickerTitle": "选择扫描件",
+    "attachFailed": "附加文件失败"
   }
 }

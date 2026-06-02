@@ -11,5 +11,16 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "App.tsx",
+    "**/*копия*",
+    "hooks/useSubscriptionBU.ts",
+    "utils/database/seaServiceDb.ts",
+    "screens/KukaLabIntroScreen.tsx",
+    "components/CustomCalendar.tsx",
+    "components/DatePickerInput.tsx",
+    "components/PremiumBadge.tsx"
   ]
 }

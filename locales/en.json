@@ -178,7 +178,18 @@
     "cameraScan": "Camera Scan",
     "scanCreated": "Scan saved",
     "scanFailed": "Failed to create scan",
-    "cameraPermissionDenied": "Camera access denied. Enable it in Settings."
+    "cameraPermissionDenied": "Camera access denied. Enable it in Settings.",
+    "previewFailed": "Could not open the file",
+    "renameTitle": "Rename scan",
+    "renamePlaceholder": "File name",
+    "renameExists": "A file with this name already exists",
+    "renameFailed": "Failed to rename",
+    "addPageTitle": "Add another page?",
+    "pagesSoFar": "Pages so far",
+    "savePdf": "Save PDF",
+    "addPage": "Add page",
+    "pages": "pages",
+    "pageOne": "page"
   },
   "documents": {
     "title": "Documents",
@@ -655,5 +666,14 @@
     "disclosureDecline": "Decline",
     "disclosureAllow": "Allow",
     "iosBackgroundHint": "For midnight auto-record to work on iPhone, enable Background App Refresh: Settings → General → Background App Refresh"
+  },
+  "attach": {
+    "title": "Attach file",
+    "fromScans": "From my scans",
+    "fromFiles": "From phone files",
+    "camera": "Scan with camera",
+    "noScans": "No saved scans yet. Use the + button on the Scans screen to create one.",
+    "pickerTitle": "Choose a scan",
+    "attachFailed": "Failed to attach file"
   }
 }

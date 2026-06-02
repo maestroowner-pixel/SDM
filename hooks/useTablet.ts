@@ -7,5 +7,5 @@ const { width: SCREEN_WIDTH } = Dimensions.get('screen');
 export const useTablet = () => {
   // Platform.isPad — нативная проверка iOS
   // SCREEN_WIDTH >= 768 — размер физического экрана (не окна)
-  return Platform.isPad || SCREEN_WIDTH >= 768;
+  return (Platform as any).isPad || SCREEN_WIDTH >= 768;
 };

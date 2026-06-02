@@ -158,7 +158,18 @@
     "cameraScan": "Scan par caméra",
     "scanCreated": "Scan enregistré",
     "scanFailed": "Échec de la création du scan",
-    "cameraPermissionDenied": "Accès à la caméra refusé. Activez-le dans les Réglages."
+    "cameraPermissionDenied": "Accès à la caméra refusé. Activez-le dans les Réglages.",
+    "previewFailed": "Impossible d'ouvrir le fichier",
+    "renameTitle": "Renommer le scan",
+    "renamePlaceholder": "Nom du fichier",
+    "renameExists": "Un fichier portant ce nom existe déjà",
+    "renameFailed": "Échec du renommage",
+    "addPageTitle": "Ajouter une page ?",
+    "pagesSoFar": "Pages jusqu’ici",
+    "savePdf": "Enregistrer le PDF",
+    "addPage": "Ajouter une page",
+    "pages": "pages",
+    "pageOne": "page"
   },
   "documents": {
     "title": "Documents",
@@ -637,5 +648,14 @@
     "disclosureDecline": "Refuser",
     "disclosureAllow": "Autoriser",
     "iosBackgroundHint": "Pour que l'enregistrement automatique de minuit fonctionne sur iPhone, activez l'actualisation en arrière-plan : Réglages → Général → Actualisation en arrière-plan"
+  },
+  "attach": {
+    "title": "Joindre un fichier",
+    "fromScans": "Depuis mes scans",
+    "fromFiles": "Depuis les fichiers du téléphone",
+    "camera": "Scanner avec la caméra",
+    "noScans": "Aucun scan enregistré. Utilisez le bouton + sur l'écran Scans pour en créer un.",
+    "pickerTitle": "Choisir un scan",
+    "attachFailed": "Échec de la pièce jointe"
   }
 }

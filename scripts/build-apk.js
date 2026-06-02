@@ -32,7 +32,7 @@ function applyKeyPatch() {
     'android.compileSdkVersion': '36',
     'android.targetSdkVersion': '36',
     'android.buildToolsVersion': '35.0.0',
-    'android.kotlinVersion': '2.0.20',
+    'android.kotlinVersion': '2.1.20',
     'MYAPP_UPLOAD_STORE_FILE': KEYSTORE.file,
     'MYAPP_UPLOAD_KEY_ALIAS': KEYSTORE.keyAlias,
     'MYAPP_UPLOAD_STORE_PASSWORD': KEYSTORE.storePassword,

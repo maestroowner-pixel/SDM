@@ -22,7 +22,7 @@ const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
 export const TestingScreen: React.FC = () => {
   const { state } = useData();
   // Убрали refreshStatus, чтобы не было ошибки undefined
-  const { isPremium, subscriptionType, expirationDate } = useSubscription();
+  const { isPremium, subscriptionType, expirationDate } = useSubscription() as any;
   const isDark = state.theme === 'dark';
   const isTablet = useTablet(); // ← ДОБАВЛЕНО
   
@@ -60,7 +60,7 @@ export const TestingScreen: React.FC = () => {
       await AsyncStorage.setItem('premium_expires', expireStr);
 
       // Принудительно обновляем сервис, чтобы он подхватил кеш
-      await SubscriptionService.forceRefresh();
+      await (SubscriptionService as any).forceRefresh?.();
       
       await loadStorageStatus();
       Alert.alert("Ваша светлость!", `Премиум (${type}) активирован локально.`);
@@ -73,13 +73,13 @@ export const TestingScreen: React.FC = () => {
     await AsyncStorage.removeItem('premium_status');
     await AsyncStorage.removeItem('premium_type');
     await AsyncStorage.removeItem('premium_expires');
-    await SubscriptionService.forceRefresh();
+    await (SubscriptionService as any).forceRefresh?.();
     await loadStorageStatus();
     Alert.alert("Статус сброшен", "Вы снова обычный моряк.");
   };
 
   const checkStatus = async () => {
-    await SubscriptionService.forceRefresh();
+    await (SubscriptionService as any).forceRefresh?.();
     await loadStorageStatus();
     console.log('=== SUBSCRIPTION CHECK ===');
     console.log('Is Premium:', isPremium);

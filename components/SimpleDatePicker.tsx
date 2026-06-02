@@ -17,9 +17,10 @@ interface Props {
   onChange: (date: string) => void;
   isDark: boolean;
   defaultYear?: number;
+  disabled?: boolean;
 }
 
-const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark, defaultYear }) => {
+const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark, defaultYear, disabled }) => {
   const [visible, setVisible] = useState(false);
 
   // Правильное создание даты из ISO строки (без timezone проблем)
@@ -89,7 +90,8 @@ const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark, def
       
       <TouchableOpacity 
         style={[styles.inputTrigger, isDark ? styles.inputDark : styles.inputLight]}
-        onPress={() => setVisible(true)}
+        disabled={disabled}
+        onPress={() => !disabled && setVisible(true)}
         activeOpacity={0.7}
       >
         <Text style={[styles.triggerText, isDark ? styles.textLight : styles.textDark]}>
@@ -135,7 +137,7 @@ const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark, def
                 </View>
 
                 <View style={styles.monthsGrid}>
-                  {months.map((m, i) => {
+                  {months.map((m: string, i: number) => {
                     const isActive = viewDate.getMonth() === i;
                     return (
                       <TouchableOpacity 
@@ -167,9 +169,9 @@ const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark, def
                         key={i} 
                         disabled={d === null}
                         onPress={() => d && handleSelectDay(d)}
-                        style={[styles.dayItem, isSelected && styles.activeBtn]}
+                        style={[styles.dayItem, isSelected && styles.activeBtn] as any}
                       >
-                        <Text style={[styles.dayText, { color: d ? (isDark ? '#fff' : '#333') : 'transparent' }, isSelected && styles.activeText]}>
+                        <Text style={[styles.dayText, { color: d ? (isDark ? '#fff' : '#333') : 'transparent' }, isSelected && styles.activeText] as any}>
                           {d}
                         </Text>
                       </TouchableOpacity>

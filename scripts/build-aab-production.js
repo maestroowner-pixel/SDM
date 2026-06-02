@@ -29,10 +29,10 @@ function applyKeyPatch() {
     'EX_DEV_CLIENT_NETWORK_INSPECTOR': 'true',
     'expo.useLegacyPackaging': 'false',
     'expo.edgeToEdgeEnabled': 'true',
-    'android.compileSdkVersion': '35',
-    'android.targetSdkVersion': '35',
+    'android.compileSdkVersion': '36',
+    'android.targetSdkVersion': '36',
     'android.buildToolsVersion': '35.0.0',
-    'android.kotlinVersion': '2.0.21',
+    'android.kotlinVersion': '2.1.20',
     'MYAPP_UPLOAD_STORE_FILE': KEYSTORE.file,
     'MYAPP_UPLOAD_KEY_ALIAS': KEYSTORE.keyAlias,
     'MYAPP_UPLOAD_STORE_PASSWORD': KEYSTORE.storePassword,
@@ -51,7 +51,7 @@ function applyKeyPatch() {
     let gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
     gradle = gradle.replace(/namespace\s+'seafarer\.documents\.manager\.development'/, "namespace 'seafarer.documents.manager'");
     gradle = gradle.replace(/applicationId\s+'seafarer\.documents\.manager\.development'/, "applicationId 'seafarer.documents.manager'");
-    gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 30104');
+    gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 301052');
     if (!gradle.includes('MYAPP_UPLOAD_STORE_FILE')) {
       gradle = gradle.replace(
         /signingConfigs \{([\s\S]*?debug \{[\s\S]*?\})\s*\}/,

@@ -51,7 +51,7 @@ function applyKeyPatch() {
     let gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
     gradle = gradle.replace(/namespace\s+'seafarer\.documents\.manager\.development'/, "namespace 'seafarer.documents.manager'");
     gradle = gradle.replace(/applicationId\s+'seafarer\.documents\.manager\.development'/, "applicationId 'seafarer.documents.manager'");
-    gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 30104');
+    gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 301052');
     if (!gradle.includes('MYAPP_UPLOAD_STORE_FILE')) {
       gradle = gradle.replace(
         /signingConfigs \{([\s\S]*?debug \{[\s\S]*?\})\s*\}/,

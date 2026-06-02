@@ -650,6 +650,26 @@
     "cameraScan": "Kamera-Scan",
     "scanCreated": "Scan gespeichert",
     "scanFailed": "Scan konnte nicht erstellt werden",
-    "cameraPermissionDenied": "Kamerazugriff verweigert. Aktiviere ihn in den Einstellungen."
+    "cameraPermissionDenied": "Kamerazugriff verweigert. Aktiviere ihn in den Einstellungen.",
+    "previewFailed": "Datei konnte nicht geöffnet werden",
+    "renameTitle": "Scan umbenennen",
+    "renamePlaceholder": "Dateiname",
+    "renameExists": "Eine Datei mit diesem Namen existiert bereits",
+    "renameFailed": "Umbenennen fehlgeschlagen",
+    "addPageTitle": "Weitere Seite hinzufügen?",
+    "pagesSoFar": "Seiten bisher",
+    "savePdf": "PDF speichern",
+    "addPage": "Seite hinzufügen",
+    "pages": "Seiten",
+    "pageOne": "Seite"
+  },
+  "attach": {
+    "title": "Datei anhängen",
+    "fromScans": "Aus meinen Scans",
+    "fromFiles": "Aus Telefondateien",
+    "camera": "Mit Kamera scannen",
+    "noScans": "Noch keine gespeicherten Scans. Erstelle einen mit der +-Taste im Scans-Bildschirm.",
+    "pickerTitle": "Scan auswählen",
+    "attachFailed": "Datei konnte nicht angehängt werden"
   }
 }

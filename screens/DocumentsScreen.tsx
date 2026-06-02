@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/scanUtils';
+import { ScanPickerModal } from '../components/ScanPickerModal';
 import { useData, Document } from '../contexts/DataContext';
 import SimpleDatePicker from '../components/SimpleDatePicker';
 import { t } from '../utils/i18n';
@@ -108,6 +110,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   const [sortMode, setSortMode] = useState<'type' | 'date'>('date');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [scanPickerItems, setScanPickerItems] = useState<AttachedFile[] | null>(null);
   const [documentAttachments, setDocumentAttachments] = useState<{ [key: string]: AttachedFile[] }>({});
   const isDark = state.theme === 'dark';
 
@@ -307,6 +310,51 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     
     setShowModal(false);
     resetForm();
+  };
+
+  // Логичное имя файла под документ: <Имя>_<СрокДействия>_<N>.pdf
+  const buildAttachName = () =>
+    `${formData.name || 'Document'}_${formData.expiryDate || 'NoExpiry'}_${attachedFiles.length + 1}.pdf`;
+
+  // Меню прикрепления: из моих сканов / из файлов телефона / снять камерой
+  const openAttachMenu = () => {
+    Alert.alert(t('attach.title'), undefined, [
+      { text: t('attach.fromScans'), onPress: openMyScans },
+      { text: t('attach.fromFiles'), onPress: handleAttachFile },
+      { text: t('attach.camera'), onPress: handleCameraAttach },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
+  const openMyScans = async () => {
+    const scans = await loadStandaloneScans();
+    if (scans.length === 0) { Alert.alert(t('attach.title'), t('attach.noScans')); return; }
+    setScanPickerItems(scans);
+  };
+
+  const onScanSelected = async (scan: AttachedFile) => {
+    setScanPickerItems(null);
+    try {
+      const f = await copyScanInto(SCANS_DIR, scan, buildAttachName());
+      setAttachedFiles(prev => [...prev, f]);
+    } catch (error) {
+      console.error('Attach scan failed:', error);
+      Alert.alert(t('common.error'), t('attach.attachFailed'));
+    }
+  };
+
+  const handleCameraAttach = async () => {
+    try {
+      const f = await captureScanToPdf(SCANS_DIR, buildAttachName());
+      if (f) setAttachedFiles(prev => [...prev, f]);
+    } catch (error: any) {
+      if (error?.message === 'camera-permission-denied') {
+        Alert.alert(t('common.error'), t('scans.cameraPermissionDenied'));
+      } else {
+        console.error('Camera attach failed:', error);
+        Alert.alert(t('common.error'), t('attach.attachFailed'));
+      }
+    }
   };
 
   const handleAttachFile = async () => {
@@ -650,7 +698,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
                 )}
 
                 <View style={styles.modalButtons}>
-                  {!isViewMode && <GlowButton onPress={handleAttachFile} isDark={isDark} />}
+                  {!isViewMode && <GlowButton onPress={openAttachMenu} isDark={isDark} />}
                   
                   <TouchableOpacity 
                     style={[styles.button, styles.buttonSecondary]} 
@@ -680,6 +728,14 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      <ScanPickerModal
+        visible={!!scanPickerItems}
+        scans={scanPickerItems || []}
+        isDark={isDark}
+        onSelect={onScanSelected}
+        onClose={() => setScanPickerItems(null)}
+      />
       </ImageBackground>
     </SafeAreaView>
   );

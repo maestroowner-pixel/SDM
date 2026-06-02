@@ -481,7 +481,7 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
       </View>
 
       {!isEdit
-        ? <SimpleDatePicker label="Date" value={formDate} onChange={setFormDate} />
+        ? <SimpleDatePicker label="Date" value={formDate} onChange={setFormDate} isDark={isDark} />
         : (
           <View style={s.editDateRow}>
             <Ionicons name="calendar-outline" size={15} color={tc.sub} />

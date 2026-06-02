@@ -66,7 +66,7 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall }) => {
   const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleMPCScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
-  const { isPremium, subscriptionType, loading: subscriptionLoading, refresh: refreshSubscription } = useSubscription();
+  const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
   
   const [exporting, setExporting] = useState(false);
   const [showManual, setShowManual] = useState(false);

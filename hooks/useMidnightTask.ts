@@ -17,6 +17,8 @@ Notifications.setNotificationHandler({
     const isMPC = notification.request.content.data?.mpc === true;
     return {
       shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
       shouldPlaySound: false,
       shouldSetBadge: false,
       priority: isMPC

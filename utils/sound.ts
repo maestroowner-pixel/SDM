@@ -1,11 +1,11 @@
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 // Инициализация аудио режима
-setAudioModeAsync({
-  playsInSilentModeIOS: true,
+setAudioModeAsync(({
+  playsInSilentMode: true,
   staysActiveInBackground: false,
   shouldDuckAndroid: true,
-}).catch(() => {});
+} as any)).catch(() => {});
 
 // ─── Универсальный хелпер ────────────────────────────────────────────────────
 const playSound = async (source: any, volume = 0.6): Promise<void> => {

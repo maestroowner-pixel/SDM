@@ -88,8 +88,17 @@ import DPScreen from '../screens/DPScreen';
 import MPCScreen from '../screens/MPCScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import { SplashScreen } from '../screens/SplashScreen';
+import * as Application from 'expo-application';
 
-const isTestVisible = Constants.expoConfig?.extra?.enableTestingScreen;
+// Тест-экран виден в dev/preview сборках (по нативному package id — не зависит от
+// кеша JS-бандла и того, какой .env подхватился при сборке), в Metro-dev, либо если
+// явно включён через extra.enableTestingScreen. В production (package без суффикса) — скрыт.
+const __appId = Application.applicationId || '';
+const isTestVisible =
+  __DEV__ ||
+  __appId.endsWith('.development') ||
+  __appId.endsWith('.preview') ||
+  Constants.expoConfig?.extra?.enableTestingScreen === true;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = 50;
 const ICON_SIZE = 26;
@@ -317,7 +326,7 @@ const MainApp: React.FC = () => {
   };
 
   const renderContent = () => {
-    const screenProps = { theme, accent, onOpenPaywall: () => setShowPaywall(true) };
+    const screenProps: any = { theme, accent, onOpenPaywall: () => setShowPaywall(true) };
     switch (activeTab) {
       case 'personal':   return <PersonalScreen   {...screenProps} />;
       case 'documents':  return <DocumentsScreen  {...screenProps} />;
@@ -339,11 +348,11 @@ const MainApp: React.FC = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <LinearGradient colors={theme.background} style={styles.container}>
+      <LinearGradient colors={theme.background as any} style={styles.container}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
         
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-          <LinearGradient colors={theme.headerGradient} style={styles.headerGradient}>
+          <LinearGradient colors={theme.headerGradient as any} style={styles.headerGradient}>
             <View style={isTablet ? styles.headerContentTablet : undefined}>
               <Animated.Text style={[styles.headerTitle, { color: theme.text, opacity: fadeAnim }]}>
                 {getTabTitle()}
