@@ -16,6 +16,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
 } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -194,7 +195,7 @@ export const ScansScreen: React.FC = () => {
     const selectedScans = getSelectedScans();
     
     if (selectedScans.length === 0) {
-      Alert.alert(t('scans.noSelection'), t('scans.selectFilesFirst'));
+      alertMsg(t('scans.noSelection'), t('scans.selectFilesFirst'));
       return;
     }
 
@@ -245,82 +246,57 @@ export const ScansScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to share:', error);
-      Alert.alert(t('common.error'), t('scans.shareFailed'));
+      alertMsg(t('common.error'), t('scans.shareFailed'));
     } finally {
       setArchiving(false);
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     const selectedScans = getSelectedScans();
-    
+
     if (selectedScans.length === 0) {
-      Alert.alert(t('scans.noSelection'), t('scans.selectFilesFirst'));
+      alertMsg(t('scans.noSelection'), t('scans.selectFilesFirst'));
       return;
     }
 
-    Alert.alert(
+    const confirmed = await confirmAsync(
       t('scans.deleteTitle'),
       `${t('scans.deleteMessage')} ${selectedScans.length} ${selectedScans.length > 1 ? 'files' : 'file'}?`,
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              for (const scan of selectedScans) {
-                await FileSystem.deleteAsync(scan.uri, { idempotent: true });
-              }
-
-              const storedAttachments = await AsyncStorage.getItem('document_attachments');
-              if (storedAttachments) {
-                const attachments = JSON.parse(storedAttachments);
-                
-                for (const scan of selectedScans) {
-                  if (attachments[scan.documentId]) {
-                    attachments[scan.documentId] = attachments[scan.documentId].filter(
-                      (file: any) => file.uri !== scan.uri
-                    );
-                    
-                    if (attachments[scan.documentId].length === 0) {
-                      delete attachments[scan.documentId];
-                    }
-                  }
-                }
-                
-                await AsyncStorage.setItem('document_attachments', JSON.stringify(attachments));
-              }
-
-              const serviceAttachments = await AsyncStorage.getItem('service_attachments');
-              if (serviceAttachments) {
-                const attachments = JSON.parse(serviceAttachments);
-                
-                for (const scan of selectedScans) {
-                  if (attachments[scan.documentId]) {
-                    attachments[scan.documentId] = attachments[scan.documentId].filter(
-                      (file: any) => file.uri !== scan.uri
-                    );
-                    
-                    if (attachments[scan.documentId].length === 0) {
-                      delete attachments[scan.documentId];
-                    }
-                  }
-                }
-                
-                await AsyncStorage.setItem('service_attachments', JSON.stringify(attachments));
-              }
-
-              await loadScans();
-              Alert.alert(t('common.success'), t('scans.deleteSuccess'));
-            } catch (error) {
-              console.error('Failed to delete scans:', error);
-              Alert.alert(t('common.error'), t('scans.deleteFailed'));
-            }
-          },
-        },
-      ]
+      { confirmText: t('common.delete'), destructive: true }
     );
+    if (!confirmed) return;
+
+    try {
+      for (const scan of selectedScans) {
+        await FileSystem.deleteAsync(scan.uri, { idempotent: true });
+      }
+
+      for (const key of ['document_attachments', 'service_attachments']) {
+        const stored = await AsyncStorage.getItem(key);
+        if (!stored) continue;
+        const attachments = JSON.parse(stored);
+
+        for (const scan of selectedScans) {
+          if (attachments[scan.documentId]) {
+            attachments[scan.documentId] = attachments[scan.documentId].filter(
+              (file: any) => file.uri !== scan.uri
+            );
+            if (attachments[scan.documentId].length === 0) {
+              delete attachments[scan.documentId];
+            }
+          }
+        }
+
+        await AsyncStorage.setItem(key, JSON.stringify(attachments));
+      }
+
+      await loadScans();
+      alertMsg(t('common.success'), t('scans.deleteSuccess'));
+    } catch (error) {
+      console.error('Failed to delete scans:', error);
+      alertMsg(t('common.error'), t('scans.deleteFailed'));
+    }
   };
 
   // Имя файла: SDM_scan_DDMMYYYY_HHMM.pdf
@@ -332,17 +308,11 @@ export const ScansScreen: React.FC = () => {
 
   // Спросить: добавить ещё страницу или сохранить готовый PDF
   const confirmAddPage = (count: number): Promise<boolean> =>
-    new Promise((resolve) => {
-      Alert.alert(
-        t('scans.addPageTitle'),
-        `${t('scans.pagesSoFar')}: ${count}`,
-        [
-          { text: t('scans.savePdf'), style: 'cancel', onPress: () => resolve(false) },
-          { text: t('scans.addPage'), onPress: () => resolve(true) },
-        ],
-        { cancelable: false }
-      );
-    });
+    confirmAsync(
+      t('scans.addPageTitle'),
+      `${t('scans.pagesSoFar')}: ${count}`,
+      { confirmText: t('scans.addPage'), cancelText: t('scans.savePdf') }
+    );
 
   // Снять документ камерой (одна или несколько страниц) → один PDF
   const handleCameraScan = async () => {
@@ -379,13 +349,13 @@ export const ScansScreen: React.FC = () => {
 
       await loadScans();
       const pagesWord = images.length > 1 ? t('scans.pages') : t('scans.pageOne');
-      Alert.alert(t('common.success'), `${t('scans.scanCreated')}\n${f.fileName} — ${images.length} ${pagesWord}`);
+      alertMsg(t('common.success'), `${t('scans.scanCreated')}\n${f.fileName} — ${images.length} ${pagesWord}`);
     } catch (error: any) {
       if (error?.message === 'camera-permission-denied') {
-        Alert.alert(t('common.error'), t('scans.cameraPermissionDenied'));
+        alertMsg(t('common.error'), t('scans.cameraPermissionDenied'));
       } else {
         console.error('Camera scan failed:', error);
-        Alert.alert(t('common.error'), t('scans.scanFailed'));
+        alertMsg(t('common.error'), t('scans.scanFailed'));
       }
     } finally {
       setScanning(false);
@@ -442,7 +412,7 @@ export const ScansScreen: React.FC = () => {
     try {
       if (newUri !== renameTarget.uri) {
         const exists = await FileSystem.getInfoAsync(newUri);
-        if (exists.exists) { Alert.alert(t('common.error'), t('scans.renameExists')); return; }
+        if (exists.exists) { alertMsg(t('common.error'), t('scans.renameExists')); return; }
         await FileSystem.moveAsync({ from: renameTarget.uri, to: newUri });
         await updateScanInStores(renameTarget.uri, newName, newUri);
       }
@@ -450,7 +420,7 @@ export const ScansScreen: React.FC = () => {
       await loadScans();
     } catch (error) {
       console.error('Rename failed:', error);
-      Alert.alert(t('common.error'), t('scans.renameFailed'));
+      alertMsg(t('common.error'), t('scans.renameFailed'));
     }
   };
 

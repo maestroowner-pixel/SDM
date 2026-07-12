@@ -11,6 +11,8 @@ import {
   Alert,
   ImageBackground,
 } from 'react-native';
+import { DialogHost } from '../contexts/DialogContext';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -227,7 +229,7 @@ const DPScreen: React.FC = () => {
 
   const addDay = () => {
     if (days.find(d => d.date === newDate)) {
-      Alert.alert('Error', 'This date already exists in the log');
+      alertMsg('Error', 'This date already exists in the log');
       return;
     }
     setDays(prev =>
@@ -252,14 +254,13 @@ const DPScreen: React.FC = () => {
   // ── Удалить день ───────────────────────────────────────────────────────────
 
   const deleteDay = (id: string) => {
-    Alert.alert('Delete Day', 'Remove this day from the log?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => {
+    confirmAsync('Delete day', 'Remove this day from the log?', { confirmText: 'Delete', destructive: true })
+      .then((ok) => {
+        if (!ok) return;
         setDays(p => p.filter(d => d.id !== id));
         setEditModal(false);
         setEditDayId(null);
-      }},
-    ]);
+      });
   };
 
   // ── Итоги ──────────────────────────────────────────────────────────────────
@@ -276,12 +277,12 @@ const DPScreen: React.FC = () => {
     const rank     = personalRank || info.rank;
 
     if (!fullName || !info.vesselName) {
-      Alert.alert('Missing Info', 'Please fill in DPO information first');
+      alertMsg('Missing Info', 'Please fill in DPO information first');
       return;
     }
     const validDays = days.filter(d => isValid(d.slots));
     if (validDays.length === 0) {
-      Alert.alert('No Data', 'No valid DP days to include in the letter');
+      alertMsg('No Data', 'No valid DP days to include in the letter');
       return;
     }
 
@@ -377,7 +378,7 @@ ${scheme === 'new' ? '<p class="note"><b>NOTE:</b> For revalidation applications
       await FileSystem.moveAsync({ from: uri, to: destUri });
       await Sharing.shareAsync(destUri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
     } catch (e) {
-      Alert.alert('Error', 'Could not generate PDF');
+      alertMsg('Error', 'Could not generate PDF');
     }
   };
 
@@ -533,6 +534,8 @@ ${scheme === 'new' ? '<p class="note"><b>NOTE:</b> For revalidation applications
           <ScrollView contentContainerStyle={{ padding: 20 }}>
             <SimpleDatePicker label="Select Date" value={newDate} onChange={setNewDate} isDark={isDark} />
           </ScrollView>
+          {/* Dialogs raised from inside this modal must render here, not at the root */}
+          <DialogHost />
         </SafeAreaView>
       </Modal>
 
@@ -606,6 +609,8 @@ ${scheme === 'new' ? '<p class="note"><b>NOTE:</b> For revalidation applications
               );
             })()}
           </LinearGradient>
+          {/* Dialogs raised from inside this modal must render here, not at the root */}
+          <DialogHost />
         </SafeAreaView>
       </Modal>
 

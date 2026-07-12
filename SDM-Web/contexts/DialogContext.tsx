@@ -1,37 +1,33 @@
 // In-app themed dialogs, replacing the browser's native alert/confirm (which
 // render as "localhost:8090 says…"). Registers itself with utils/webAlert so the
-// existing alertMsg/confirmAsync call sites keep working unchanged.
+// existing alertMsg/confirmAsync/chooseAsync call sites work unchanged.
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState, ReactNode } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { createPortal } from 'react-dom';
 import { useData } from './DataContext';
 import { UI_THEME } from '../utils/theme';
-import { setDialogHandler, type ConfirmOptions } from '../utils/webAlert';
+import { setDialogHandler, type DialogRequest, type DialogButtonStyle } from '../utils/webAlert';
 
 const APP_NAME = 'Seafarer Documents Manager';
 
-interface DialogRequest {
-  kind: 'alert' | 'confirm';
-  title: string;
-  message?: string;
-  opts?: ConfirmOptions;
-  resolve: (v: boolean) => void;
+interface PendingDialog extends DialogRequest {
+  resolve: (value: string | null) => void;
 }
 
-const DialogContext = createContext<{ alert: (t: string, m?: string) => void }>({ alert: () => {} });
+const DialogContext = createContext<{ alert: (title: string, message?: string) => void }>({ alert: () => {} });
 
 export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { state } = useData();
   const isDark = state.theme === 'dark';
   const theme = isDark ? UI_THEME.colors.dark : UI_THEME.colors.light;
 
-  const [current, setCurrent] = useState<DialogRequest | null>(null);
-  const queue = useRef<DialogRequest[]>([]);
+  const [current, setCurrent] = useState<PendingDialog | null>(null);
+  const queue = useRef<PendingDialog[]>([]);
   // Mirror of `current` so queueing stays deterministic (no side effects inside
   // a state updater, which React may invoke twice).
-  const currentRef = useRef<DialogRequest | null>(null);
+  const currentRef = useRef<PendingDialog | null>(null);
 
-  const push = useCallback((req: DialogRequest) => {
+  const push = useCallback((req: PendingDialog) => {
     if (currentRef.current) {
       queue.current.push(req);
       return;
@@ -40,32 +36,31 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setCurrent(req);
   }, []);
 
-  const close = useCallback((result: boolean) => {
+  const close = useCallback((value: string | null) => {
     const cur = currentRef.current;
-    cur?.resolve(result);
+    cur?.resolve(value);
     const item = queue.current.shift() || null;
     currentRef.current = item;
     setCurrent(item);
   }, []);
 
-  // Register the real dialog implementation for alertMsg/confirmAsync.
   useEffect(() => {
     setDialogHandler({
-      alert: (title, message) => {
-        push({ kind: 'alert', title, message, resolve: () => {} });
-      },
-      confirm: (title, message, opts) =>
-        new Promise<boolean>((resolve) => {
-          push({ kind: 'confirm', title, message, opts, resolve });
-        }),
+      show: (req) => new Promise<string | null>((resolve) => push({ ...req, resolve })),
     });
     return () => setDialogHandler(null);
   }, [push]);
 
-  const isConfirm = current?.kind === 'confirm';
-  const destructive = !!current?.opts?.destructive;
-  const confirmText = current?.opts?.confirmText || (isConfirm ? 'Confirm' : 'OK');
-  const cancelText = current?.opts?.cancelText || 'Cancel';
+  const buttonStyleFor = (style?: DialogButtonStyle) => {
+    if (style === 'ghost') {
+      return {
+        container: [styles.btn, styles.btnGhost, { borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }],
+        text: [styles.btnGhostText, { color: theme.textSecondary }],
+      };
+    }
+    const bg = style === 'destructive' ? '#f44336' : theme.primary;
+    return { container: [styles.btn, { backgroundColor: bg }], text: styles.btnPrimaryText };
+  };
 
   // Rendered through a portal straight into <body> with the highest possible
   // z-index: react-native-web's Modal stacks by mount order, so a dialog opened
@@ -93,29 +88,31 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         )}
 
         <View style={styles.buttons}>
-          {isConfirm && (
-            <TouchableOpacity
-              style={[styles.btn, styles.btnGhost, { borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }]}
-              onPress={() => close(false)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.btnGhostText, { color: theme.textSecondary }]}>{cancelText}</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: destructive ? '#f44336' : theme.primary }]}
-            onPress={() => close(true)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.btnPrimaryText}>{confirmText}</Text>
-          </TouchableOpacity>
+          {current.buttons.map((btn) => {
+            const s = buttonStyleFor(btn.style);
+            return (
+              <TouchableOpacity
+                key={btn.value}
+                style={s.container as any}
+                onPress={() => close(btn.value)}
+                activeOpacity={0.8}
+              >
+                <Text style={s.text as any}>{btn.text}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </View>
   ) : null;
 
   return (
-    <DialogContext.Provider value={{ alert: (t, m) => push({ kind: 'alert', title: t, message: m, resolve: () => {} }) }}>
+    <DialogContext.Provider
+      value={{
+        alert: (title, message) =>
+          push({ title, message, buttons: [{ text: 'OK', value: 'ok', style: 'primary' }], resolve: () => {} }),
+      }}
+    >
       {children}
       {overlay && typeof document !== 'undefined' ? createPortal(overlay, document.body) : null}
     </DialogContext.Provider>
@@ -141,7 +138,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 460,
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     padding: 24,
@@ -155,9 +152,9 @@ const styles = StyleSheet.create({
   brandLogo: { width: 20, height: 20, borderRadius: 5 },
   brandText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
   title: { fontSize: 19, fontWeight: '700', marginBottom: 8 },
-  messageScroll: { maxHeight: 220 },
+  messageScroll: { maxHeight: 240 },
   message: { fontSize: 15, lineHeight: 21 },
-  buttons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 22 },
+  buttons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 10, marginTop: 22 },
   btn: {
     minWidth: 96,
     height: 44,

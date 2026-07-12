@@ -5,6 +5,7 @@ import {
   StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator,
   ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { DialogHost } from '../contexts/DialogContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../contexts/DataContext';
 import { useAuth, authErrorMessage } from '../contexts/AuthContext';
@@ -190,6 +191,8 @@ export const AuthScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {/* AuthScreen lives inside a Modal → dialogs must render here */}
+      <DialogHost />
     </View>
   );
 };

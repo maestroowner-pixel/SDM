@@ -13,6 +13,8 @@ import {
   Image,
   Platform,
 } from 'react-native';
+import { DialogHost } from '../contexts/DialogContext';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SubscriptionService } from '../services/subscriptionService';
@@ -51,7 +53,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
       
       if (!offerings || offerings.length === 0) {
         console.error('❌ [Paywall] No offerings available');
-        Alert.alert(
+        alertMsg(
           t('paywall.alerts.errorTitle'),
           t('paywall.alerts.noOfferingsMessage')
         );
@@ -132,7 +134,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
           productId: p.product?.identifier,
         })));
         
-        Alert.alert(
+        alertMsg(
           t('paywall.alerts.errorTitle'),
           Platform.OS === 'ios'
             ? t('paywall.alerts.noPackagesIos')
@@ -142,7 +144,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
       
     } catch (error) {
       console.error('❌ [Paywall] Error loading offerings:', error);
-      Alert.alert(t('paywall.alerts.errorTitle'), t('paywall.alerts.noOfferingsMessage'));
+      alertMsg(t('paywall.alerts.errorTitle'), t('paywall.alerts.noOfferingsMessage'));
     } finally {
       setLoading(false);
     }
@@ -150,7 +152,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
 
   const handlePurchase = async (packageType: 'monthly' | 'lifetime') => {
     if (!packages || packages.length === 0) {
-      Alert.alert(t('paywall.alerts.errorTitle'), t('paywall.alerts.packagesUnavailable'));
+      alertMsg(t('paywall.alerts.errorTitle'), t('paywall.alerts.packagesUnavailable'));
       return;
     }
 
@@ -186,7 +188,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
           packageType: p.packageType,
           productId: p.product?.identifier,
         })));
-        Alert.alert(t('paywall.alerts.errorTitle'), t('paywall.alerts.errorPackage'));
+        alertMsg(t('paywall.alerts.errorTitle'), t('paywall.alerts.errorPackage'));
         setPurchasing(false);
         return;
       }
@@ -200,17 +202,18 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
       const customerInfo = await SubscriptionService.purchasePackage(packageToBuy);
 
       if (customerInfo) {
-        Alert.alert(
+        await chooseAsync(
           t('paywall.alerts.successTitle'),
           t('paywall.alerts.successMessage'),
-          [{ text: t('paywall.alerts.successButton'), onPress: onClose }]
+          [{ text: t('paywall.alerts.successButton'), value: 'ok', style: 'primary' }]
         );
+        onClose();
       }
     } catch (error: any) {
       console.error('❌ [Paywall] Purchase error:', error);
       
       if (!error.userCancelled) {
-        Alert.alert(
+        alertMsg(
           t('paywall.alerts.errorPurchase'),
           error.message || t('paywall.alerts.purchaseErrorFallback')
         );
@@ -227,20 +230,21 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
       const customerInfo = await SubscriptionService.restorePurchases();
       
       if (customerInfo && customerInfo.entitlements.active['premium']) {
-        Alert.alert(
+        await chooseAsync(
           t('paywall.alerts.restoreSuccessTitle'),
           t('paywall.alerts.restoreSuccessMessage'),
-          [{ text: t('common.ok'), onPress: onClose }]
+          [{ text: t('common.ok'), value: 'ok', style: 'primary' }]
         );
+        onClose();
       } else {
-        Alert.alert(
+        alertMsg(
           t('paywall.alerts.restoreFailTitle'),
           t('paywall.alerts.restoreFailMessage')
         );
       }
     } catch (error) {
       console.error('❌ [Paywall] Restore error:', error);
-      Alert.alert(
+      alertMsg(
         t('paywall.alerts.restoreFailTitle'),
         t('paywall.alerts.restoreFailMessage')
       );
@@ -412,6 +416,8 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
         <View style={{ height: 40 }} />
         </View>
       </ScrollView>
+      {/* Paywall itself lives inside a Modal → dialogs must render here */}
+      <DialogHost />
     </View>
   );
 }

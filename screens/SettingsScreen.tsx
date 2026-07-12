@@ -18,6 +18,7 @@ import {
   Animated,
   Modal
 } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
@@ -167,11 +168,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert(t('common.error'), t('settings.alerts.cannotOpen', { title }));
+        alertMsg(t('common.error'), t('settings.alerts.cannotOpen', { title }));
       }
     } catch (error) {
       console.error(`Error opening ${title}:`, error);
-      Alert.alert(t('common.error'), t('settings.alerts.failedOpen', { title }));
+      alertMsg(t('common.error'), t('settings.alerts.failedOpen', { title }));
     }
   };
 
@@ -186,15 +187,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       
       i18n.locale = langCode;
       
-      Alert.alert(
+      alertMsg(
         t('settings.language.changed'),
-        t('settings.language.restartMessage'),
-        [
-          {
-            text: t('common.ok'),
-            style: 'default'
-          }
-        ]
+        t('settings.language.restartMessage')
       );
     } catch (error) {
       console.error('❌ Failed to change language:', error);
@@ -212,14 +207,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           setScheduledCount(scheduled.length);
           setNotificationsEnabled(true);
           
-          Alert.alert(
+          alertMsg(
             t('settings.alerts.notificationsEnabled'),
             scheduled.length > 0 
               ? t('settings.alerts.notificationsMessage', { count: scheduled.length })
               : t('settings.alerts.noExpiringMessage')
           );
         } else {
-          Alert.alert(
+          alertMsg(
             t('settings.alerts.permissionDenied'),
             t('settings.alerts.permissionMessage')
           );
@@ -229,7 +224,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         await NotificationService.cancelAllNotifications();
         setNotificationsEnabled(false);
         setScheduledCount(0);
-        Alert.alert(
+        alertMsg(
           t('settings.alerts.notificationsDisabled'),
           t('settings.alerts.disabledMessage')
         );
@@ -237,7 +232,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
     } catch (error) {
       console.error('Failed to toggle notifications:', error);
       setNotificationsEnabled(false);
-      Alert.alert(
+      alertMsg(
         t('settings.alerts.errorTitle'),
         t('settings.alerts.failedSettings')
       );
@@ -246,17 +241,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
 
   const handleExportBackup = async () => {
     if (!isPremium) {
-      Alert.alert(
+      const ok = await confirmAsync(
         t('settings.unlimited.required'),
         t('settings.unlimited.exportImportMessage'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { 
-            text: t('settings.unlimited.getUnlimited'), 
-            onPress: onOpenPaywall 
-          }
-        ]
+        { confirmText: t('settings.unlimited.getUnlimited') }
       );
+      if (ok) onOpenPaywall();
       return;
     }
 
@@ -265,7 +255,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       const dataToExport = exportData();
       
       if (!dataToExport || dataToExport === '{}' || dataToExport === 'null') {
-        Alert.alert(
+        alertMsg(
           t('settings.alerts.noData'),
           t('settings.alerts.noDataMessage')
         );
@@ -287,7 +277,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           UTI: 'com.sdm.backup',
         });
         playSuccessSound();
-        Alert.alert(
+        alertMsg(
           t('settings.alerts.backupExported'),
           t('settings.alerts.backupDetails', {
             fileName: fileName,
@@ -296,14 +286,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         );
       } else {
         playSuccessSound();
-        Alert.alert(
+        alertMsg(
           t('settings.alerts.successTitle'),
           t('settings.alerts.backupCreated')
         );
       }
     } catch (error) {
       console.error('Export error:', error);
-      Alert.alert(
+      alertMsg(
         t('settings.alerts.errorTitle'),
         t('settings.alerts.exportError')
       );
@@ -314,17 +304,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
 
   const handleImportBackup = async () => {
     if (!isPremium) {
-      Alert.alert(
+      const ok = await confirmAsync(
         t('settings.unlimited.required'),
         t('settings.unlimited.exportImportMessage'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { 
-            text: t('settings.unlimited.getUnlimited'), 
-            onPress: onOpenPaywall 
-          }
-        ]
+        { confirmText: t('settings.unlimited.getUnlimited') }
       );
+      if (ok) onOpenPaywall();
       return;
     }
 
@@ -345,16 +330,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         if (success) {
           playSuccessSound();
           if (isOldFormat) {
-            Alert.alert(
+            const choice = await chooseAsync(
               t('settings.alerts.successTitle'),
               "Ваша светлость, старый формат импортирован. Рекомендую создать новый бэкап .sdm для защиты.",
-              [{ text: "Создать .sdm", onPress: handleExportBackup }, { text: t('common.ok') }]
+              [
+                { text: "Создать .sdm", value: 'create', style: 'primary' },
+                { text: t('common.ok'), value: 'ok', style: 'ghost' },
+              ]
             );
+            if (choice === 'create') handleExportBackup();
           } else {
-            Alert.alert(t('settings.alerts.successTitle'), t('settings.alerts.dataRestored'));
+            alertMsg(t('settings.alerts.successTitle'), t('settings.alerts.dataRestored'));
           }
         } else {
-          Alert.alert(
+          alertMsg(
             t('settings.alerts.errorTitle'),
             t('settings.alerts.invalidBackup')
           );
@@ -362,37 +351,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       }
     } catch (error) {
       console.error('Import error:', error);
-      Alert.alert(
+      alertMsg(
         t('settings.alerts.errorTitle'),
         t('settings.alerts.importError')
       );
     }
   };
 
-  const handleClearData = () => {
-    Alert.alert(
+  const handleClearData = async () => {
+    const ok = await confirmAsync(
       t('settings.alerts.clearTitle'),
       t('settings.alerts.clearMessage'),
-      [
-        {
-          text: t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('settings.alerts.deleteEverything'),
-          style: 'destructive',
-          onPress: async () => {
-            await clearAllData();
-            await NotificationService.cancelAllNotifications();
-            setScheduledCount(0);
-            setNotificationsEnabled(false);
-            Alert.alert(
-              t('settings.alerts.successTitle'),
-              t('settings.alerts.dataCleared')
-            );
-          },
-        },
-      ]
+      { confirmText: t('settings.alerts.deleteEverything'), destructive: true }
+    );
+    if (!ok) return;
+
+    await clearAllData();
+    await NotificationService.cancelAllNotifications();
+    setScheduledCount(0);
+    setNotificationsEnabled(false);
+    alertMsg(
+      t('settings.alerts.successTitle'),
+      t('settings.alerts.dataCleared')
     );
   };
 
@@ -658,14 +638,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                       title="Sign out"
                       subtitle="Stops syncing. Your data stays on this device."
                       danger
-                      onPress={() => Alert.alert(
-                        'Sign out',
-                        'Stop syncing on this device? Your data stays on the phone.',
-                        [
-                          { text: t('common.cancel'), style: 'cancel' },
-                          { text: 'Sign out', style: 'destructive', onPress: () => logout() },
-                        ]
-                      )}
+                      onPress={async () => {
+                        const ok = await confirmAsync(
+                          'Sign out',
+                          'Stop syncing on this device? Your data stays on the phone.',
+                          { confirmText: 'Sign out', destructive: true }
+                        );
+                        if (ok) logout();
+                      }}
                     />
                   </>
                 ) : (

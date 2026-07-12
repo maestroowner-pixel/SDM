@@ -9,11 +9,11 @@
 // After that it's whole-document last-write-wins, which is fine for one person's
 // own devices.
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from 'react';
-import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { playSuccessSound } from '../utils/sound';
+import { alertMsg, chooseAsync } from '../utils/dialog';
 import { useAuth } from './AuthContext';
 import { useData } from './DataContext';
 
@@ -107,7 +107,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setStatus('synced');
           if (isFirstLink) {
             playSuccessSound().catch(() => {});
-            Alert.alert(
+            alertMsg(
               'Sync enabled',
               'Your records are now synced with the web app under this account.\n\nScans and attachments are not synced — move them with a .sdm backup.'
             );
@@ -135,16 +135,22 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (alreadyInitialized) { await takeCloud(remote.json); return; }
 
         // Different data on first link → let the user choose. No silent overwrite.
-        Alert.alert(
+        const choice = await chooseAsync(
           'Sync — which data to keep?',
           'This account already has data in the cloud, and it differs from the data on this phone. Attachments are not synced.',
           [
-            { text: 'Cancel (sign out)', style: 'cancel', onPress: () => { logout().catch(() => {}); } },
-            { text: 'Use cloud data', onPress: () => { takeCloud(remote.json as string).catch(e => console.error(e)); } },
-            { text: 'Upload phone data', onPress: () => { takeLocal().catch(e => console.error(e)); } },
-          ],
-          { cancelable: false }
+            { text: 'Use cloud data', value: 'cloud', style: 'primary' },
+            { text: 'Upload phone data', value: 'local', style: 'primary' },
+            { text: 'Cancel (sign out)', value: 'cancel', style: 'ghost' },
+          ]
         );
+        if (cancelled) return;
+
+        if (choice === 'cloud') await takeCloud(remote.json);
+        else if (choice === 'local') await takeLocal();
+        else if (choice === 'cancel') { setStatus('off'); logout().catch(() => {}); }
+        // No answer (dialog unavailable) → never guess: stay signed in, sync off.
+        else setStatus('off');
       } catch (e) {
         console.error('sync init failed:', e);
         if (!cancelled) setStatus('error');

@@ -37,6 +37,7 @@ import { DataProvider, useData } from '../contexts/DataContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { SyncProvider } from '../contexts/SyncContext';
+import { DialogProvider } from '../contexts/DialogContext';
 
 // Удерживаем заставку до команды
 SplashScreenNative.preventAutoHideAsync().catch(() => {});
@@ -452,11 +453,13 @@ export default function Index() {
     <SafeAreaProvider>
       <LanguageProvider>
         <DataProvider>
-          <AuthProvider>
-            <SyncProvider>
-              <MainApp />
-            </SyncProvider>
-          </AuthProvider>
+          <DialogProvider>
+            <AuthProvider>
+              <SyncProvider>
+                <MainApp />
+              </SyncProvider>
+            </AuthProvider>
+          </DialogProvider>
         </DataProvider>
       </LanguageProvider>
     </SafeAreaProvider>

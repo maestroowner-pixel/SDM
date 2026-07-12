@@ -1,4 +1,5 @@
 import { Alert, BackHandler } from 'react-native';
+import { alertMsg, chooseAsync } from './dialog';
 import Constants from 'expo-constants';
 
 export const checkGiftExpiry = () => {
@@ -12,11 +13,11 @@ export const checkGiftExpiry = () => {
   const now = new Date();
   
   if (now > expiryDate) { // ОШИБКА 1: Была пропущена открывающая скобка {
-    Alert.alert(
+    chooseAsync(
       "Срок действия истек",
       "Ваша подарочная версия приложения больше недоступна.",
-      [{ text: "OK", onPress: () => BackHandler.exitApp() }] // ОШИБКА 2: Не было действия для выхода
-    );
+      [{ text: "OK", value: 'ok', style: 'primary' }]
+    ).then(() => BackHandler.exitApp());
     return false; // Остановка работы приложения
   }
   

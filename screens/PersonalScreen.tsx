@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 // Импортируем SafeAreaView для защиты интерфейса
@@ -87,7 +88,7 @@ export const PersonalScreen: React.FC = () => {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant access to your photos');
+      alertMsg('Permission Required', 'Please grant access to your photos');
       return;
     }
 
@@ -104,15 +105,12 @@ export const PersonalScreen: React.FC = () => {
     }
   };
 
-  const removePhoto = () => {
-    Alert.alert(
-      'Remove Photo',
-      'Are you sure you want to remove your photo?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Remove', style: 'destructive', onPress: () => updatePersonal({ ...state.personal, photo: '' }) },
-      ]
-    );
+  const removePhoto = async () => {
+    const ok = await confirmAsync('Remove photo', 'Are you sure you want to remove your photo?', {
+      confirmText: 'Remove',
+      destructive: true,
+    });
+    if (ok) updatePersonal({ ...state.personal, photo: '' });
   };
 
   const InfoRow = ({ label, value }: { label: string; value: string | undefined }) => (

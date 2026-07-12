@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,7 +70,7 @@ export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
       onFinish();
     } catch (error) {
       console.error('Error saving agreement:', error);
-      Alert.alert('Error', 'Failed to save agreement. Please try again.');
+      alertMsg('Error', 'Failed to save agreement. Please try again.');
     }
   };
 
@@ -79,11 +80,11 @@ export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Error', `Cannot open ${title}`);
+        alertMsg('Error', `Cannot open ${title}`);
       }
     } catch (error) {
       console.error(`Error opening ${title}:`, error);
-      Alert.alert('Error', `Failed to open ${title}`);
+      alertMsg('Error', `Failed to open ${title}`);
     }
   };
 

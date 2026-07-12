@@ -4,6 +4,8 @@ import {
   StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, 
   Alert, Modal, ImageBackground, Platform, KeyboardAvoidingView, Animated
 } from 'react-native';
+import { DialogHost } from '../contexts/DialogContext';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -212,7 +214,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       if (onOpenPaywall) {
         onOpenPaywall();
       } else {
-        Alert.alert(t('common.unlimitedOnly'), "Please upgrade to Unlimited to add more documents.");
+        alertMsg(t('common.unlimitedOnly'), "Please upgrade to Unlimited to add more documents.");
       }
       return;
     }
@@ -261,36 +263,33 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
-    Alert.alert(t('documents.alerts.deleteTitle'), t('documents.alerts.deleteMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { 
-        text: t('common.delete'), 
-        style: 'destructive', 
-        onPress: async () => {
-          // Удаляем прикрепленные файлы
-          if (documentAttachments[id]) {
-            for (const file of documentAttachments[id]) {
-              try {
-                await FileSystem.deleteAsync(file.uri, { idempotent: true });
-              } catch (error) {
-                console.error('Failed to delete file:', error);
-              }
-            }
-            const newAttachments = { ...documentAttachments };
-            delete newAttachments[id];
-            setDocumentAttachments(newAttachments);
-            await saveDocumentAttachments(newAttachments);
-          }
-          deleteDocument(id);
+  const handleDelete = async (id: string) => {
+    const ok = await confirmAsync(t('documents.alerts.deleteTitle'), t('documents.alerts.deleteMessage'), {
+      confirmText: t('common.delete'),
+      destructive: true,
+    });
+    if (!ok) return;
+
+    // Удаляем прикрепленные файлы
+    if (documentAttachments[id]) {
+      for (const file of documentAttachments[id]) {
+        try {
+          await FileSystem.deleteAsync(file.uri, { idempotent: true });
+        } catch (error) {
+          console.error('Failed to delete file:', error);
         }
-      },
-    ]);
+      }
+      const newAttachments = { ...documentAttachments };
+      delete newAttachments[id];
+      setDocumentAttachments(newAttachments);
+      await saveDocumentAttachments(newAttachments);
+    }
+    deleteDocument(id);
   };
 
   const handleSave = async () => {
     if (!formData.name || !formData.category) {
-      Alert.alert(t('common.error'), t('documents.alerts.requiredFields'));
+      alertMsg(t('common.error'), t('documents.alerts.requiredFields'));
       return;
     }
     
@@ -319,18 +318,21 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     `${formData.name || 'Document'}_${formData.expiryDate || 'NoExpiry'}_${attachedFiles.length + 1}.pdf`;
 
   // Меню прикрепления: из моих сканов / из файлов телефона / снять камерой
-  const openAttachMenu = () => {
-    Alert.alert(t('attach.title'), undefined, [
-      { text: t('attach.fromScans'), onPress: openMyScans },
-      { text: t('attach.fromFiles'), onPress: handleAttachFile },
-      { text: t('attach.camera'), onPress: handleCameraAttach },
-      { text: t('common.cancel'), style: 'cancel' },
+  const openAttachMenu = async () => {
+    const choice = await chooseAsync(t('attach.title'), undefined, [
+      { text: t('attach.fromScans'), value: 'scans', style: 'primary' },
+      { text: t('attach.fromFiles'), value: 'files', style: 'primary' },
+      { text: t('attach.camera'), value: 'camera', style: 'primary' },
+      { text: t('common.cancel'), value: 'cancel', style: 'ghost' },
     ]);
+    if (choice === 'scans') openMyScans();
+    else if (choice === 'files') handleAttachFile();
+    else if (choice === 'camera') handleCameraAttach();
   };
 
   const openMyScans = async () => {
     const scans = await loadStandaloneScans();
-    if (scans.length === 0) { Alert.alert(t('attach.title'), t('attach.noScans')); return; }
+    if (scans.length === 0) { alertMsg(t('attach.title'), t('attach.noScans')); return; }
     setScanPickerItems(scans);
   };
 
@@ -341,7 +343,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       setAttachedFiles(prev => [...prev, f]);
     } catch (error) {
       console.error('Attach scan failed:', error);
-      Alert.alert(t('common.error'), t('attach.attachFailed'));
+      alertMsg(t('common.error'), t('attach.attachFailed'));
     }
   };
 
@@ -351,10 +353,10 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       if (f) setAttachedFiles(prev => [...prev, f]);
     } catch (error: any) {
       if (error?.message === 'camera-permission-denied') {
-        Alert.alert(t('common.error'), t('scans.cameraPermissionDenied'));
+        alertMsg(t('common.error'), t('scans.cameraPermissionDenied'));
       } else {
         console.error('Camera attach failed:', error);
-        Alert.alert(t('common.error'), t('attach.attachFailed'));
+        alertMsg(t('common.error'), t('attach.attachFailed'));
       }
     }
   };
@@ -374,7 +376,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       
       // Проверка размера файла (3MB = 3 * 1024 * 1024 bytes)
       if (file.size && file.size > 3 * 1024 * 1024) {
-        Alert.alert(
+        alertMsg(
           t('common.error'), 
           'File size exceeds 3MB limit. Please choose a smaller file.'
         );
@@ -402,10 +404,10 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
 
       setAttachedFiles([...attachedFiles, newFile]);
       
-      Alert.alert('Success', `File "${file.name}" attached successfully`);
+      alertMsg('Success', `File "${file.name}" attached successfully`);
     } catch (error) {
       console.error('Error picking document:', error);
-      Alert.alert(t('common.error'), 'Failed to attach file. Please try again.');
+      alertMsg(t('common.error'), 'Failed to attach file. Please try again.');
     }
   };
 
@@ -737,6 +739,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
           onClose={() => setScanPickerItems(null)}
         />
         {cropElement}
+        {/* Dialogs raised from inside this modal must render here, not at the root */}
+        <DialogHost />
       </Modal>
       </ImageBackground>
     </SafeAreaView>

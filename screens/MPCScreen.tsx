@@ -15,6 +15,8 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import { DialogHost } from '../contexts/DialogContext';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -262,14 +264,15 @@ const MPCScreen: React.FC = () => {
     await AsyncStorage.setItem(MPC_AUTO_KEY, 'true');
     await scheduleMidnightFallback();
     if (Platform.OS === 'android') {
-      setTimeout(() => {
-        Alert.alert(t('mpc.batteryTitle'), t('mpc.batteryMsg'), [
-          { text: t('mpc.batteryLater'), style: 'cancel' },
-          { text: t('mpc.batteryOpen'), onPress: () => { openBatteryOptimizationSettings(); } },
-        ]);
+      setTimeout(async () => {
+        const ok = await confirmAsync(t('mpc.batteryTitle'), t('mpc.batteryMsg'), {
+          confirmText: t('mpc.batteryOpen'),
+          cancelText: t('mpc.batteryLater'),
+        });
+        if (ok) openBatteryOptimizationSettings();
       }, 300);
     } else {
-      setTimeout(() => Alert.alert(t('mpc.autoTitle'), t('mpc.autoEnabledMsg')), 300);
+      setTimeout(() => alertMsg(t('mpc.autoTitle'), t('mpc.autoEnabledMsg')), 300);
     }
   }, []);
 
@@ -311,7 +314,7 @@ const MPCScreen: React.FC = () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', t('mpc.permDeniedGps'));
+        alertMsg('Permission Denied', t('mpc.permDeniedGps'));
         return;
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -322,7 +325,7 @@ const MPCScreen: React.FC = () => {
       const inside = isInsideTerritorialWaters(latitude, longitude, UK_ZONE);
       setFormStatus(inside ? 'INSIDE' : 'OUTSIDE');
     } catch (e: any) {
-      Alert.alert('GPS Error', e?.message || 'Could not get location');
+      alertMsg('GPS Error', e?.message || 'Could not get location');
     } finally {
       setGpsLoading(false);
     }
@@ -385,11 +388,11 @@ const MPCScreen: React.FC = () => {
 
   const saveAdd = async () => {
     if (!formLat.trim() || !formLon.trim()) {
-      Alert.alert(t('common.error'), t('mpc.errorCoords'));
+      alertMsg(t('common.error'), t('mpc.errorCoords'));
       return;
     }
     if (records.find(r => r.date === formDate)) {
-      Alert.alert(t('common.error'), t('mpc.errorExists'));
+      alertMsg(t('common.error'), t('mpc.errorExists'));
       return;
     }
     const rec: MPCRecord = {
@@ -415,7 +418,7 @@ const MPCScreen: React.FC = () => {
 
   const saveEdit = async () => {
     if (!formLat.trim() || !formLon.trim()) {
-      Alert.alert('Error', 'Please enter latitude and longitude');
+      alertMsg('Error', 'Please enter latitude and longitude');
       return;
     }
     const updated = records.map(r =>
@@ -431,21 +434,23 @@ const MPCScreen: React.FC = () => {
     setEditModal(false); setEditId(null);
   };
 
-  const deleteRecord = (id: string) => {
-    Alert.alert(t('mpc.deleteTitle'), t('mpc.deleteMsg'), [
-      { text: t('mpc.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: async () => {
-        const updated = records.filter(r => r.id !== id);
-        await saveRecords(updated);
-        setEditModal(false); setEditId(null);
-      }},
-    ]);
+  const deleteRecord = async (id: string) => {
+    const ok = await confirmAsync(t('mpc.deleteTitle'), t('mpc.deleteMsg'), {
+      confirmText: t('common.delete'),
+      cancelText: t('mpc.cancel'),
+      destructive: true,
+    });
+    if (!ok) return;
+    const updated = records.filter(r => r.id !== id);
+    await saveRecords(updated);
+    setEditModal(false);
+    setEditId(null);
   };
 
   // ── PDF ────────────────────────────────────────────────────────────────────
   const generatePDF = async () => {
     if (currentRecords.length === 0) {
-      Alert.alert(t('common.error'), t('mpc.noDataPdf'));
+      alertMsg(t('common.error'), t('mpc.noDataPdf'));
       return;
     }
     const name   = personalFullName || 'Seafarer';
@@ -497,7 +502,7 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
       await FileSystem.moveAsync({ from: uri, to: destUri });
       await Sharing.shareAsync(destUri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
     } catch (e: any) {
-      Alert.alert('PDF Error', e?.message || 'Could not generate PDF');
+      alertMsg('PDF Error', e?.message || 'Could not generate PDF');
     }
   };
 
@@ -740,6 +745,8 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
               </TouchableOpacity>
             </View>
             {renderForm(false)}
+            {/* Dialogs raised from inside this modal must render here, not at the root */}
+            <DialogHost />
           </SafeAreaView>
         </Modal>
 
@@ -765,6 +772,8 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
               </TouchableOpacity>
             </View>
             {renderForm(true)}
+            {/* Dialogs raised from inside this modal must render here, not at the root */}
+            <DialogHost />
           </SafeAreaView>
         </Modal>
 

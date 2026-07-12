@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -63,9 +64,9 @@ export const TestingScreen: React.FC = () => {
       await (SubscriptionService as any).forceRefresh?.();
       
       await loadStorageStatus();
-      Alert.alert("Ваша светлость!", `Премиум (${type}) активирован локально.`);
+      alertMsg("Ваша светлость!", `Премиум (${type}) активирован локально.`);
     } catch (e) {
-      Alert.alert("Ошибка", "Система сопротивляется активации.");
+      alertMsg("Ошибка", "Система сопротивляется активации.");
     }
   };
 
@@ -75,7 +76,7 @@ export const TestingScreen: React.FC = () => {
     await AsyncStorage.removeItem('premium_expires');
     await (SubscriptionService as any).forceRefresh?.();
     await loadStorageStatus();
-    Alert.alert("Статус сброшен", "Вы снова обычный моряк.");
+    alertMsg("Статус сброшен", "Вы снова обычный моряк.");
   };
 
   const checkStatus = async () => {

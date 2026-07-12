@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'; 
 import { StyleSheet, View, Text, ScrollView, Alert, Image, Platform, TouchableOpacity } from 'react-native';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -632,10 +633,10 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
         playSuccessSound();
       } else {
         playSuccessSound();
-        Alert.alert(t('common.success'), `PDF saved!\n\nFile: ${fileName}`);
+        alertMsg(t('common.success'), `PDF saved!\n\nFile: ${fileName}`);
       }
     } catch (error) {
-      Alert.alert(t('common.error'), t('cv.alerts.errorMessage'));
+      alertMsg(t('common.error'), t('cv.alerts.errorMessage'));
       console.error('PDF generation error:', error);
     } finally {
       setLoading(false);

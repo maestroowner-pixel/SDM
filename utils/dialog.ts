@@ -1,6 +1,8 @@
-// Dialog bridge. Screens keep calling alertMsg/confirmAsync; DialogProvider
-// registers the real, in-app themed dialog here at mount. Falls back to the
-// browser's native window.alert/confirm only if no provider is mounted.
+// Dialog bridge for the mobile app. DialogProvider registers the real, themed
+// in-app dialog here; callers just use alertMsg/confirmAsync/chooseAsync. Falls
+// back to the OS Alert only if no provider is mounted.
+import { Alert } from 'react-native';
+
 export type DialogButtonStyle = 'primary' | 'ghost' | 'destructive';
 
 export interface DialogButton {
@@ -15,12 +17,6 @@ export interface DialogRequest {
   buttons: DialogButton[];
 }
 
-export interface ConfirmOptions {
-  confirmText?: string;
-  cancelText?: string;
-  destructive?: boolean;
-}
-
 export interface DialogHandler {
   show: (req: DialogRequest) => Promise<string | null>;
 }
@@ -29,20 +25,18 @@ let handler: DialogHandler | null = null;
 
 export const setDialogHandler = (h: DialogHandler | null): void => { handler = h; };
 
-const join = (title: string, message?: string) => [title, message].filter(Boolean).join('\n\n');
-
 export const alertMsg = (title: string, message?: string): void => {
   if (handler) {
     handler.show({ title, message, buttons: [{ text: 'OK', value: 'ok', style: 'primary' }] });
     return;
   }
-  if (typeof window !== 'undefined' && window.alert) window.alert(join(title, message));
+  Alert.alert(title, message);
 };
 
 export const confirmAsync = async (
   title: string,
   message?: string,
-  opts?: ConfirmOptions
+  opts?: { confirmText?: string; cancelText?: string; destructive?: boolean }
 ): Promise<boolean> => {
   if (handler) {
     const result = await handler.show({
@@ -55,8 +49,12 @@ export const confirmAsync = async (
     });
     return result === 'ok';
   }
-  if (typeof window !== 'undefined' && window.confirm) return window.confirm(join(title, message));
-  return false;
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: opts?.cancelText || 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: opts?.confirmText || 'Confirm', onPress: () => resolve(true) },
+    ]);
+  });
 };
 
 /** Multi-option dialog. Resolves to the chosen button's `value`. */
@@ -66,5 +64,12 @@ export const chooseAsync = async (
   buttons: DialogButton[]
 ): Promise<string | null> => {
   if (handler) return handler.show({ title, message, buttons });
-  return null;
+  return new Promise((resolve) => {
+    Alert.alert(
+      title,
+      message,
+      buttons.map(b => ({ text: b.text, onPress: () => resolve(b.value) })),
+      { cancelable: false }
+    );
+  });
 };
