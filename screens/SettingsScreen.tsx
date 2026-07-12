@@ -15,9 +15,13 @@ import {
   TouchableWithoutFeedback, 
   Keyboard,
   ActivityIndicator,
-  Animated
+  Animated,
+  Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
+import { useSync } from '../contexts/SyncContext';
+import { AuthScreen } from './AuthScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -67,6 +71,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleMPCScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
+  const { user, logout, isConfigured: authConfigured } = useAuth();
+  const { status: syncStatus, lastSyncAt } = useSync();
+  const [showAuth, setShowAuth] = useState(false);
+
+  const syncSubtitle = () => {
+    if (!user) return 'Sync your records with the web app';
+    if (!user.emailVerified) return 'Verify your email to enable sync';
+    if (syncStatus === 'connecting') return 'Connecting…';
+    if (syncStatus === 'error') return 'Sync error — check connection';
+    return lastSyncAt ? `Synced · ${new Date(lastSyncAt).toLocaleTimeString()}` : 'Synced';
+  };
 
   // Панель языков: показываем только язык системы + английский.
   // Если язык системы не поддерживается (или это английский) — панель скрыта.
@@ -625,6 +640,45 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               />
             </View>
 
+            {/* ACCOUNT & SYNC (optional — app works fully without signing in) */}
+            {authConfigured && (
+              <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight]}>
+                <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark]}>
+                  Account & Sync
+                </Text>
+                {user && user.emailVerified ? (
+                  <>
+                    <SettingRow
+                      icon={syncStatus === 'synced' ? 'cloud-done' : syncStatus === 'error' ? 'cloud-offline' : 'cloud'}
+                      title={user.email || 'Signed in'}
+                      subtitle={syncSubtitle()}
+                    />
+                    <SettingRow
+                      icon="log-out"
+                      title="Sign out"
+                      subtitle="Stops syncing. Your data stays on this device."
+                      danger
+                      onPress={() => Alert.alert(
+                        'Sign out',
+                        'Stop syncing on this device? Your data stays on the phone.',
+                        [
+                          { text: t('common.cancel'), style: 'cancel' },
+                          { text: 'Sign out', style: 'destructive', onPress: () => logout() },
+                        ]
+                      )}
+                    />
+                  </>
+                ) : (
+                  <SettingRow
+                    icon="cloud-outline"
+                    title={user ? 'Verify your email' : 'Sign in to sync'}
+                    subtitle={syncSubtitle()}
+                    onPress={() => setShowAuth(true)}
+                  />
+                )}
+              </View>
+            )}
+
             {/* APPEARANCE */}
             <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight]}>
               <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark]}>
@@ -850,6 +904,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       </KeyboardAvoidingView>
 
       <ManualScreen visible={showManual} onClose={() => setShowManual(false)} />
+
+      <Modal
+        visible={showAuth}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAuth(false)}
+      >
+        <AuthScreen onClose={() => setShowAuth(false)} />
+      </Modal>
     </SafeAreaView>
   );
 };

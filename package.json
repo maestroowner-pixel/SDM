@@ -79,6 +79,7 @@
     "expo-updates": "~56.0.17",
     "expo-video": "~56.1.2",
     "expo-web-browser": "~56.0.5",
+    "firebase": "^12.16.0",
     "i18n-js": "^4.5.1",
     "jszip": "^3.10.1",
     "qrcode-generator": "^2.0.4",

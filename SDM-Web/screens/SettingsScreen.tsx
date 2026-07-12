@@ -12,9 +12,10 @@ import Constants from 'expo-constants';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync } from '../utils/webAlert';
-import { t } from '../utils/i18n';
+import { t, getSystemLanguage } from '../utils/i18n';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
 const TERMS_URL = 'https://sdm.kuka-lab.com/terms-of-service';
@@ -42,6 +43,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isConfigured: authConfigured, user, logout } = useAuth();
+  const { status: syncStatus, lastSyncAt, enabled: syncEnabled } = useSync();
   const { isPremium, loading: subscriptionLoading } = useSubscription();
   const isDark = state.theme === 'dark';
 
@@ -51,6 +53,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const cardStyle = [styles.card, isDark ? styles.cardDark : styles.cardLight];
   const titleColor = isDark ? '#fff' : '#1A3A5C';
   const mutedColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+
+  // Only offer the system language + English (the maritime lingua franca).
+  const visibleLanguages = React.useMemo(() => {
+    const sys = getSystemLanguage(); // supported code or null
+    const codes = sys && sys !== 'en' ? [sys, 'en'] : ['en'];
+    return codes
+      .map(code => LANGUAGES.find(l => l.code === code))
+      .filter(Boolean) as typeof LANGUAGES;
+  }, []);
 
   const handleExport = () => {
     try {
@@ -149,6 +160,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                     <Text style={styles.signOutText}>Sign out</Text>
                   </TouchableOpacity>
                 </View>
+                <View style={styles.divider} />
+                <View style={styles.row}>
+                  <View style={styles.rowLeft}>
+                    <Ionicons
+                      name={syncStatus === 'synced' ? 'cloud-done-outline' : syncStatus === 'error' ? 'cloud-offline-outline' : 'cloud-outline'}
+                      size={22}
+                      color={syncStatus === 'synced' ? '#4CAF50' : syncStatus === 'error' ? '#f44336' : (isDark ? '#64b5f6' : '#1976d2')}
+                    />
+                    <Text style={[styles.rowLabel, { color: titleColor }]}>Sync</Text>
+                  </View>
+                  <Text style={{ color: mutedColor, fontSize: 13 }}>
+                    {!syncEnabled ? 'Off'
+                      : syncStatus === 'connecting' ? 'Connecting…'
+                      : syncStatus === 'error' ? 'Error'
+                      : lastSyncAt ? `Synced · ${new Date(lastSyncAt).toLocaleTimeString()}` : 'Synced'}
+                  </Text>
+                </View>
               </View>
             </>
           )}
@@ -174,7 +202,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           <Text style={[styles.sectionTitle, { color: mutedColor }]}>{t('settings.language') !== 'settings.language' ? t('settings.language') : 'Language'}</Text>
           <View style={cardStyle}>
             <View style={styles.langGrid}>
-              {LANGUAGES.map((lang) => {
+              {visibleLanguages.map((lang) => {
                 const active = currentLanguage === lang.code;
                 return (
                   <TouchableOpacity

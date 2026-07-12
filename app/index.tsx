@@ -35,6 +35,8 @@ import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet';
 import { DataProvider, useData } from '../contexts/DataContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import { AuthProvider } from '../contexts/AuthContext';
+import { SyncProvider } from '../contexts/SyncContext';
 
 // Удерживаем заставку до команды
 SplashScreenNative.preventAutoHideAsync().catch(() => {});
@@ -450,7 +452,11 @@ export default function Index() {
     <SafeAreaProvider>
       <LanguageProvider>
         <DataProvider>
-          <MainApp />
+          <AuthProvider>
+            <SyncProvider>
+              <MainApp />
+            </SyncProvider>
+          </AuthProvider>
         </DataProvider>
       </LanguageProvider>
     </SafeAreaProvider>

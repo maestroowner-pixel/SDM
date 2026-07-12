@@ -21,6 +21,7 @@ import { DataProvider, useData } from './contexts/DataContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { SyncProvider } from './contexts/SyncContext';
 import { AuthScreen } from './screens/AuthScreen';
 import { PaywallScreen } from './screens/PaywallScreen';
 import { PersonalScreen } from './screens/PersonalScreen';
@@ -179,7 +180,9 @@ export default function App() {
         <DataProvider>
           <AuthProvider>
             <SubscriptionProvider>
-              <AuthGate />
+              <SyncProvider>
+                <AuthGate />
+              </SyncProvider>
             </SubscriptionProvider>
           </AuthProvider>
         </DataProvider>
