@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { t } from '../utils/i18n';
 import type { AttachedFile } from '../utils/scanUtils';
@@ -21,8 +21,10 @@ export const ScanPickerModal: React.FC<Props> = ({ visible, scans, isDark, onSel
   const sub = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
   const rowBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)';
 
+  // Оверлей-View (НЕ RN Modal): чтобы корректно показываться поверх уже открытой
+  // модалки редактирования Documents/Sea Service на iOS (modal-over-modal там не работает).
+  if (!visible) return null;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: bg }]}>
           <View style={styles.header}>
@@ -62,12 +64,11 @@ export const ScanPickerModal: React.FC<Props> = ({ visible, scans, isDark, onSel
           )}
         </View>
       </View>
-    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', zIndex: 1000, elevation: 1000 },
   sheet: { maxHeight: '70%', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: 28 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   title: { fontSize: 17, fontWeight: '700' },

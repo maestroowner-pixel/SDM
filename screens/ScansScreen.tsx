@@ -16,7 +16,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -27,6 +27,7 @@ import * as Print from 'expo-print';
 import JSZip from 'jszip';
 import Pdf from 'react-native-pdf';
 import { captureScanImage, buildPdfFromImages, ScanImage } from '../utils/scanUtils';
+import { useImageCropper } from '../components/ImageCropModal';
 import { useData } from '../contexts/DataContext';
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
@@ -107,6 +108,8 @@ export const ScansScreen: React.FC = () => {
   const [renameTarget, setRenameTarget] = useState<ScanFile | null>(null);
   const [renameText, setRenameText] = useState('');
   const [previewFile, setPreviewFile] = useState<ScanFile | null>(null);
+  const { cropImage, cropElement } = useImageCropper();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadScans();
@@ -344,13 +347,13 @@ export const ScansScreen: React.FC = () => {
   // Снять документ камерой (одна или несколько страниц) → один PDF
   const handleCameraScan = async () => {
     try {
-      const first = await captureScanImage();
+      const first = await captureScanImage(cropImage);
       if (!first) return;
 
       const images: ScanImage[] = [first];
       let addMore = await confirmAddPage(images.length);
       while (addMore) {
-        const next = await captureScanImage();
+        const next = await captureScanImage(cropImage);
         if (next) images.push(next);
         addMore = next ? await confirmAddPage(images.length) : false;
       }
@@ -669,7 +672,7 @@ export const ScansScreen: React.FC = () => {
         {/* Предпросмотр PDF прямо в приложении */}
         <Modal visible={!!previewFile} animationType="slide" onRequestClose={() => setPreviewFile(null)}>
           <SafeAreaView style={[styles.previewContainer, { backgroundColor: isDark ? '#0a1628' : '#fff' }]}>
-            <View style={[styles.previewHeader, { borderBottomColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)' }]}>
+            <View style={[styles.previewHeader, { paddingTop: insets.top + 12, borderBottomColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)' }]}>
               <TouchableOpacity onPress={() => setPreviewFile(null)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="close" size={26} color={isDark ? '#fff' : '#1a1a1a'} />
               </TouchableOpacity>
@@ -689,6 +692,7 @@ export const ScansScreen: React.FC = () => {
             )}
           </SafeAreaView>
         </Modal>
+        {cropElement}
       </View>
     </SafeAreaView>
   );

@@ -27,7 +27,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ManualScreen } from './ManualScreen';
-import { t } from '../utils/i18n';
+import { t, getSystemLanguage } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import i18n from '../utils/i18n';
 import { playSuccessSound } from '../utils/sound';
@@ -67,6 +67,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleMPCScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
+
+  // Панель языков: показываем только язык системы + английский.
+  // Если язык системы не поддерживается (или это английский) — панель скрыта.
+  const languagePanel = React.useMemo(() => {
+    const sysLang = getSystemLanguage();
+    if (!sysLang || sysLang === 'en') return [];
+    return [sysLang, 'en']
+      .map((code) => LANGUAGES.find((l) => l.code === code))
+      .filter(Boolean) as typeof LANGUAGES;
+  }, []);
   
   const [exporting, setExporting] = useState(false);
   const [showManual, setShowManual] = useState(false);
@@ -563,54 +573,34 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               )}
             </View>
 
-            {/* LANGUAGE SECTION */}
-            <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight, { padding: 16 }]}>
-              <Text style={[styles.sectionTitleHeader, isDark ? styles.textLight : styles.textDark]}>
-                {t('settings.language.title')}
-              </Text>
-              
-              {/* Первая строка: en - uk - pl - de - es */}
-              <View style={styles.languageRow}>
-                {LANGUAGES.slice(0, 5).map((lang) => (
-                  <TouchableOpacity
-                    key={lang.code}
-                    style={[
-                      styles.langBtn,
-                      isDark ? styles.langBtnDark : styles.langBtnLight,
-                      currentLanguage === lang.code && (isDark ? styles.langBtnActiveDark : styles.langBtnActiveLight)
-                    ]}
-                    onPress={() => handleLanguageChange(lang.code)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.flagSmall}>{lang.flag}</Text>
-                    <Text style={[styles.langText, isDark ? styles.textLight : styles.textDark]}>
-                      {lang.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+            {/* LANGUAGE SECTION — показываем только если есть язык системы + английский */}
+            {languagePanel.length > 0 && (
+              <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight, { padding: 16 }]}>
+                <Text style={[styles.sectionTitleHeader, isDark ? styles.textLight : styles.textDark]}>
+                  {t('settings.language.title')}
+                </Text>
 
-              {/* Вторая строка: fr - ru - tl - zh - hi */}
-              <View style={styles.languageRow}>
-                {LANGUAGES.slice(5, 10).map((lang) => (
-                  <TouchableOpacity
-                    key={lang.code}
-                    style={[
-                      styles.langBtn,
-                      isDark ? styles.langBtnDark : styles.langBtnLight,
-                      currentLanguage === lang.code && (isDark ? styles.langBtnActiveDark : styles.langBtnActiveLight)
-                    ]}
-                    onPress={() => handleLanguageChange(lang.code)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.flagSmall}>{lang.flag}</Text>
-                    <Text style={[styles.langText, isDark ? styles.textLight : styles.textDark]}>
-                      {lang.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                <View style={styles.languageRow}>
+                  {languagePanel.map((lang) => (
+                    <TouchableOpacity
+                      key={lang.code}
+                      style={[
+                        styles.langBtn,
+                        isDark ? styles.langBtnDark : styles.langBtnLight,
+                        currentLanguage === lang.code && (isDark ? styles.langBtnActiveDark : styles.langBtnActiveLight)
+                      ]}
+                      onPress={() => handleLanguageChange(lang.code)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.flagSmall}>{lang.flag}</Text>
+                      <Text style={[styles.langText, isDark ? styles.textLight : styles.textDark]}>
+                        {lang.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
+            )}
 
             {/* NOTIFICATIONS */}
             <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight]}>

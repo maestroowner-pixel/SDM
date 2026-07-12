@@ -14,16 +14,20 @@ import { MPC_LOCATION_TASK, MPC_FETCH_TASK, MPC_BACKGROUND_TASK } from '../tasks
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
-    const isMPC = notification.request.content.data?.mpc === true;
+    const data = notification.request.content.data;
+    const isFallback = data?.fallback === true;  // ночное напоминание — показываем заметно
+    const isMPC = data?.mpc === true;             // тихое подтверждение авто-записи
     return {
       shouldShowAlert: true,
       shouldShowBanner: true,
       shouldShowList: true,
-      shouldPlaySound: false,
+      shouldPlaySound: isFallback,
       shouldSetBadge: false,
-      priority: isMPC
-        ? Notifications.AndroidNotificationPriority.LOW
-        : Notifications.AndroidNotificationPriority.DEFAULT,
+      priority: isFallback
+        ? Notifications.AndroidNotificationPriority.HIGH
+        : isMPC
+          ? Notifications.AndroidNotificationPriority.LOW
+          : Notifications.AndroidNotificationPriority.DEFAULT,
     };
   },
 });

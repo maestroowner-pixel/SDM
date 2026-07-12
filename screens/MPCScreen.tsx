@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Animated,
   Switch,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,6 +36,7 @@ import {
   loadMPCVesselName, saveMPCVesselName,
 } from '../services/mpcStorage';
 import { useMidnightTask } from '../hooks/useMidnightTask';
+import { scheduleMidnightFallback, cancelMidnightFallback, openBatteryOptimizationSettings, MPC_AUTOSTART_KEY } from '../utils/mpcFallback';
 
 // GeoJSON для UK 12nm зоны
 const UK_ZONE = require('../data/uk_12nm_zone.json');
@@ -241,6 +243,9 @@ const MPCScreen: React.FC = () => {
       setVesselName(vessel);
       setAutoEnabled(autoVal === 'true');
       setLoading(false);
+      // Перепланируем fallback-пуш при заходе на экран — пересчитывает локальное
+      // время под лондонскую полночь (учёт BST/GMT и смены часового пояса).
+      if (autoVal === 'true') scheduleMidnightFallback();
     })();
   }, []);
 
@@ -250,16 +255,30 @@ const MPCScreen: React.FC = () => {
     await saveMPCRecords(newRecs);
   }, []);
 
+  // Общий хвост включения авто-записи: помечаем флаг, планируем fallback-пуш
+  // и на Android предлагаем снять оптимизацию батареи (иначе Doze глушит запись).
+  const afterAutoEnabled = useCallback(async () => {
+    setAutoEnabled(true);
+    await AsyncStorage.setItem(MPC_AUTO_KEY, 'true');
+    await scheduleMidnightFallback();
+    if (Platform.OS === 'android') {
+      setTimeout(() => {
+        Alert.alert(t('mpc.batteryTitle'), t('mpc.batteryMsg'), [
+          { text: t('mpc.batteryLater'), style: 'cancel' },
+          { text: t('mpc.batteryOpen'), onPress: () => { openBatteryOptimizationSettings(); } },
+        ]);
+      }, 300);
+    } else {
+      setTimeout(() => Alert.alert(t('mpc.autoTitle'), t('mpc.autoEnabledMsg')), 300);
+    }
+  }, []);
+
   const handleAutoToggle = useCallback(async (val: boolean) => {
     if (val) {
       const existing = await Location.getBackgroundPermissionsAsync();
       if (existing.status === 'granted') {
         const started = await requestAndStart();
-        if (started) {
-          setAutoEnabled(true);
-          await AsyncStorage.setItem(MPC_AUTO_KEY, 'true');
-          setTimeout(() => Alert.alert(t('mpc.autoTitle'), t('mpc.autoEnabledMsg')), 300);
-        }
+        if (started) await afterAutoEnabled();
       } else {
         setPendingLocationAction('auto');
         setShowLocationDisclosure(true);
@@ -268,8 +287,9 @@ const MPCScreen: React.FC = () => {
       setAutoEnabled(false);
       await AsyncStorage.setItem(MPC_AUTO_KEY, 'false');
       await stop();
+      await cancelMidnightFallback();
     }
-  }, [requestAndStart, stop]);
+  }, [requestAndStart, stop, afterAutoEnabled]);
 
   const handleVesselChange = useCallback(async (v: string) => {
     setVesselName(v);
@@ -329,11 +349,7 @@ const MPCScreen: React.FC = () => {
       await doGetGPSPosition();
     } else if (pendingLocationAction === 'auto') {
       const started = await doRequestAndStart();
-      if (started) {
-        setAutoEnabled(true);
-        await AsyncStorage.setItem(MPC_AUTO_KEY, 'true');
-        setTimeout(() => Alert.alert(t('mpc.autoTitle'), t('mpc.autoEnabledMsg')), 300);
-      }
+      if (started) await afterAutoEnabled();
     }
     setPendingLocationAction(null);
   };
@@ -350,6 +366,22 @@ const MPCScreen: React.FC = () => {
     setFormStatus('OUTSIDE'); setFormNote('');
     setAddModal(true);
   };
+
+  // Авто-старт по тапу на полночный пуш: открыть форму и сразу подтянуть GPS.
+  // Флаг ставит обработчик уведомления (app/index.tsx), здесь — читаем и сбрасываем.
+  useEffect(() => {
+    if (loading) return;
+    (async () => {
+      try {
+        const flag = await AsyncStorage.getItem(MPC_AUTOSTART_KEY);
+        if (flag === 'true') {
+          await AsyncStorage.removeItem(MPC_AUTOSTART_KEY);
+          openAdd();
+          getGPSPosition();
+        }
+      } catch {}
+    })();
+  }, [loading]);
 
   const saveAdd = async () => {
     if (!formLat.trim() || !formLon.trim()) {
@@ -603,6 +635,14 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
                 />
               </View>
 
+              {/* Подсказка: держать на зарядке для надёжной ночной записи */}
+              {autoEnabled && (
+                <View style={[s.chargingHint, { backgroundColor: tc.accentGlow, borderColor: tc.cardBorder }]}>
+                  <Ionicons name="battery-charging-outline" size={15} color={tc.accent} />
+                  <Text style={[s.chargingHintTxt, { color: tc.sub }]}>{t('mpc.chargingHint')}</Text>
+                </View>
+              )}
+
               {/* Месячные табы */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}
                 contentContainerStyle={s.tabsRow}>
@@ -774,6 +814,8 @@ const s = StyleSheet.create({
   autoRow:      { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 10 },
   autoTitle:    { fontSize: 14, fontWeight: '600' },
   autoSub:      { fontSize: 11, marginTop: 1 },
+  chargingHint:    { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 10 },
+  chargingHintTxt: { flex: 1, fontSize: 11, lineHeight: 15 },
 
   tabsRow:      { paddingVertical: 6, paddingBottom: 10, gap: 8 },
   tab:          { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },

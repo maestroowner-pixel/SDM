@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/scanUtils';
+import { useImageCropper } from '../components/ImageCropModal';
 import { ScanPickerModal } from '../components/ScanPickerModal';
 import { useData, Document } from '../contexts/DataContext';
 import SimpleDatePicker from '../components/SimpleDatePicker';
@@ -111,6 +112,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [scanPickerItems, setScanPickerItems] = useState<AttachedFile[] | null>(null);
+  const { cropImage, cropElement } = useImageCropper();
   const [documentAttachments, setDocumentAttachments] = useState<{ [key: string]: AttachedFile[] }>({});
   const isDark = state.theme === 'dark';
 
@@ -345,7 +347,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
 
   const handleCameraAttach = async () => {
     try {
-      const f = await captureScanToPdf(SCANS_DIR, buildAttachName());
+      const f = await captureScanToPdf(SCANS_DIR, buildAttachName(), cropImage);
       if (f) setAttachedFiles(prev => [...prev, f]);
     } catch (error: any) {
       if (error?.message === 'camera-permission-denied') {
@@ -727,15 +729,15 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
             </View>
           </View>
         </KeyboardAvoidingView>
+        <ScanPickerModal
+          visible={!!scanPickerItems}
+          scans={scanPickerItems || []}
+          isDark={isDark}
+          onSelect={onScanSelected}
+          onClose={() => setScanPickerItems(null)}
+        />
+        {cropElement}
       </Modal>
-
-      <ScanPickerModal
-        visible={!!scanPickerItems}
-        scans={scanPickerItems || []}
-        isDark={isDark}
-        onSelect={onScanSelected}
-        onClose={() => setScanPickerItems(null)}
-      />
       </ImageBackground>
     </SafeAreaView>
   );

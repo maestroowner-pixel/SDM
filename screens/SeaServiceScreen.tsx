@@ -23,6 +23,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/scanUtils';
 import { ScanPickerModal } from '../components/ScanPickerModal';
+import { useImageCropper } from '../components/ImageCropModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PositionInput } from '@/components/PositionInput';
 
@@ -73,6 +74,7 @@ export const SeaServiceScreen: React.FC = () => {
   const [editingService, setEditingService] = useState<SeaService | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [scanPickerItems, setScanPickerItems] = useState<AttachedFile[] | null>(null);
+  const { cropImage, cropElement } = useImageCropper();
   const [serviceAttachments, setServiceAttachments] = useState<{ [key: string]: AttachedFile[] }>({});
   const isDark = state.theme === 'dark';
   const isTablet = useTablet(); // ← ДОБАВЛЕНО
@@ -273,7 +275,7 @@ export const SeaServiceScreen: React.FC = () => {
 
   const handleCameraAttach = async () => {
     try {
-      const f = await captureScanToPdf(SCANS_DIR, buildAttachName());
+      const f = await captureScanToPdf(SCANS_DIR, buildAttachName(), cropImage);
       if (f) setAttachedFiles(prev => [...prev, f]);
     } catch (error: any) {
       if (error?.message === 'camera-permission-denied') {
@@ -715,6 +717,14 @@ export const SeaServiceScreen: React.FC = () => {
               </View>
             </View>
             </KeyboardAvoidingView>
+            <ScanPickerModal
+              visible={!!scanPickerItems}
+              scans={scanPickerItems || []}
+              isDark={isDark}
+              onSelect={onScanSelected}
+              onClose={() => setScanPickerItems(null)}
+            />
+            {cropElement}
           </View>
         </Modal>
 
@@ -734,14 +744,6 @@ export const SeaServiceScreen: React.FC = () => {
             </View>
           </TouchableOpacity>
         </Modal>
-
-        <ScanPickerModal
-          visible={!!scanPickerItems}
-          scans={scanPickerItems || []}
-          isDark={isDark}
-          onSelect={onScanSelected}
-          onClose={() => setScanPickerItems(null)}
-        />
       </View>
     </SafeAreaView>
   );

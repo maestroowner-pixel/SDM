@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "seafarer.documents.manager",
       "deploymentTarget": "16.4",
-      "buildNumber": "301040",
+      "buildNumber": "301061",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
         "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility.",
@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "seafarer.documents.manager",
-      "versionCode": 301052
+      "versionCode": 301061
     },
     "plugins": [
       [

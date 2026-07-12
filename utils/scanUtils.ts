@@ -35,21 +35,34 @@ const uniqueDest = async (destDir: string, fileName: string): Promise<string> =>
 
 export interface ScanImage { base64: string; width: number; height: number; }
 
-// Снять один кадр камерой → кроп → сжатие. Возвращает данные изображения или null (отмена).
+// Функция обрезки: получает uri+размеры снимка, возвращает uri обрезанного фото
+// или null (пользователь отменил). Реализуется через useImageCropper (UI-кроп).
+export type CropFn = (uri: string, width: number, height: number) => Promise<string | null>;
+
+// Снять один кадр камерой → (опц.) кроп → сжатие. Возвращает данные изображения или null (отмена).
 // Бросает 'camera-permission-denied', если нет доступа.
-export const captureScanImage = async (): Promise<ScanImage | null> => {
+// Если передан crop — используем свой UI-кроп (прямоугольный, iOS+Android),
+// иначе встроенный allowsEditing (на iOS он только квадратный).
+export const captureScanImage = async (crop?: CropFn): Promise<ScanImage | null> => {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) throw new Error('camera-permission-denied');
 
   const result = await ImagePicker.launchCameraAsync({
     mediaTypes: ['images'],
     quality: 1,
-    allowsEditing: true,
+    allowsEditing: !crop,
   });
   if (result.canceled || !result.assets?.length) return null;
 
+  let uri = result.assets[0].uri;
+  if (crop) {
+    const cropped = await crop(uri, result.assets[0].width || 1500, result.assets[0].height || 2000);
+    if (cropped === null) return null; // отмена кропа = отмена страницы
+    uri = cropped;
+  }
+
   const c = await ImageManipulator.manipulateAsync(
-    result.assets[0].uri,
+    uri,
     [{ resize: { width: 1500 } }],
     { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
   );
@@ -66,20 +79,23 @@ export const buildPdfFromImages = async (
 ): Promise<AttachedFile | null> => {
   if (!images.length) return null;
 
-  let pageW: number, pageH: number, html: string;
-  if (images.length === 1) {
-    const im = images[0];
-    pageW = 595;
-    pageH = Math.max(1, Math.round((pageW * im.height) / im.width));
-    // фиксированная .page + height:100% + overflow:hidden → перелива нет, ровно 1 страница
-    html = `<html><head><meta charset="utf-8"/><style>@page{size:${pageW}pt ${pageH}pt;margin:0}html,body{margin:0;padding:0}.p{width:${pageW}pt;height:${pageH}pt;overflow:hidden}img{width:100%;height:100%;object-fit:cover;display:block}</style></head><body><div class="p"><img src="data:image/jpeg;base64,${im.base64}"/></div></body></html>`;
-  } else {
-    pageW = 595; pageH = 842; // A4
-    const pages = images
-      .map((im, i) => `<div class="p" style="page-break-after:${i === images.length - 1 ? 'auto' : 'always'}"><img src="data:image/jpeg;base64,${im.base64}"/></div>`)
-      .join('');
-    html = `<html><head><meta charset="utf-8"/><style>@page{size:${pageW}pt ${pageH}pt;margin:0}html,body{margin:0;padding:0}.p{width:${pageW}pt;height:${pageH}pt;display:flex;align-items:center;justify-content:center;overflow:hidden}img{max-width:100%;max-height:100%;display:block}</style></head><body>${pages}</body></html>`;
-  }
+  // ВАЖНО: printToFileAsync width/height — в ПИКСЕЛЯХ (72dpi). В CSS используем тоже
+  // px (НЕ pt — иначе 595pt=793px → перелив на пустую 2-ю страницу на iOS WebKit).
+  const single = images.length === 1;
+  const pageW = 595;
+  const pageH = single
+    ? Math.max(1, Math.round((pageW * images[0].height) / images[0].width))
+    : 842; // A4 для многостраничных
+  const fit = single ? 'cover' : 'contain'; // single: заполнить без полей; multi: вписать без обрезки
+
+  const pages = images
+    .map((im, i) => `<div class="pg" style="page-break-after:${i === images.length - 1 ? 'auto' : 'always'}"><img src="data:image/jpeg;base64,${im.base64}"/></div>`)
+    .join('');
+  const html = `<html><head><meta charset="utf-8"/><style>` +
+    `*{margin:0;padding:0;box-sizing:border-box}@page{margin:0}html,body{width:100%}` +
+    `.pg{width:100%;height:${pageH}px;overflow:hidden;display:flex;align-items:center;justify-content:center}` +
+    `img{width:100%;height:100%;object-fit:${fit};display:block}` +
+    `</style></head><body>${pages}</body></html>`;
 
   const { uri: tmp } = await Print.printToFileAsync({ html, width: pageW, height: pageH, base64: false });
 
@@ -93,8 +109,8 @@ export const buildPdfFromImages = async (
 };
 
 // Снять один кадр и сразу сохранить одностраничным PDF (для прикрепления к записи).
-export const captureScanToPdf = async (destDir: string, fileName?: string): Promise<AttachedFile | null> => {
-  const img = await captureScanImage();
+export const captureScanToPdf = async (destDir: string, fileName?: string, crop?: CropFn): Promise<AttachedFile | null> => {
+  const img = await captureScanImage(crop);
   if (!img) return null;
   return buildPdfFromImages(destDir, [img], fileName);
 };

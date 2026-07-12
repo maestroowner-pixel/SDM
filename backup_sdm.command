@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт копирования для Вашей светлости
 
-SOURCE="/Users/frontend"
+SOURCE="/Users/Seafarer-Documents-Manager"
 # Замените 'DISK_NAME' на реальное имя вашего внешнего диска
 DEST="/Volumes/E:/2026/SDM 2.3.11"
 

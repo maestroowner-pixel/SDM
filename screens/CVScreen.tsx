@@ -13,8 +13,49 @@ import { playSuccessSound } from '../utils/sound';
 import { t } from '../utils/i18n';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
+import qrcode from 'qrcode-generator';
 
 const GHOST_ROSE_IMAGE = require('../assets/images/ghost-rose.png');
+
+// Ссылка, зашитая в QR-код на CV.
+const CV_QR_TARGET = 'https://sdm.kuka-lab.com';
+
+// Локальная (оффлайн) генерация QR как data-URL — без обращения к внешнему сервису.
+const makeQrDataUrl = (data: string): string => {
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(data);
+    qr.make();
+    return qr.createDataURL(4, 8); // cellSize, margin → data:image/gif;base64,...
+  } catch {
+    return '';
+  }
+};
+
+// vCard с контактами для QR на CV (как на экране QR) — чтобы можно было
+// отсканировать и сразу сохранить контакт в телефон. Пусто, если контактов нет.
+const buildVCard = (p: any, title?: string): string => {
+  const hasContact = p?.firstName || p?.lastName || p?.phone || p?.email;
+  if (!hasContact) return '';
+  const fullName = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+  const telegramHandle = p.telegram ? (String(p.telegram).startsWith('@') ? p.telegram : `@${p.telegram}`) : '';
+  const whatsappNumber = p.whatsapp ? String(p.whatsapp).replace(/\D/g, '') : '';
+  return [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `N:${p.lastName || ''};${p.firstName || ''};${p.middleName || ''};;`,
+    `FN:${fullName}`,
+    (title || p.appliedPosition) ? `TITLE:${title || p.appliedPosition}` : '',
+    p.phone ? `TEL;TYPE=CELL:${p.phone}` : '',
+    p.email ? `EMAIL:${p.email}` : '',
+    telegramHandle ? `X-SOCIALPROFILE;TYPE=telegram:${telegramHandle}` : '',
+    whatsappNumber ? `X-SOCIALPROFILE;TYPE=whatsapp:${p.whatsapp}` : '',
+    p.teams ? `X-SOCIALPROFILE;TYPE=teams:${p.teams}` : '',
+    telegramHandle ? `URL;TYPE=Telegram:https://t.me/${String(telegramHandle).replace('@', '')}` : '',
+    whatsappNumber ? `URL;TYPE=WhatsApp:https://wa.me/${whatsappNumber}` : '',
+    'END:VCARD',
+  ].filter(Boolean).join('\n');
+};
 
 const getVesselTypeLabel = (value: string): string => {
   const found = VESSEL_TYPES.find(t => t.value === value);
@@ -71,7 +112,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
     const fullName = [personal.firstName, personal.middleName, personal.lastName]
       .filter(Boolean).join(' ') || t('cv.defaultName');
 
-    const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://sdm.free.nf";
+    const qrCodeUrl = makeQrDataUrl(CV_QR_TARGET);
 
     const photoHtml = personal.photo ? `
       <div style="float: right; margin-left: 20px; margin-bottom: 10px;">
@@ -166,8 +207,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       </div>` : '';
 
     // ── Образование ───────────────────────────────────────────────────────────
-    const educationHtml = (education && (education.institution || education.degree)) ? `
-      <div class="section">
+    const educationInnerHtml = (education && (education.institution || education.degree)) ? `
         <h2>${t('education.title')}</h2>
         ${education.institution ? `<div class="info-row"><span class="info-label">${t('education.fields.institution')}:</span> ${education.institution}</div>` : ''}
         ${education.degree ? `<div class="info-row"><span class="info-label">${t('education.fields.degree')}:</span> ${education.degree}</div>` : ''}
@@ -175,8 +215,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
         ${education.graduationYear ? `<div class="info-row"><span class="info-label">${t('education.fields.graduationYear')}:</span> ${education.graduationYear}</div>` : ''}
         ${education.languages ? `<div class="info-row"><span class="info-label">${t('education.fields.languages')}:</span> ${education.languages}</div>` : ''}
         ${education.englishLevel ? `<div class="info-row"><span class="info-label">${t('education.fields.englishLevel')}:</span> ${education.englishLevel}</div>` : ''}
-        ${education.additionalSkills ? `<div class="info-row"><span class="info-label">${t('education.fields.additionalSkills')}:</span> ${education.additionalSkills}</div>` : ''}
-      </div>` : '';
+        ${education.additionalSkills ? `<div class="info-row"><span class="info-label">${t('education.fields.additionalSkills')}:</span> ${education.additionalSkills}</div>` : ''}` : '';
 
     // ── Заметки ───────────────────────────────────────────────────────────────
     const notesHtml = (includeNotesInCV && notes) ? `
@@ -188,6 +227,28 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
     const vesselTypeLine = personal.vesselType === 'Other' ? personal.customVesselType : (personal.vesselType ? getVesselTypeLabel(personal.vesselType) : '-');
     const dayRateLine = personal.minDayRate ? `${personal.minDayRate} ${personal.minDayRateCurrency || ''} ${personal.isRateNegotiable ? '(Negotiable)' : ''}` : '-';
     const positionLine = personal.appliedPosition === 'Other' ? personal.customPosition : personal.appliedPosition;
+
+    // ── Контактный vCard-QR (отсканировать → сохранить контакт в телефон) ──────
+    const contactQrUrl = makeQrDataUrl(buildVCard(personal, positionLine));
+    // Ячейка QR рядом (справа) с блоком Education — для светлых дизайнов 1, 2, 3
+    const contactQrCell = contactQrUrl ? `
+      <div style="flex-shrink:0;text-align:center;width:120px;page-break-inside:avoid;">
+        <img src="${contactQrUrl}" style="width:110px;height:110px;background:#fff;padding:4px;border:1px solid #e0e0e0;border-radius:6px;" alt="Contact QR" />
+        <div style="font-size:8.5px;color:#777;font-style:italic;margin-top:5px;line-height:1.35;">${t('cv.scanContact')}</div>
+      </div>` : '';
+    // Блок QR в тёмном сайдбаре под Education — для дизайна 4
+    const contactQrBlockDark = contactQrUrl ? `
+      <div class="sb-section" style="text-align:center;page-break-inside:avoid;">
+        <img src="${contactQrUrl}" style="width:124px;height:124px;background:#fff;padding:6px;border-radius:8px;" alt="Contact QR" />
+        <div style="font-size:10px;color:#cfd3d6;margin-top:9px;line-height:1.4;">${t('cv.scanContact')}</div>
+      </div>` : '';
+
+    // Education + контактный QR справа (одна строка). Показываем рядом с образованием (дизайны 1–3).
+    const educationHtml = (educationInnerHtml || contactQrCell) ? `
+      <div class="section" style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;page-break-inside:avoid;">
+        <div style="flex:1;min-width:0;">${educationInnerHtml}</div>
+        ${contactQrCell}
+      </div>` : '';
 
     // ── Design 1: Classic Blue ────────────────────────────────────────────────
     if (design === 1) return `
@@ -361,8 +422,8 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
   /* sidebar */
   .left { width: 34%; color: #e7eaec; }
-  .photo { width: 100%; height: 250px; overflow: hidden; }
-  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo { width: 100%; overflow: hidden; }
+  .photo img { width: 100%; height: auto; object-fit: contain; display: block; }
   .left-inner { padding: 20px 22px 30px; }
   .name { font-size: 20px; font-weight: 700; letter-spacing: .4px; line-height: 1.15; }
   .role { font-size: 12.5px; font-weight: 600; color: #cfd3d6; margin-top: 4px; }
@@ -434,6 +495,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
         ${physicalHtml}
         ${eduSidebarHtml}
+        ${contactQrBlockDark}
       </div>
     </aside>
 

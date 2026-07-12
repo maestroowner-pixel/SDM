@@ -29,6 +29,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 // Нативное управление сплеш-скрином
 import * as SplashScreenNative from 'expo-splash-screen';
 
+import * as Notifications from 'expo-notifications';
+import { flagMpcAutoRecord } from '../utils/mpcFallback';
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet';
 import { DataProvider, useData } from '../contexts/DataContext';
@@ -212,8 +214,12 @@ const MainApp: React.FC = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [isReady, setIsReady] = useState(false);
   
-  const { state } = useData();
+  const { state, toggleMPCScreen } = useData();
   const insets = useSafeAreaInsets();
+
+  // Актуальная видимость вкладки MPC для слушателя уведомлений (без устаревшего замыкания)
+  const showMPCRef = useRef(state.showMPCScreen);
+  showMPCRef.current = state.showMPCScreen;
   const isDark = state.theme === 'dark';
   const isTablet = useTablet();
 
@@ -258,6 +264,24 @@ const MainApp: React.FC = () => {
       }
     }
     prepare();
+  }, []);
+
+  // Тап по полночному пушу MPC → открыть экран MPC и автоматически снять GPS.
+  // Работает и на тёплом запуске (listener), и на холодном (getLast…).
+  useEffect(() => {
+    const handle = async (response: Notifications.NotificationResponse | null) => {
+      const data = response?.notification?.request?.content?.data as any;
+      if (data?.mpc) {
+        await flagMpcAutoRecord();
+        // Если вкладка MPC скрыта в настройках — принудительно включаем её,
+        // иначе переход не сработает (её нет в списке вкладок).
+        if (!showMPCRef.current) toggleMPCScreen();
+        setActiveTabSafe('mpc');
+      }
+    };
+    Notifications.getLastNotificationResponseAsync().then(handle).catch(() => {});
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => { handle(r); });
+    return () => sub.remove();
   }, []);
 
   // ТА САМАЯ ФУНКЦИЯ, КОТОРАЯ СКРЫВАЕТ СПЛЕШ
