@@ -163,7 +163,7 @@ export const SeaServiceScreen: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirmAsync(t('seaService.alerts.deleteTitle'), t('seaService.alerts.deleteMessage'))) return;
+    if (!(await confirmAsync(t('seaService.alerts.deleteTitle'), t('seaService.alerts.deleteMessage'), { confirmText: t('common.delete'), destructive: true }))) return;
     if (serviceAttachments[id]) {
       for (const file of serviceAttachments[id]) {
         try { await deleteBlob(file.uri); } catch (error) { console.error('Error deleting file:', error); }

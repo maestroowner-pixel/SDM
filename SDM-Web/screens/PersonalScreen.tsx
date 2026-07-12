@@ -104,8 +104,8 @@ export const PersonalScreen: React.FC = () => {
     }
   };
 
-  const removePhoto = () => {
-    if (confirmAsync('Remove Photo', 'Are you sure you want to remove your photo?')) {
+  const removePhoto = async () => {
+    if (await confirmAsync('Remove photo', 'Are you sure you want to remove your photo?', { confirmText: 'Remove', destructive: true })) {
       updatePersonal({ ...state.personal, photo: '' });
     }
   };

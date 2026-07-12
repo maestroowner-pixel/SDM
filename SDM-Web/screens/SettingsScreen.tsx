@@ -129,10 +129,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
     }
   };
 
-  const handleClear = () => {
-    if (confirmAsync(t('settings.clearData') || 'Clear all data', 'This will permanently erase all your data on this device. Continue?')) {
-      clearAllData();
-    }
+  const handleClear = async () => {
+    const ok = await confirmAsync(
+      t('settings.clearData') !== 'settings.clearData' ? t('settings.clearData') : 'Clear all data',
+      'This will permanently erase all your data on this device. Continue?',
+      { confirmText: 'Erase', destructive: true }
+    );
+    if (ok) clearAllData();
   };
 
   const openUrl = (url: string) => Linking.openURL(url).catch(() => {});

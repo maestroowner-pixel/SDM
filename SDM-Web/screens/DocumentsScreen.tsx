@@ -246,8 +246,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (!confirmAsync(t('documents.alerts.deleteTitle'), t('documents.alerts.deleteMessage'))) return;
+  const handleDelete = async (id: string) => {
+    if (!(await confirmAsync(t('documents.alerts.deleteTitle'), t('documents.alerts.deleteMessage'), { confirmText: t('common.delete'), destructive: true }))) return;
     (async () => {
       // Удаляем прикрепленные файлы из IndexedDB
       if (documentAttachments[id]) {

@@ -249,8 +249,8 @@ const DPScreen: React.FC = () => {
 
   // ── Удалить день ───────────────────────────────────────────────────────────
 
-  const deleteDay = (id: string) => {
-    if (confirmAsync('Delete Day', 'Remove this day from the log?')) {
+  const deleteDay = async (id: string) => {
+    if (await confirmAsync('Delete day', 'Remove this day from the log?', { confirmText: 'Delete', destructive: true })) {
       setDays(p => p.filter(d => d.id !== id));
       setEditModal(false);
       setEditDayId(null);

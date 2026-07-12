@@ -249,10 +249,15 @@ export const ScansScreen: React.FC = () => {
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     const selectedScans = getSelectedScans();
     if (selectedScans.length === 0) { alertMsg(t('scans.noSelection'), t('scans.selectFilesFirst')); return; }
-    if (!confirmAsync(t('scans.deleteTitle'), `${t('scans.deleteMessage')} ${selectedScans.length} ${selectedScans.length > 1 ? 'files' : 'file'}?`)) return;
+    const ok = await confirmAsync(
+      t('scans.deleteTitle'),
+      `${t('scans.deleteMessage')} ${selectedScans.length} ${selectedScans.length > 1 ? 'files' : 'file'}?`,
+      { confirmText: t('common.delete'), destructive: true }
+    );
+    if (!ok) return;
     (async () => {
       try {
         for (const scan of selectedScans) { await deleteBlob(scan.uri); }
