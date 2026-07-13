@@ -1,8 +1,14 @@
 const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugins');
 
 // Hardens android/ against `expo prebuild` regeneration:
-//   1) keeps the ARM-only ABI restriction (smaller APK)
+//   1) pins the ABI list
 //   2) re-applies the Google Play release signingConfig
+//
+// ABI note: this used to be ARM-only ("smaller APK"). That is pointless for an
+// AAB — Play splits the bundle and ships each device only its own ABI, so the
+// user's download doesn't grow — and it silently DROPPED x86/x86_64 devices
+// (Intel tablets, Chromebooks). Play then rejects the release with "некоторые
+// устройства из предыдущего выпуска не поддерживаются". Keep all four.
 //
 // SECRETS ARE NOT STORED HERE. The release keystore credentials must live in
 // the global, un-versioned ~/.gradle/gradle.properties:
@@ -14,7 +20,7 @@ const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugin
 // build falls back to the debug keystore instead of failing configuration.
 
 const GRADLE_PROPERTIES = {
-  reactNativeArchitectures: 'armeabi-v7a,arm64-v8a',
+  reactNativeArchitectures: 'armeabi-v7a,arm64-v8a,x86,x86_64',
 };
 
 function withHardenedGradleProperties(config) {
@@ -40,7 +46,13 @@ function withReleaseSigning(config) {
     // Inject a `release` signingConfig after the default debug block.
     // Credentials are resolved from gradle properties (global ~/.gradle), with
     // a safe fallback to the debug keystore when they are not provided.
-    if (!/signingConfigs\s*\{[\s\S]*?release\s*\{/.test(contents)) {
+    //
+    // Guard on our own marker, NOT on /signingConfigs[\s\S]*?release\s*\{/ — that
+    // pattern skips across the whole file and matches the `release {` of the
+    // buildTypes block, so the injection was silently skipped while the buildType
+    // was still repointed at signingConfigs.release → Gradle: "could not find
+    // property 'release'".
+    if (!contents.includes('MYAPP_UPLOAD_STORE_FILE')) {
       contents = contents.replace(
         /(signingConfigs\s*\{\s*debug\s*\{[\s\S]*?keyPassword 'android'\s*\}\s*)/,
         `$1

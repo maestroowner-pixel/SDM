@@ -2,7 +2,7 @@
   "expo": {
     "name": "Seafarer Documents Manager",
     "slug": "seafarer.documents.manager",
-    "version": "3.1.5",
+    "version": "3.1.7",
     "orientation": "all",
     "icon": "./assets/images/icon.png",
     "scheme": "seafarer-docs",
@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "seafarer.documents.manager",
       "deploymentTarget": "16.4",
-      "buildNumber": "301061",
+      "buildNumber": "301071",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
         "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility.",
@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "seafarer.documents.manager",
-      "versionCode": 301061
+      "versionCode": 301071
     },
     "plugins": [
       [
@@ -73,7 +73,8 @@
       "./plugins/remove-audio-boot-receivers",
       "./plugins/android-signing",
       "./plugins/ios-fix-codegen-cycle",
-      "./plugins/android-large-screen-fix"
+      "./plugins/android-large-screen-fix",
+      "./plugins/android-device-compat"
     ]
   }
 }
