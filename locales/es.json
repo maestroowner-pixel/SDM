@@ -1,5 +1,8 @@
 {
-  "syncHelp": {"title":"Cómo funciona la sincronización","body":"Inicia sesión con el mismo correo aquí y en tu otro dispositivo.\nTus registros — datos personales, documentos, tiempo de embarque y notas — se sincronizan automáticamente en tiempo real.\nLos escaneos y archivos adjuntos no se sincronizan; transfiérelos con una copia .sdm.\nLa sincronización solo funciona mientras tienes la sesión iniciada."},
+  "syncHelp": {
+    "title": "Cómo funciona la sincronización",
+    "body": "Inicia sesión con el mismo correo aquí y en tu otro dispositivo.\nTus registros — datos personales, documentos, tiempo de embarque y notas — se sincronizan automáticamente en tiempo real.\nLos escaneos y archivos adjuntos no se sincronizan; transfiérelos con una copia .sdm.\nLa sincronización solo funciona mientras tienes la sesión iniciada."
+  },
   "es": {
     "biometrics.eyeColors": {
       "brown": "Marrón",
@@ -529,7 +532,10 @@
       "clearTitle": "Borrar Todos los Datos",
       "clearMessage": "Esto eliminará permanentemente todos tus datos. Esta acción no se puede deshacer.",
       "deleteEverything": "Eliminar Todo",
-      "dataCleared": "Todos los datos han sido eliminados"
+      "dataCleared": "Todos los datos han sido eliminados",
+      "clearSyncedMessage": "La sincronización en la nube está activa en esta cuenta. Si borras aquí, también se borrarán tus datos en todos los demás dispositivos con esta cuenta: teléfono, navegador y ordenador.\n\nElige «Borrar solo aquí» para cerrar sesión primero y conservar la copia en la nube.",
+      "eraseEverywhere": "Borrar en todas partes",
+      "eraseHereOnly": "Borrar solo aquí"
     },
     "language": {
       "title": "Idioma",

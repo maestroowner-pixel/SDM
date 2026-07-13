@@ -1,5 +1,8 @@
 {
-  "syncHelp": {"title":"Paano gumagana ang sync","body":"Mag-sign in gamit ang parehong email dito at sa iyong isa pang device.\nAng iyong mga record — personal na impormasyon, dokumento, sea service at mga tala — ay awtomatikong nagsi-sync nang real time.\nAng mga scan at naka-attach na file ay hindi naisi-sync; ilipat ang mga ito gamit ang .sdm backup.\nGumagana lang ang sync habang naka-sign in ka."},
+  "syncHelp": {
+    "title": "Paano gumagana ang sync",
+    "body": "Mag-sign in gamit ang parehong email dito at sa iyong isa pang device.\nAng iyong mga record — personal na impormasyon, dokumento, sea service at mga tala — ay awtomatikong nagsi-sync nang real time.\nAng mga scan at naka-attach na file ay hindi naisi-sync; ilipat ang mga ito gamit ang .sdm backup.\nGumagana lang ang sync habang naka-sign in ka."
+  },
   "Language Changed": "Nabago ang Wika",
   "Please restart the app to apply language changes": "Mangyaring i-restart ang app upang mailapat ang mga pagbabago sa wika",
   "OK": "OK",
@@ -541,7 +544,10 @@
       "clearTitle": "Burahin ang Lahat ng Data",
       "clearMessage": "Permanenteng buburahin nito ang lahat ng iyong data. Ang aksyong ito ay hindi na maaaring bawiin.",
       "deleteEverything": "Burahin ang Lahat",
-      "dataCleared": "Nabura na ang lahat ng data"
+      "dataCleared": "Nabura na ang lahat ng data",
+      "clearSyncedMessage": "Naka-on ang cloud sync para sa account na ito. Kapag binura mo rito, mabubura rin ang iyong mga tala sa lahat ng ibang device na naka-sign in sa account na ito — telepono, browser at computer.\n\nPiliin ang \"Burahin dito lang\" para mag-sign out muna at manatili ang kopya sa cloud.",
+      "eraseEverywhere": "Burahin sa lahat",
+      "eraseHereOnly": "Burahin dito lang"
     },
     "language": {
       "title": "Wika",

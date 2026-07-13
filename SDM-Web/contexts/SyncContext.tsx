@@ -25,9 +25,17 @@ interface SyncContextType {
   status: SyncStatus;
   lastSyncAt: number | null;
   enabled: boolean;
+  /**
+   * Stop this session from ever writing to the cloud again. Synchronous, so a
+   * caller can wipe local data right after without the change racing its way up
+   * to the account (and from there onto every other device).
+   */
+  halt: () => void;
 }
 
-const SyncContext = createContext<SyncContextType>({ status: 'off', lastSyncAt: null, enabled: false });
+const SyncContext = createContext<SyncContextType>({
+  status: 'off', lastSyncAt: null, enabled: false, halt: () => {},
+});
 
 export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -49,9 +57,17 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const applyingRemote = useRef(false);
   const lastSyncedJson = useRef<string | null>(null);
   const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const halted = useRef(false);
+
+  const halt = useCallback(() => {
+    halted.current = true;
+    if (pushTimer.current) clearTimeout(pushTimer.current);
+    setReady(false); // tears down the snapshot listener
+    setStatus('off');
+  }, []);
 
   const pushNow = useCallback(async () => {
-    if (!db || !uid) return;
+    if (!db || !uid || halted.current) return;
     try {
       const json = exportRef.current();
       if (json === lastSyncedJson.current) return;
@@ -66,7 +82,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [uid]);
 
   const schedulePush = useCallback((immediate = false) => {
-    if (!db || !uid) return;
+    if (!db || !uid || halted.current) return;
     if (pushTimer.current) clearTimeout(pushTimer.current);
     pushTimer.current = setTimeout(pushNow, immediate ? 0 : PUSH_DEBOUNCE_MS);
   }, [uid, pushNow]);
@@ -82,6 +98,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         lastSyncedJson.current = null;
         return;
       }
+      halted.current = false; // a fresh sign-in re-arms sync
       setStatus('connecting');
       const ref = doc(db, 'users', uid);
       const initKey = `sync_init_${uid}`;
@@ -166,6 +183,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsub = onSnapshot(
       ref,
       (snap) => {
+        if (halted.current) return; // wiping locally — don't pull the cloud copy back in
         const data = snap.data() as { json?: string; deviceId?: string } | undefined;
         setStatus('synced');
         if (!data?.json) { schedulePush(true); return; }
@@ -196,7 +214,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [state, uid, ready, schedulePush]);
 
   return (
-    <SyncContext.Provider value={{ status, lastSyncAt, enabled }}>
+    <SyncContext.Provider value={{ status, lastSyncAt, enabled, halt }}>
       {children}
     </SyncContext.Provider>
   );

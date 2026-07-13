@@ -1,5 +1,8 @@
 {
-  "syncHelp": {"title":"How sync works","body":"Sign in with the same email here and on your other device.\nYour records — personal info, documents, sea service and notes — sync automatically in real time.\nScans and attached files are not synced; move them with a .sdm backup.\nSync runs only while you are signed in, and your data stays private to your account."},
+  "syncHelp": {
+    "title": "How sync works",
+    "body": "Sign in with the same email here and on your other device.\nYour records — personal info, documents, sea service and notes — sync automatically in real time.\nScans and attached files are not synced; move them with a .sdm backup.\nSync runs only while you are signed in, and your data stays private to your account."
+  },
   "Language Changed": "Language Changed",
   "Please restart the app to apply language changes": "Please restart the app to apply language changes",
   "OK": "OK",
@@ -541,7 +544,10 @@
       "clearTitle": "Clear All Data",
       "clearMessage": "This will permanently delete all your data. This action cannot be undone.",
       "deleteEverything": "Delete Everything",
-      "dataCleared": "All data has been cleared"
+      "dataCleared": "All data has been cleared",
+      "clearSyncedMessage": "Cloud sync is on for this account. Erasing here will also erase your records on every other device signed in to it — phone, browser and desktop.\n\nChoose \"Erase here only\" to sign out first and keep the cloud copy.",
+      "eraseEverywhere": "Erase everywhere",
+      "eraseHereOnly": "Erase here only"
     },
     "language": {
       "title": "Language",

@@ -73,7 +73,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
   const { user, logout, isConfigured: authConfigured } = useAuth();
-  const { status: syncStatus, lastSyncAt } = useSync();
+  const { status: syncStatus, lastSyncAt, enabled: syncEnabled, halt: haltSync } = useSync();
   const [showAuth, setShowAuth] = useState(false);
 
   const syncSubtitle = () => {
@@ -359,12 +359,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   };
 
   const handleClearData = async () => {
-    const ok = await confirmAsync(
-      t('settings.alerts.clearTitle'),
-      t('settings.alerts.clearMessage'),
-      { confirmText: t('settings.alerts.deleteEverything'), destructive: true }
-    );
-    if (!ok) return;
+    // While synced, a local wipe is pushed to the account and lands on every other
+    // signed-in device. Never let that happen without the user choosing it.
+    let signOutFirst = false;
+
+    if (syncEnabled) {
+      const choice = await chooseAsync(
+        t('settings.alerts.clearTitle'),
+        t('settings.alerts.clearSyncedMessage'),
+        [
+          { text: t('common.cancel'), value: 'cancel', style: 'ghost' },
+          { text: t('settings.alerts.eraseHereOnly'), value: 'local', style: 'destructive' },
+          { text: t('settings.alerts.eraseEverywhere'), value: 'all', style: 'destructive' },
+        ]
+      );
+      if (choice !== 'local' && choice !== 'all') return;
+      signOutFirst = choice === 'local';
+    } else {
+      const ok = await confirmAsync(
+        t('settings.alerts.clearTitle'),
+        t('settings.alerts.clearMessage'),
+        { confirmText: t('settings.alerts.deleteEverything'), destructive: true }
+      );
+      if (!ok) return;
+    }
+
+    if (signOutFirst) {
+      haltSync();          // synchronous — no further writes from this session
+      await logout();
+    }
 
     await clearAllData();
     await NotificationService.cancelAllNotifications();

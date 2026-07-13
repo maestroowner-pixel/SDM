@@ -1,5 +1,8 @@
 {
-  "syncHelp": {"title":"So funktioniert die Synchronisierung","body":"Melde dich hier und auf deinem anderen Gerät mit derselben E-Mail an.\nDeine Daten – persönliche Angaben, Dokumente, Seefahrtzeit und Notizen – werden automatisch in Echtzeit synchronisiert.\nScans und angehängte Dateien werden nicht synchronisiert; übertrage sie per .sdm-Backup.\nDie Synchronisierung läuft nur, solange du angemeldet bist."},
+  "syncHelp": {
+    "title": "So funktioniert die Synchronisierung",
+    "body": "Melde dich hier und auf deinem anderen Gerät mit derselben E-Mail an.\nDeine Daten – persönliche Angaben, Dokumente, Seefahrtzeit und Notizen – werden automatisch in Echtzeit synchronisiert.\nScans und angehängte Dateien werden nicht synchronisiert; übertrage sie per .sdm-Backup.\nDie Synchronisierung läuft nur, solange du angemeldet bist."
+  },
   "Language Changed": "Sprache geändert",
   "Please restart the app to apply language changes": "Bitte starten Sie die App neu, um die Sprachänderungen anzuwenden",
   "OK": "OK",
@@ -527,7 +530,10 @@
       "clearTitle": "Alle Daten Löschen",
       "clearMessage": "Dies wird alle Ihre Daten dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleteEverything": "Alles Löschen",
-      "dataCleared": "Alle Daten wurden gelöscht"
+      "dataCleared": "Alle Daten wurden gelöscht",
+      "clearSyncedMessage": "Für dieses Konto ist die Cloud-Synchronisierung aktiv. Wenn Sie hier löschen, werden Ihre Daten auch auf allen anderen mit diesem Konto angemeldeten Geräten gelöscht — Telefon, Browser und Computer.\n\nWählen Sie „Nur hier löschen“, um sich zuerst abzumelden und die Kopie in der Cloud zu behalten.",
+      "eraseEverywhere": "Überall löschen",
+      "eraseHereOnly": "Nur hier löschen"
     }
   },
   "splash": {

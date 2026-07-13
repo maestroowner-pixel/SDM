@@ -1,5 +1,8 @@
 {
-  "syncHelp": {"title":"Comment fonctionne la synchronisation","body":"Connectez-vous avec le même e-mail ici et sur votre autre appareil.\nVos données — informations personnelles, documents, temps de navigation et notes — se synchronisent automatiquement en temps réel.\nLes scans et fichiers joints ne sont pas synchronisés ; transférez-les avec une sauvegarde .sdm.\nLa synchronisation ne fonctionne que lorsque vous êtes connecté."},
+  "syncHelp": {
+    "title": "Comment fonctionne la synchronisation",
+    "body": "Connectez-vous avec le même e-mail ici et sur votre autre appareil.\nVos données — informations personnelles, documents, temps de navigation et notes — se synchronisent automatiquement en temps réel.\nLes scans et fichiers joints ne sont pas synchronisés ; transférez-les avec une sauvegarde .sdm.\nLa synchronisation ne fonctionne que lorsque vous êtes connecté."
+  },
   "biometrics.eyeColors": {
     "brown": "Marron",
     "blue": "Bleu",
@@ -521,7 +524,10 @@
       "clearTitle": "Effacer Toutes les Données",
       "clearMessage": "Cela supprimera définitivement toutes vos données. Cette action ne peut pas être annulée.",
       "deleteEverything": "Tout Supprimer",
-      "dataCleared": "Toutes les données ont été effacées"
+      "dataCleared": "Toutes les données ont été effacées",
+      "clearSyncedMessage": "La synchronisation cloud est activée pour ce compte. Effacer ici effacera aussi vos données sur tous les autres appareils connectés à ce compte : téléphone, navigateur et ordinateur.\n\nChoisissez « Effacer ici seulement » pour vous déconnecter d'abord et conserver la copie dans le cloud.",
+      "eraseEverywhere": "Effacer partout",
+      "eraseHereOnly": "Effacer ici seulement"
     },
     "language": {
       "title": "Langue",

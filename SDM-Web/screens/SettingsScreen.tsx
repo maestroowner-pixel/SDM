@@ -14,7 +14,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
-import { alertMsg, confirmAsync } from '../utils/webAlert';
+import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
 import { t, getSystemLanguage } from '../utils/i18n';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
@@ -43,7 +43,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isConfigured: authConfigured, user, logout } = useAuth();
-  const { status: syncStatus, lastSyncAt, enabled: syncEnabled } = useSync();
+  const { status: syncStatus, lastSyncAt, enabled: syncEnabled, halt: haltSync } = useSync();
   const { isPremium, isTrial, trialDaysLeft, loading: subscriptionLoading } = useSubscription();
   const isDark = state.theme === 'dark';
 
@@ -139,12 +139,34 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   };
 
   const handleClear = async () => {
+    // While synced, a local wipe is pushed to the account and lands on every other
+    // signed-in device. Never let that happen without the user choosing it.
+    if (syncEnabled) {
+      const choice = await chooseAsync(
+        t('settings.alerts.clearTitle'),
+        t('settings.alerts.clearSyncedMessage'),
+        [
+          { text: t('common.cancel'), value: 'cancel', style: 'ghost' },
+          { text: t('settings.alerts.eraseHereOnly'), value: 'local', style: 'destructive' },
+          { text: t('settings.alerts.eraseEverywhere'), value: 'all', style: 'destructive' },
+        ]
+      );
+      if (choice !== 'local' && choice !== 'all') return;
+
+      if (choice === 'local') {
+        haltSync();        // synchronous — no further writes from this session
+        await logout();
+      }
+      await clearAllData();
+      return;
+    }
+
     const ok = await confirmAsync(
-      t('settings.clearData') !== 'settings.clearData' ? t('settings.clearData') : 'Clear all data',
-      'This will permanently erase all your data on this device. Continue?',
-      { confirmText: 'Erase', destructive: true }
+      t('settings.alerts.clearTitle'),
+      t('settings.alerts.clearMessage'),
+      { confirmText: t('settings.alerts.deleteEverything'), destructive: true }
     );
-    if (ok) clearAllData();
+    if (ok) await clearAllData();
   };
 
   const openUrl = (url: string) => Linking.openURL(url).catch(() => {});
@@ -304,7 +326,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
             <TouchableOpacity style={styles.actionRow} onPress={handleClear}>
               <View style={styles.rowLeft}>
                 <Ionicons name="trash-outline" size={22} color="#f44336" />
-                <Text style={[styles.rowLabel, { color: '#f44336' }]}>{t('settings.clearData') !== 'settings.clearData' ? t('settings.clearData') : 'Clear all data'}</Text>
+                <Text style={[styles.rowLabel, { color: '#f44336' }]}>{t('settings.alerts.clearTitle')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={mutedColor} />
             </TouchableOpacity>
