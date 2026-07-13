@@ -623,9 +623,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
             {/* ACCOUNT & SYNC (optional — app works fully without signing in) */}
             {authConfigured && (
               <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight]}>
-                <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark]}>
-                  Account & Sync
-                </Text>
+                <View style={styles.sectionTitleRow}>
+                  <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark, { marginBottom: 0 }]}>
+                    Account & Sync
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => alertMsg(t('syncHelp.title'), t('syncHelp.body'))}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name="help-circle-outline"
+                      size={20}
+                      color={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'}
+                    />
+                  </TouchableOpacity>
+                </View>
                 {user && user.emailVerified ? (
                   <>
                     <SettingRow
@@ -936,13 +948,20 @@ const styles = StyleSheet.create({
   sectionLight: { 
     backgroundColor: 'rgba(253, 248, 240, 0.3)' 
   },
-  sectionTitle: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    padding: 16, 
-    paddingBottom: 8, 
-    textTransform: 'uppercase', 
-    letterSpacing: 0.5 
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    padding: 16,
+    paddingBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  // Title + a "?" help button on the same line (sectionTitle keeps its own padding).
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 16,
   },
   sectionTitleHeader: { 
     fontSize: 13, 

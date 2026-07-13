@@ -1,4 +1,5 @@
 {
+  "syncHelp": {"title":"Jak działa synchronizacja","body":"Zaloguj się tym samym adresem e-mail tutaj i na drugim urządzeniu.\nTwoje dane — informacje osobiste, dokumenty, staż morski i notatki — synchronizują się automatycznie w czasie rzeczywistym.\nSkany i załączone pliki nie są synchronizowane; przenieś je kopią zapasową .sdm.\nSynchronizacja działa tylko gdy jesteś zalogowany."},
   "Language Changed": "Język zmieniony",
   "Please restart the app to apply language changes": "Uruchom ponownie aplikację, aby zastosować zmiany języka",
   "OK": "OK",

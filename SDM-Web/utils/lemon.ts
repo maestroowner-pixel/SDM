@@ -33,6 +33,11 @@ export const getStoredLicense = async (): Promise<StoredLicense | null> => {
   } catch { return null; }
 };
 
+/** Adopt a license restored from the cloud (e.g. after a reinstall). */
+export const setStoredLicense = async (lic: StoredLicense): Promise<void> => {
+  await AsyncStorage.setItem(LICENSE_KEY, JSON.stringify(lic));
+};
+
 const setPremium = (active: boolean) => AsyncStorage.setItem(PREMIUM_KEY, active ? 'active' : 'inactive');
 
 // Build a checkout URL, optionally prefilling the buyer's email + tagging the

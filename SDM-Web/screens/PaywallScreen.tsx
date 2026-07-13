@@ -13,7 +13,7 @@ import { UI_THEME } from '../utils/theme';
 import { t } from '../utils/i18n';
 import { alertMsg } from '../utils/webAlert';
 import {
-  isLemonConfigured, buildCheckoutUrl, activateLicense, deactivateLicense,
+  isLemonConfigured, buildCheckoutUrl, activateLicense,
 } from '../utils/lemon';
 
 const BENEFITS = [
@@ -30,7 +30,7 @@ export const PaywallScreen: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const isDark = state.theme === 'dark';
   const theme = isDark ? UI_THEME.colors.dark : UI_THEME.colors.light;
   const { user } = useAuth();
-  const { isPremium, refreshStatus } = useSubscription();
+  const { isPremium, refreshStatus, clearLicense } = useSubscription();
 
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
@@ -61,9 +61,10 @@ export const PaywallScreen: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const remove = async () => {
     setBusy(true);
     try {
-      await deactivateLicense();
-      await refreshStatus();
-      alertMsg('Premium', 'Premium removed from this device.');
+      // Clears the license on this device AND on the account, otherwise the next
+      // refresh would re-adopt it from the cloud.
+      await clearLicense();
+      alertMsg('Premium', 'Premium removed from this device and this account.');
     } finally {
       setBusy(false);
     }

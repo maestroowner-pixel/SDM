@@ -1,4 +1,5 @@
 {
+  "syncHelp": {"title":"Cómo funciona la sincronización","body":"Inicia sesión con el mismo correo aquí y en tu otro dispositivo.\nTus registros — datos personales, documentos, tiempo de embarque y notas — se sincronizan automáticamente en tiempo real.\nLos escaneos y archivos adjuntos no se sincronizan; transfiérelos con una copia .sdm.\nLa sincronización solo funciona mientras tienes la sesión iniciada."},
   "es": {
     "biometrics.eyeColors": {
       "brown": "Marrón",
