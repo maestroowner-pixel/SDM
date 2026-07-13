@@ -1,0 +1,45 @@
+{
+  "name": "sdm-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Seafarer Documents Manager — desktop build (Electron shell around SDM Web)",
+  "main": "main.js",
+  "scripts": {
+    "build:web": "cd ../SDM-Web && npx expo export -p web --clear && rm -rf ../SDM-Desktop/app && cp -R dist ../SDM-Desktop/app",
+    "start": "npm run build:web && electron .",
+    "dist:win": "npm run build:web && electron-builder --win",
+    "dist:mac": "npm run build:web && electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.kukalab.sdm.desktop",
+    "productName": "Seafarer Documents Manager",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Seafarer Documents Manager"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.png",
+      "category": "public.app-category.productivity"
+    }
+  }
+}
