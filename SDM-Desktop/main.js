@@ -37,6 +37,18 @@ function createWindow() {
     },
   });
 
+  // Surface renderer errors in the terminal — without this the only place they
+  // show up is DevTools, which makes diagnosing a packaged build painful.
+  win.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+    if (level >= 2) console.error(`[renderer] ${message}  (${sourceId}:${line})`);
+  });
+  win.webContents.on('did-fail-load', (_e, code, desc, url) => {
+    console.error(`[load-failed] ${code} ${desc} → ${url}`);
+  });
+  win.webContents.session.webRequest.onErrorOccurred(({ url, error }) => {
+    if (!/net::ERR_ABORTED/.test(error)) console.error(`[net] ${error} → ${url}`);
+  });
+
   win.loadURL('app://local/index.html');
 
   // External links (Lemon Squeezy checkout, website, policies) go to the real

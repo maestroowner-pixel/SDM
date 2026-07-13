@@ -80,20 +80,28 @@ export const activateLicense = async (key: string, email?: string): Promise<{ ok
   }
 };
 
+// Throws on a network/transport failure so callers can tell "the server says this
+// key is invalid" apart from "we couldn't reach the server".
 const validateStoredOrKey = async (key: string, instanceId?: string): Promise<boolean> => {
-  try {
-    const data = await post('/licenses/validate', instanceId ? { license_key: key, instance_id: instanceId } : { license_key: key });
-    return !!data?.valid && (data?.license_key?.status === 'active' || data?.license_key?.status === undefined);
-  } catch { return false; }
+  const data = await post('/licenses/validate', instanceId ? { license_key: key, instance_id: instanceId } : { license_key: key });
+  return !!data?.valid && (data?.license_key?.status === 'active' || data?.license_key?.status === undefined);
 };
 
 // Re-check the stored license (called on launch). Updates premium_status.
+//
+// Offline must not revoke a paid user's premium: if the server is unreachable we
+// keep the last known status instead of downgrading them.
 export const revalidateLicense = async (): Promise<boolean> => {
   const lic = await getStoredLicense();
   if (!lic) return false;
-  const ok = await validateStoredOrKey(lic.key, lic.instanceId);
-  await setPremium(ok);
-  return ok;
+  try {
+    const ok = await validateStoredOrKey(lic.key, lic.instanceId);
+    await setPremium(ok);
+    return ok;
+  } catch (e) {
+    console.warn('license: validation unreachable, keeping cached status', e);
+    return (await AsyncStorage.getItem(PREMIUM_KEY)) === 'active';
+  }
 };
 
 // Remove premium on this device (deactivates the instance so the seat frees up).

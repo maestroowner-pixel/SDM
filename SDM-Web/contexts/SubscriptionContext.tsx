@@ -81,12 +81,24 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         lic = cloud.license;
       }
 
-      let licenseActive = (await AsyncStorage.getItem('premium_status')) === 'active';
-      if (lic) licenseActive = await revalidateLicense();
+      // Premium comes ONLY from a real license object (validated, with an offline
+      // fallback to the cached flag). `premium_status` is just a cache — treating
+      // it as a source of truth let a stale flag grant premium forever on one
+      // device while nothing was ever pushed to the account.
+      let licenseActive = false;
+      if (lic) {
+        licenseActive = await revalidateLicense();
+      } else {
+        await AsyncStorage.setItem('premium_status', 'inactive'); // drop a stale flag
+      }
 
       // Activated on this device but not yet known to the account → push it up.
       if (cloudRef && lic && licenseActive && !cloud?.license?.key) {
-        try { await setDoc(cloudRef, { license: lic }, { merge: true }); } catch {}
+        try {
+          await setDoc(cloudRef, { license: lic }, { merge: true });
+        } catch (e) {
+          console.warn('subscription: failed to push license to account', e);
+        }
       }
 
       // ── Trial: the cloud value wins, so a reinstall can't restart it ───────
