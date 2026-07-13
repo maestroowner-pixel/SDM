@@ -34,7 +34,11 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Seafarer Documents Manager"
+      "shortcutName": "Seafarer Documents Manager",
+      "artifactName": "SDM-Setup-win-x64.exe"
+    },
+    "portable": {
+      "artifactName": "SDM-Portable-win-x64.exe"
     },
     "mac": {
       "target": "dmg",
