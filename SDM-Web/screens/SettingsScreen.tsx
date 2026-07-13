@@ -44,7 +44,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isConfigured: authConfigured, user, logout } = useAuth();
   const { status: syncStatus, lastSyncAt, enabled: syncEnabled } = useSync();
-  const { isPremium, loading: subscriptionLoading } = useSubscription();
+  const { isPremium, isTrial, trialDaysLeft, loading: subscriptionLoading } = useSubscription();
   const isDark = state.theme === 'dark';
 
   const [exporting, setExporting] = useState(false);
@@ -63,7 +63,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       .filter(Boolean) as typeof LANGUAGES;
   }, []);
 
+  const requirePremium = (): boolean => {
+    if (isPremium) return true;
+    if (onOpenPaywall) onOpenPaywall();
+    else alertMsg('Premium', 'Backup export/import is available in Premium.');
+    return false;
+  };
+
   const handleExport = () => {
+    if (!requirePremium()) return;
     try {
       setExporting(true);
       const data = exportData();
@@ -86,6 +94,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   };
 
   const handleImport = async () => {
+    if (!requirePremium()) return;
     try {
       const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: false });
       if (result.canceled || !result.assets?.length) return;
@@ -151,7 +160,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           {/* Account */}
           {authConfigured && user && (
             <>
-              <Text style={[styles.sectionTitle, { color: mutedColor }]}>Account</Text>
+              <View style={styles.sectionTitleRow}>
+                <Text style={[styles.sectionTitle, { color: mutedColor, marginTop: 0, marginBottom: 0 }]}>Account & Sync</Text>
+                <TouchableOpacity
+                  onPress={() => alertMsg(t('syncHelp.title'), t('syncHelp.body'))}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="help-circle-outline" size={20} color={mutedColor} />
+                </TouchableOpacity>
+              </View>
               <View style={cardStyle}>
                 <View style={styles.row}>
                   <View style={styles.rowLeft}>
@@ -245,10 +262,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               <View style={styles.rowLeft}>
                 <Ionicons name={isPremium ? 'star' : 'star-outline'} size={22} color="#FFC107" />
                 <Text style={[styles.rowLabel, { color: titleColor }]}>
-                  {subscriptionLoading ? '…' : isPremium ? (t('settings.premiumActive') !== 'settings.premiumActive' ? t('settings.premiumActive') : 'Premium active') : 'Free plan'}
+                  {subscriptionLoading
+                    ? '…'
+                    : isTrial
+                      ? `Free trial · ${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left`
+                      : isPremium
+                        ? (t('settings.premiumActive') !== 'settings.premiumActive' ? t('settings.premiumActive') : 'Premium active')
+                        : 'Free plan'}
                 </Text>
               </View>
-              {!isPremium && (
+              {(!isPremium || isTrial) && (
                 <TouchableOpacity
                   style={styles.upgradeBtn}
                   onPress={() => (onOpenPaywall ? onOpenPaywall() : alertMsg('Premium', 'Checkout will be available soon.'))}
@@ -318,6 +341,7 @@ const styles = StyleSheet.create({
   scroll: { padding: 24, paddingBottom: 60 },
   centered: { width: '100%', maxWidth: 760, alignSelf: 'center' },
   sectionTitle: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 24, marginBottom: 10, marginLeft: 4 },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 10, marginLeft: 4, marginRight: 4 },
   card: { borderRadius: 16, paddingHorizontal: 18, paddingVertical: 6 },
   cardDark: { backgroundColor: 'rgba(255,255,255,0.08)' },
   cardLight: { backgroundColor: 'rgba(255,255,255,0.6)' },

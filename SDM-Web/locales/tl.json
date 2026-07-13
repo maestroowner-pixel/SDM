@@ -1,4 +1,5 @@
 {
+  "syncHelp": {"title":"Paano gumagana ang sync","body":"Mag-sign in gamit ang parehong email dito at sa iyong isa pang device.\nAng iyong mga record — personal na impormasyon, dokumento, sea service at mga tala — ay awtomatikong nagsi-sync nang real time.\nAng mga scan at naka-attach na file ay hindi naisi-sync; ilipat ang mga ito gamit ang .sdm backup.\nGumagana lang ang sync habang naka-sign in ka."},
   "Language Changed": "Nabago ang Wika",
   "Please restart the app to apply language changes": "Mangyaring i-restart ang app upang mailapat ang mga pagbabago sa wika",
   "OK": "OK",

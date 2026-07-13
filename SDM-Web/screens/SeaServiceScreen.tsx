@@ -19,6 +19,7 @@ const getVesselTypeLabel = (value: string): string => {
 };
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
+import { useSubscription } from '../hooks/useSubscription';
 import * as DocumentPicker from 'expo-document-picker';
 import { storeUploadedFile } from '../utils/scanUtils';
 import { deleteBlob, openAttachment } from '../utils/attachmentStore';
@@ -66,8 +67,23 @@ const GlowButton: React.FC<{ onPress: () => void; isDark: boolean }> = ({ onPres
   );
 };
 
-export const SeaServiceScreen: React.FC = () => {
+const FREE_LIMIT = 6;
+
+interface SeaServiceScreenProps {
+  onOpenPaywall?: () => void;
+}
+
+export const SeaServiceScreen: React.FC<SeaServiceScreenProps> = ({ onOpenPaywall }) => {
   const { state, addSeaService, updateSeaServiceItem, deleteSeaService } = useData();
+  const { isPremium } = useSubscription();
+
+  // Free tier: first FREE_LIMIT records (by insertion order) accessible; extras
+  // brought in by cloud sync stay visible but locked (tap → paywall).
+  const accessibleIds = React.useMemo(
+    () => (isPremium ? null : new Set(state.seaService.slice(0, FREE_LIMIT).map(s => s.id))),
+    [isPremium, state.seaService]
+  );
+  const isLocked = (id: string) => (accessibleIds ? !accessibleIds.has(id) : false);
   const [showModal, setShowModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [editingService, setEditingService] = useState<SeaService | null>(null);
@@ -133,6 +149,11 @@ export const SeaServiceScreen: React.FC = () => {
   };
 
   const handleAdd = () => {
+    if (!isPremium && state.seaService.length >= FREE_LIMIT) {
+      if (onOpenPaywall) onOpenPaywall();
+      else alertMsg(t('common.unlimitedOnly'), 'Upgrade to Premium to add more sea service records.');
+      return;
+    }
     resetForm();
     setShowModal(true);
   };
@@ -359,8 +380,15 @@ export const SeaServiceScreen: React.FC = () => {
               const { months, days } = calculateMonthsAndDays(service.signOn, service.signOff);
               const totalServiceDays = calculateDays(service.signOn, service.signOff);
               
+              const locked = isLocked(service.id);
               return (
-                <View key={service.id} style={[styles.serviceCard, isDark ? styles.cardDark : styles.cardLight, isTablet && styles.serviceCardTablet]}>
+                <TouchableOpacity
+                  key={service.id}
+                  activeOpacity={locked ? 0.7 : 1}
+                  onPress={locked ? () => onOpenPaywall?.() : undefined}
+                  disabled={!locked}
+                  style={[styles.serviceCard, isDark ? styles.cardDark : styles.cardLight, isTablet && styles.serviceCardTablet, locked && { opacity: 0.55 }]}
+                >
                   <View style={styles.cardHeader}>
                     <View style={styles.cardHeaderLeft}>
                       <Text style={[styles.vesselName, isDark ? styles.textLight : styles.textDark]}>
@@ -370,6 +398,9 @@ export const SeaServiceScreen: React.FC = () => {
                         {getVesselTypeLabel(service.vesselType)} • {service.flag}
                       </Text>
                     </View>
+                    {locked ? (
+                      <Ionicons name="lock-closed" size={18} color="#FFC107" />
+                    ) : (
                     <TouchableOpacity
                       onPress={() => toggleRevalidation(service.id)}
                       style={[
@@ -381,13 +412,14 @@ export const SeaServiceScreen: React.FC = () => {
                     >
                       <Text style={[
                         styles.revalidationBadgeText,
-                        service.countForRevalidation === false 
+                        service.countForRevalidation === false
                           ? { color: '#FF6B6B' }
                           : { color: '#4CAF50' }
                       ]}>
                         R
                       </Text>
                     </TouchableOpacity>
+                    )}
                   </View>
 
                   <View style={styles.cardBody}>
@@ -428,15 +460,17 @@ export const SeaServiceScreen: React.FC = () => {
                     </View>
                   )}
 
-                  <View style={styles.cardActions}>
-                    <TouchableOpacity onPress={() => handleEdit(service)} style={styles.actionButton}>
-                      <Ionicons name="create-outline" size={16} color={isDark ? '#64b5f6' : '#1976d2'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(service.id)} style={styles.actionButton}>
-                      <Ionicons name="trash-outline" size={16} color="#f44336" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                  {!locked && (
+                    <View style={styles.cardActions}>
+                      <TouchableOpacity onPress={() => handleEdit(service)} style={styles.actionButton}>
+                        <Ionicons name="create-outline" size={16} color={isDark ? '#64b5f6' : '#1976d2'} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDelete(service.id)} style={styles.actionButton}>
+                        <Ionicons name="trash-outline" size={16} color="#f44336" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </TouchableOpacity>
               );
             })}
             </View>

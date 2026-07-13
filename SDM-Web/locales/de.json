@@ -1,4 +1,5 @@
 {
+  "syncHelp": {"title":"So funktioniert die Synchronisierung","body":"Melde dich hier und auf deinem anderen Gerät mit derselben E-Mail an.\nDeine Daten – persönliche Angaben, Dokumente, Seefahrtzeit und Notizen – werden automatisch in Echtzeit synchronisiert.\nScans und angehängte Dateien werden nicht synchronisiert; übertrage sie per .sdm-Backup.\nDie Synchronisierung läuft nur, solange du angemeldet bist."},
   "Language Changed": "Sprache geändert",
   "Please restart the app to apply language changes": "Bitte starten Sie die App neu, um die Sprachänderungen anzuwenden",
   "OK": "OK",

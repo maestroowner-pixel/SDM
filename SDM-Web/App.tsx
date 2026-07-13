@@ -93,13 +93,13 @@ const Shell: React.FC = () => {
     switch (activeTab) {
       case 'personal':   return <PersonalScreen />;
       case 'documents':  return <DocumentsScreen onOpenPaywall={openPaywall} />;
-      case 'seaService': return <SeaServiceScreen />;
+      case 'seaService': return <SeaServiceScreen onOpenPaywall={openPaywall} />;
       case 'biometrics': return <BiometricsScreen />;
       case 'education':  return <EducationScreen />;
       case 'nextOfKin':  return <NextOfKinScreen />;
       case 'notes':      return <NotesScreen />;
       case 'qr':         return <QRScreen />;
-      case 'cv':         return <CVScreen />;
+      case 'cv':         return <CVScreen onOpenPaywall={openPaywall} />;
       case 'scans':      return <ScansScreen />;
       case 'dp':         return <DPScreen />;
       case 'settings':   return <SettingsScreen onOpenPaywall={openPaywall} />;

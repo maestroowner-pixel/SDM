@@ -113,6 +113,17 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   const [documentAttachments, setDocumentAttachments] = useState<{ [key: string]: AttachedFile[] }>({});
   const isDark = state.theme === 'dark';
 
+  // Free tier: the first FREE_DOC_LIMIT documents (by insertion order) are
+  // accessible. Sync can bring in more from the cloud — those extra ones stay
+  // visible in the list but are locked (tap → paywall). Not an add-block: the
+  // records exist, they're just gated on this free device.
+  const FREE_DOC_LIMIT = 6;
+  const accessibleIds = React.useMemo(
+    () => (isPremium ? null : new Set(state.documents.slice(0, FREE_DOC_LIMIT).map(d => d.id))),
+    [isPremium, state.documents]
+  );
+  const isLocked = (doc: Document) => (accessibleIds ? !accessibleIds.has(doc.id) : false);
+
   // Web: attachments live in IndexedDB (attachmentStore); no filesystem dir needed.
   const SCANS_DIR = '';
 
@@ -193,7 +204,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   };
 
   const handleAdd = () => {
-    if (!isPremium && state.documents.length >= 5) {
+    if (!isPremium && state.documents.length >= FREE_DOC_LIMIT) {
       if (onOpenPaywall) {
         onOpenPaywall();
       } else {
@@ -432,19 +443,31 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
               {docs.map((doc) => {
                 const days = getDaysUntilExpiry(doc.expiryDate);
                 const hasAttachments = documentAttachments[doc.id] && documentAttachments[doc.id].length > 0;
+                const locked = isLocked(doc);
                 return (
-                  <TouchableOpacity key={doc.id} style={[styles.card, isDark ? styles.cardDark : styles.cardLight, isTablet && styles.cardTablet]} onPress={() => handleView(doc)} activeOpacity={0.7}>
+                  <TouchableOpacity
+                    key={doc.id}
+                    style={[styles.card, isDark ? styles.cardDark : styles.cardLight, isTablet && styles.cardTablet, locked && { opacity: 0.55 }]}
+                    onPress={() => (locked ? onOpenPaywall?.() : handleView(doc))}
+                    activeOpacity={0.7}
+                  >
                     <View style={styles.cardRow}>
                       <View style={styles.cardTitleContainer}>
                         <Text style={[styles.cardTitle, isDark ? styles.textLight : styles.textDark]}>{doc.name}</Text>
                       </View>
                       <View style={styles.cardActions}>
-                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleEdit(doc); }} style={styles.iconButton}>
-                          <Ionicons name="pencil" size={20} color="#1976d2" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleDelete(doc.id); }} style={styles.iconButton}>
-                          <Ionicons name="trash-outline" size={20} color="#f44336" />
-                        </TouchableOpacity>
+                        {locked ? (
+                          <Ionicons name="lock-closed" size={18} color="#FFC107" />
+                        ) : (
+                          <>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleEdit(doc); }} style={styles.iconButton}>
+                              <Ionicons name="pencil" size={20} color="#1976d2" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleDelete(doc.id); }} style={styles.iconButton}>
+                              <Ionicons name="trash-outline" size={20} color="#f44336" />
+                            </TouchableOpacity>
+                          </>
+                        )}
                       </View>
                     </View>
                     <View style={styles.cardSubRow}>

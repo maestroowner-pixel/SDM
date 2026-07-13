@@ -24,7 +24,7 @@ import {
 
 const CONFIG_KEY = 'cv_design_config';
 
-export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
+export const CVScreen: React.FC<{ onDisableSwipe?: () => void; onOpenPaywall?: () => void }> = ({ onOpenPaywall }) => {
   const { state, updatePersonal } = useData();
   const { isPremium } = useSubscription();
   const isDark = state.theme === 'dark';
@@ -62,17 +62,24 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
     }
   }, [state.personal.lastCVGeneratedDate]);
 
-  const set = <K extends keyof CvDesignConfig>(key: K, value: CvDesignConfig[K]) =>
+  // The design constructor is a Premium feature: free users see a live preview
+  // of the default design but any customization opens the paywall.
+  const effectiveConfig = isPremium ? config : defaultCvConfig;
+
+  const set = <K extends keyof CvDesignConfig>(key: K, value: CvDesignConfig[K]) => {
+    if (!isPremium) { onOpenPaywall?.(); return; }
     setConfig(prev => ({ ...prev, [key]: value }));
+  };
 
   const applyHex = (raw: string) => {
+    if (!isPremium) { onOpenPaywall?.(); return; }
     setHexInput(raw);
     let v = raw.trim();
     if (!v.startsWith('#')) v = `#${v}`;
     if (/^#[0-9a-fA-F]{6}$/.test(v)) set('accent', v);
   };
 
-  const html = useMemo(() => buildCvHtml(state, isPremium, config), [state, isPremium, config]);
+  const html = useMemo(() => buildCvHtml(state, isPremium, effectiveConfig), [state, isPremium, effectiveConfig]);
 
   const hasData = state.personal.firstName || state.seaService.length > 0 || state.documents.length > 0;
 
@@ -119,15 +126,26 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
         </View>
       )}
 
+      {/* The design constructor is Premium. Free users see the default design
+          preview; tapping any control opens the paywall. */}
+      {!isPremium && (
+        <TouchableOpacity style={styles.premiumLock} onPress={() => onOpenPaywall?.()} activeOpacity={0.85}>
+          <Ionicons name="lock-closed" size={18} color="#FFC107" />
+          <Text style={styles.premiumLockText}>Design constructor is a Premium feature — tap to unlock</Text>
+          <Ionicons name="chevron-forward" size={16} color={theme.muted} />
+        </TouchableOpacity>
+      )}
+
+      <View pointerEvents={isPremium ? 'auto' : undefined} style={!isPremium ? { opacity: 0.5 } : undefined}>
       {/* Layout */}
       <SectionLabel>Layout</SectionLabel>
       <View style={styles.chipRow}>
         {CV_LAYOUTS.map(l => {
-          const active = config.layout === l.id;
+          const active = effectiveConfig.layout === l.id;
           return (
             <TouchableOpacity
               key={l.id}
-              style={[styles.chip, { backgroundColor: active ? config.accent : theme.chipInactive, borderColor: active ? config.accent : theme.border }]}
+              style={[styles.chip, { backgroundColor: active ? effectiveConfig.accent : theme.chipInactive, borderColor: active ? effectiveConfig.accent : theme.border }]}
               onPress={() => set('layout', l.id)}
             >
               <Text style={[styles.chipText, { color: active ? '#fff' : theme.text }]}>{l.name}</Text>
@@ -142,23 +160,24 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
         {ACCENT_PRESETS.map(p => (
           <TouchableOpacity
             key={p.color}
-            style={[styles.swatch, { backgroundColor: p.color }, config.accent.toLowerCase() === p.color.toLowerCase() && styles.swatchActive]}
+            style={[styles.swatch, { backgroundColor: p.color }, effectiveConfig.accent.toLowerCase() === p.color.toLowerCase() && styles.swatchActive]}
             onPress={() => { set('accent', p.color); setHexInput(p.color); }}
           >
-            {config.accent.toLowerCase() === p.color.toLowerCase() && <Ionicons name="checkmark" size={16} color="#fff" />}
+            {effectiveConfig.accent.toLowerCase() === p.color.toLowerCase() && <Ionicons name="checkmark" size={16} color="#fff" />}
           </TouchableOpacity>
         ))}
       </View>
       <View style={styles.hexRow}>
-        <View style={[styles.hexPreview, { backgroundColor: config.accent, borderColor: theme.border }]} />
+        <View style={[styles.hexPreview, { backgroundColor: effectiveConfig.accent, borderColor: theme.border }]} />
         <TextInput
           style={[styles.hexInput, { color: theme.text, borderColor: theme.border, backgroundColor: theme.chipInactive }]}
-          value={hexInput}
+          value={isPremium ? hexInput : effectiveConfig.accent}
           onChangeText={applyHex}
           placeholder="#1976d2"
           placeholderTextColor={theme.muted}
           autoCapitalize="none"
           maxLength={7}
+          editable={isPremium}
         />
         <Text style={[styles.hexHint, { color: theme.muted }]}>custom HEX</Text>
       </View>
@@ -167,11 +186,11 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
       <SectionLabel>Font</SectionLabel>
       <View style={styles.chipRow}>
         {(['sans', 'serif'] as const).map(f => {
-          const active = config.font === f;
+          const active = effectiveConfig.font === f;
           return (
             <TouchableOpacity
               key={f}
-              style={[styles.chip, { backgroundColor: active ? config.accent : theme.chipInactive, borderColor: active ? config.accent : theme.border }]}
+              style={[styles.chip, { backgroundColor: active ? effectiveConfig.accent : theme.chipInactive, borderColor: active ? effectiveConfig.accent : theme.border }]}
               onPress={() => set('font', f)}
             >
               <Text style={[styles.chipText, { color: active ? '#fff' : theme.text, fontFamily: f === 'serif' ? 'Georgia' : undefined }]}>
@@ -194,16 +213,17 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = () => {
         <View key={key} style={[styles.toggleRow, { borderColor: theme.border }]}>
           <Text style={[styles.toggleLabel, { color: theme.text }]}>{label}</Text>
           <Switch
-            value={config[key] as boolean}
+            value={effectiveConfig[key] as boolean}
             onValueChange={(v) => set(key, v as any)}
-            trackColor={{ false: '#999', true: config.accent }}
+            trackColor={{ false: '#999', true: effectiveConfig.accent }}
             thumbColor="#fff"
           />
         </View>
       ))}
+      </View>
 
       <TouchableOpacity
-        style={[styles.generateBtn, { backgroundColor: config.accent }, (!hasData || loading) && { opacity: 0.5 }]}
+        style={[styles.generateBtn, { backgroundColor: effectiveConfig.accent }, (!hasData || loading) && { opacity: 0.5 }]}
         onPress={generatePDF}
         disabled={!hasData || loading}
         activeOpacity={0.85}
@@ -277,4 +297,6 @@ const styles = StyleSheet.create({
   previewBox: { flex: 1, borderRadius: 12, borderWidth: 1, overflow: 'hidden', backgroundColor: '#fff', minHeight: 480 },
   trialWarning: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(244,67,54,0.12)', borderRadius: 10, padding: 10, marginBottom: 4 },
   trialWarningText: { color: '#f44336', fontSize: 12, flex: 1 },
+  premiumLock: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,193,7,0.14)', borderColor: 'rgba(255,193,7,0.5)', borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 8, marginBottom: 4 },
+  premiumLockText: { flex: 1, fontSize: 13, fontWeight: '600', color: '#B8860B' },
 });

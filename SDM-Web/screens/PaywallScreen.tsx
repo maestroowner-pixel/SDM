@@ -19,8 +19,9 @@ import {
 const BENEFITS = [
   'Full document details & dates in CV PDF',
   'Unlimited documents & sea service records',
-  'All CV designs and the design constructor',
+  'CV design constructor — all layouts, colors & fonts',
   'Full next-of-kin details in CV',
+  'Backup export & import (.sdm)',
   'Priority support',
 ];
 

@@ -1,4 +1,5 @@
 {
+  "syncHelp": {"title":"Comment fonctionne la synchronisation","body":"Connectez-vous avec le même e-mail ici et sur votre autre appareil.\nVos données — informations personnelles, documents, temps de navigation et notes — se synchronisent automatiquement en temps réel.\nLes scans et fichiers joints ne sont pas synchronisés ; transférez-les avec une sauvegarde .sdm.\nLa synchronisation ne fonctionne que lorsque vous êtes connecté."},
   "biometrics.eyeColors": {
     "brown": "Marron",
     "blue": "Bleu",
