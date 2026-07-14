@@ -654,6 +654,13 @@
     "later": "以后再说",
     "upToDate": "已是最新",
     "upToDateBody": "您使用的已是最新版本（{{version}}）。",
-    "failed": "无法检查更新。请检查网络连接后重试。"
+    "failed": "无法检查更新。请检查网络连接后重试。",
+    "availableAutoBody": "已发布 {{version}} 版本，您当前使用的是 {{current}}。\n\n现在下载吗？重启应用后即可安装——您的数据不会丢失。",
+    "downloading": "正在下载更新",
+    "downloadingBody": "{{version}} 版本正在后台下载。您可以继续使用——准备就绪后会提示您重启。",
+    "ready": "更新已就绪",
+    "readyBody": "{{version}} 版本已可安装。现在重启应用吗？",
+    "restart": "立即重启",
+    "notNow": "暂不"
   }
 }

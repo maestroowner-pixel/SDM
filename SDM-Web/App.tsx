@@ -17,8 +17,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { UI_THEME } from './utils/theme';
 import { t } from './utils/i18n';
-import { confirmAsync } from './utils/webAlert';
-import { checkForUpdateSilently, openDownloadPage } from './utils/updateCheck';
+import { checkForUpdateSilently } from './utils/updateCheck';
+import { runUpdateFlow } from './utils/updateFlow';
 import { DataProvider, useData } from './contexts/DataContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -171,15 +171,7 @@ const Shell: React.FC = () => {
 // Sits outside the auth gate — an update matters whether or not anyone is signed in.
 const UpdateWatcher: React.FC = () => {
   useEffect(() => {
-    checkForUpdateSilently().then(async (info) => {
-      if (!info) return;
-      const ok = await confirmAsync(
-        t('update.available'),
-        t('update.availableBody', { version: info.latest, current: info.current }),
-        { confirmText: t('update.download'), cancelText: t('update.later') }
-      );
-      if (ok) openDownloadPage(info.url);
-    });
+    checkForUpdateSilently().then((info) => { if (info) runUpdateFlow(info); });
   }, []);
   return null;
 };

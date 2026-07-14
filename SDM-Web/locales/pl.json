@@ -702,6 +702,13 @@
     "later": "Później",
     "upToDate": "Wszystko aktualne",
     "upToDateBody": "Masz najnowszą wersję ({{version}}).",
-    "failed": "Nie udało się sprawdzić aktualizacji. Sprawdź połączenie z internetem i spróbuj ponownie."
+    "failed": "Nie udało się sprawdzić aktualizacji. Sprawdź połączenie z internetem i spróbuj ponownie.",
+    "availableAutoBody": "Ukazała się wersja {{version}}. Masz zainstalowaną {{current}}.\n\nPobrać teraz? Zainstaluje się po ponownym uruchomieniu aplikacji — Twoje dane pozostaną nienaruszone.",
+    "downloading": "Pobieranie aktualizacji",
+    "downloadingBody": "Wersja {{version}} pobiera się w tle. Pracuj dalej — gdy będzie gotowa, aplikacja poprosi o ponowne uruchomienie.",
+    "ready": "Aktualizacja gotowa",
+    "readyBody": "Wersja {{version}} jest gotowa do instalacji. Uruchomić aplikację ponownie teraz?",
+    "restart": "Uruchom ponownie",
+    "notNow": "Nie teraz"
   }
 }

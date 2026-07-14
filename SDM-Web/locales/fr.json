@@ -684,6 +684,13 @@
     "later": "Plus tard",
     "upToDate": "À jour",
     "upToDateBody": "Vous utilisez la dernière version ({{version}}).",
-    "failed": "Impossible de rechercher des mises à jour. Vérifiez votre connexion internet et réessayez."
+    "failed": "Impossible de rechercher des mises à jour. Vérifiez votre connexion internet et réessayez.",
+    "availableAutoBody": "La version {{version}} est disponible. Vous utilisez la {{current}}.\n\nLa télécharger maintenant ? Elle s'installera au redémarrage de l'application : vos données sont conservées.",
+    "downloading": "Téléchargement de la mise à jour",
+    "downloadingBody": "La version {{version}} se télécharge en arrière-plan. Continuez à travailler : nous vous proposerons de redémarrer une fois prête.",
+    "ready": "Mise à jour prête",
+    "readyBody": "La version {{version}} est prête à être installée. Redémarrer l'application maintenant ?",
+    "restart": "Redémarrer",
+    "notNow": "Pas maintenant"
   }
 }

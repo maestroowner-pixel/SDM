@@ -690,6 +690,13 @@
     "later": "Más tarde",
     "upToDate": "Todo actualizado",
     "upToDateBody": "Tienes la última versión ({{version}}).",
-    "failed": "No se pudieron buscar actualizaciones. Comprueba tu conexión a internet e inténtalo de nuevo."
+    "failed": "No se pudieron buscar actualizaciones. Comprueba tu conexión a internet e inténtalo de nuevo.",
+    "availableAutoBody": "Ya está disponible la versión {{version}}. Tienes la {{current}}.\n\n¿Descargarla ahora? Se instalará al reiniciar la aplicación: tus datos se conservan.",
+    "downloading": "Descargando la actualización",
+    "downloadingBody": "La versión {{version}} se está descargando en segundo plano. Sigue trabajando: te pediremos reiniciar cuando esté lista.",
+    "ready": "Actualización lista",
+    "readyBody": "La versión {{version}} está lista para instalarse. ¿Reiniciar la aplicación ahora?",
+    "restart": "Reiniciar",
+    "notNow": "Ahora no"
   }
 }

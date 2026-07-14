@@ -702,6 +702,13 @@
     "later": "Mamaya",
     "upToDate": "Napapanahon",
     "upToDateBody": "Ginagamit mo na ang pinakabagong bersyon ({{version}}).",
-    "failed": "Hindi matingnan ang mga update. Suriin ang iyong koneksyon sa internet at subukan muli."
+    "failed": "Hindi matingnan ang mga update. Suriin ang iyong koneksyon sa internet at subukan muli.",
+    "availableAutoBody": "Available na ang bersyon {{version}}. Ang gamit mo ay {{current}}.\n\nI-download na? Mai-install ito kapag ni-restart ang app — mananatili ang iyong data.",
+    "downloading": "Dina-download ang update",
+    "downloadingBody": "Dina-download ang bersyon {{version}} sa background. Magpatuloy lang — sasabihan ka naming mag-restart kapag handa na.",
+    "ready": "Handa na ang update",
+    "readyBody": "Handa nang i-install ang bersyon {{version}}. I-restart ang app ngayon?",
+    "restart": "I-restart",
+    "notNow": "Mamaya na"
   }
 }

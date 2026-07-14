@@ -15,7 +15,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
-import { isDesktop, currentVersion, checkForUpdate, openDownloadPage } from '../utils/updateCheck';
+import { isDesktop, currentVersion, checkForUpdate } from '../utils/updateCheck';
+import { runUpdateFlow } from '../utils/updateFlow';
 import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
 
@@ -182,12 +183,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         alertMsg(t('update.upToDate'), t('update.upToDateBody', { version: currentVersion() || version }));
         return;
       }
-      const ok = await confirmAsync(
-        t('update.available'),
-        t('update.availableBody', { version: info.latest, current: info.current }),
-        { confirmText: t('update.download'), cancelText: t('update.later') }
-      );
-      if (ok) openDownloadPage(info.url);
+      await runUpdateFlow(info);
     } catch (e: any) {
       alertMsg(t('common.error'), t('update.failed'));
       console.warn('manual update check failed:', e);

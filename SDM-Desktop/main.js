@@ -4,11 +4,45 @@
 // which break under file://. So we serve the built app from a custom privileged
 // `app://` scheme — that resolves absolute paths correctly and gives the page a
 // real origin, which localStorage / IndexedDB (attachments) / Firebase need.
-const { app, BrowserWindow, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, shell, protocol, net, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const { pathToFileURL } = require('url');
 
 const APP_DIR = path.join(__dirname, 'app'); // built web assets (copied from SDM-Web/dist)
+
+// Updates are driven from the renderer so the prompts are the app's own branded dialogs
+// rather than OS message boxes. Nothing downloads or installs without the user saying so.
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+
+// Unpacked dev runs have no update metadata — checkForUpdates() would throw.
+const updatesSupported = () => app.isPackaged;
+
+function wireUpdater(win) {
+  const send = (channel, payload) => {
+    if (!win.isDestroyed()) win.webContents.send(channel, payload);
+  };
+
+  autoUpdater.on('download-progress', (p) => send('update:progress', { percent: Math.round(p.percent) }));
+  autoUpdater.on('update-downloaded', (info) => send('update:downloaded', { version: info.version }));
+  autoUpdater.on('error', (err) => {
+    console.error('[updater]', err);
+    send('update:error', { message: String(err && err.message ? err.message : err) });
+  });
+
+  ipcMain.handle('update:check', async () => {
+    if (!updatesSupported()) return { supported: false, available: false };
+    const result = await autoUpdater.checkForUpdates();
+    const version = result && result.updateInfo ? result.updateInfo.version : null;
+    // checkForUpdates() resolves for "no update" too — compare to know which it was.
+    const available = !!version && version !== app.getVersion();
+    return { supported: true, available, version, current: app.getVersion() };
+  });
+
+  ipcMain.handle('update:download', async () => { await autoUpdater.downloadUpdate(); });
+  ipcMain.handle('update:install', () => { autoUpdater.quitAndInstall(); });
+}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -51,6 +85,7 @@ function createWindow() {
     if (!/net::ERR_ABORTED/.test(error)) console.error(`[net] ${error} → ${url}`);
   });
 
+  wireUpdater(win);
   win.loadURL('app://local/index.html');
 
   // External links (Lemon Squeezy checkout, website, policies) go to the real

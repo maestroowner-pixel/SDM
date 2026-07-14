@@ -20,6 +20,13 @@
     "directories": {
       "output": "release"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "maestroowner-pixel",
+        "repo": "SDM"
+      }
+    ],
     "files": [
       "main.js",
       "preload.js",
@@ -42,5 +49,8 @@
       "icon": "icon.png",
       "category": "public.app-category.productivity"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }
