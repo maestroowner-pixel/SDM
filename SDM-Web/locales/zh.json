@@ -645,5 +645,15 @@
     "cropTitle": "拖动边角进行裁剪",
     "cropDone": "完成",
     "cropCancel": "取消"
+  },
+  "update": {
+    "check": "检查更新",
+    "available": "有可用更新",
+    "availableBody": "已发布 {{version}} 版本，您当前使用的是 {{current}}。\n\n请从发布页面下载并覆盖安装——您的数据不会丢失。",
+    "download": "下载",
+    "later": "以后再说",
+    "upToDate": "已是最新",
+    "upToDateBody": "您使用的已是最新版本（{{version}}）。",
+    "failed": "无法检查更新。请检查网络连接后重试。"
   }
 }

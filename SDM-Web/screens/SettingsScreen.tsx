@@ -15,6 +15,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
+import { isDesktop, currentVersion, checkForUpdate, openDownloadPage } from '../utils/updateCheck';
+import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
@@ -22,17 +24,19 @@ const TERMS_URL = 'https://sdm.kuka-lab.com/terms-of-service';
 const PRIVACY_URL = 'https://sdm.kuka-lab.com/privacy-policy';
 const WEBSITE_URL = 'https://sdm.kuka-lab.com';
 
+// Flags come from utils/flags.ts (real images) — emoji flags render as empty boxes on
+// Windows, which ships no glyphs for them.
 const LANGUAGES = [
-  { code: 'en', label: 'EN', flag: '🇬🇧' },
-  { code: 'uk', label: 'UK', flag: '🇺🇦' },
-  { code: 'pl', label: 'PL', flag: '🇵🇱' },
-  { code: 'de', label: 'DE', flag: '🇩🇪' },
-  { code: 'es', label: 'ES', flag: '🇪🇸' },
-  { code: 'fr', label: 'FR', flag: '🇫🇷' },
-  { code: 'ru', label: 'RU', flag: '🇷🇺' },
-  { code: 'tl', label: 'TL', flag: '🇵🇭' },
-  { code: 'zh', label: 'ZH', flag: '🇨🇳' },
-  { code: 'hi', label: 'HI', flag: '🇮🇳' },
+  { code: 'en', label: 'EN' },
+  { code: 'uk', label: 'UK' },
+  { code: 'pl', label: 'PL' },
+  { code: 'de', label: 'DE' },
+  { code: 'es', label: 'ES' },
+  { code: 'fr', label: 'FR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'tl', label: 'TL' },
+  { code: 'zh', label: 'ZH' },
+  { code: 'hi', label: 'HI' },
 ];
 
 interface SettingsScreenProps {
@@ -49,6 +53,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
 
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   const cardStyle = [styles.card, isDark ? styles.cardDark : styles.cardLight];
   const titleColor = isDark ? '#fff' : '#1A3A5C';
@@ -169,6 +174,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
     if (ok) await clearAllData();
   };
 
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    try {
+      const info = await checkForUpdate();
+      if (!info) {
+        alertMsg(t('update.upToDate'), t('update.upToDateBody', { version: currentVersion() || version }));
+        return;
+      }
+      const ok = await confirmAsync(
+        t('update.available'),
+        t('update.availableBody', { version: info.latest, current: info.current }),
+        { confirmText: t('update.download'), cancelText: t('update.later') }
+      );
+      if (ok) openDownloadPage(info.url);
+    } catch (e: any) {
+      alertMsg(t('common.error'), t('update.failed'));
+      console.warn('manual update check failed:', e);
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
   const openUrl = (url: string) => Linking.openURL(url).catch(() => {});
 
   const version = (Constants.expoConfig?.version as string) || '1.0.0';
@@ -252,7 +279,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                     style={[styles.langChip, active ? styles.langChipActive : (isDark ? styles.langChipDark : styles.langChipLight)]}
                     onPress={() => changeLanguage(lang.code)}
                   >
-                    <Text style={styles.langFlag}>{lang.flag}</Text>
+                    <Image source={{ uri: FLAGS[lang.code] }} style={styles.langFlag} />
                     <Text style={[styles.langLabel, { color: active ? '#fff' : titleColor }]}>{lang.label}</Text>
                   </TouchableOpacity>
                 );
@@ -349,9 +376,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               <View style={styles.rowLeft}><Ionicons name="shield-checkmark-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} /><Text style={[styles.rowLabel, { color: titleColor }]}>{t('settings.privacy') !== 'settings.privacy' ? t('settings.privacy') : 'Privacy Policy'}</Text></View>
               <Ionicons name="open-outline" size={18} color={mutedColor} />
             </TouchableOpacity>
+            {isDesktop() && (
+              <>
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.actionRow} onPress={handleCheckUpdate} disabled={checkingUpdate}>
+                  <View style={styles.rowLeft}>
+                    <Ionicons name="cloud-download-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} />
+                    <Text style={[styles.rowLabel, { color: titleColor }]}>{t('update.check')}</Text>
+                  </View>
+                  {checkingUpdate
+                    ? <ActivityIndicator size="small" color="#1976d2" />
+                    : <Ionicons name="chevron-forward" size={20} color={mutedColor} />}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
-          <Text style={[styles.version, { color: mutedColor }]}>SDM Web v{version}</Text>
+          <Text style={[styles.version, { color: mutedColor }]}>
+            {isDesktop() ? 'SDM Desktop' : 'SDM Web'} v{currentVersion() || version}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -377,7 +420,7 @@ const styles = StyleSheet.create({
   langChipActive: { backgroundColor: '#1976d2', borderColor: '#1976d2' },
   langChipDark: { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.15)' },
   langChipLight: { backgroundColor: 'rgba(255,255,255,0.5)', borderColor: 'rgba(0,0,0,0.1)' },
-  langFlag: { fontSize: 20 },
+  langFlag: { width: 22, height: 15, borderRadius: 2 },
   langLabel: { fontSize: 15, fontWeight: '600' },
   upgradeBtn: { backgroundColor: '#1976d2', paddingVertical: 8, paddingHorizontal: 18, borderRadius: 10 },
   upgradeBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },

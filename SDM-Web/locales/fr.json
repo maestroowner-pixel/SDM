@@ -675,5 +675,15 @@
     "cropTitle": "Faites glisser les coins pour recadrer",
     "cropDone": "Terminé",
     "cropCancel": "Annuler"
+  },
+  "update": {
+    "check": "Rechercher des mises à jour",
+    "available": "Mise à jour disponible",
+    "availableBody": "La version {{version}} est disponible. Vous utilisez la {{current}}.\n\nTéléchargez-la depuis la page des versions et installez-la par-dessus l'actuelle : vos données sont conservées.",
+    "download": "Télécharger",
+    "later": "Plus tard",
+    "upToDate": "À jour",
+    "upToDateBody": "Vous utilisez la dernière version ({{version}}).",
+    "failed": "Impossible de rechercher des mises à jour. Vérifiez votre connexion internet et réessayez."
   }
 }

@@ -689,5 +689,15 @@
     "cropTitle": "Ecken ziehen zum Zuschneiden",
     "cropDone": "Fertig",
     "cropCancel": "Abbrechen"
+  },
+  "update": {
+    "check": "Nach Updates suchen",
+    "available": "Update verfügbar",
+    "availableBody": "Version {{version}} ist erschienen. Sie verwenden {{current}}.\n\nLaden Sie sie von der Release-Seite herunter und installieren Sie sie über die aktuelle Version — Ihre Daten bleiben erhalten.",
+    "download": "Herunterladen",
+    "later": "Später",
+    "upToDate": "Aktuell",
+    "upToDateBody": "Sie verwenden die neueste Version ({{version}}).",
+    "failed": "Suche nach Updates fehlgeschlagen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   }
 }

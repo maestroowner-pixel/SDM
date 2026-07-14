@@ -693,5 +693,15 @@
     "cropTitle": "Przeciągnij rogi, aby przyciąć",
     "cropDone": "Gotowe",
     "cropCancel": "Anuluj"
+  },
+  "update": {
+    "check": "Sprawdź aktualizacje",
+    "available": "Dostępna aktualizacja",
+    "availableBody": "Ukazała się wersja {{version}}. Masz zainstalowaną {{current}}.\n\nPobierz ją ze strony wydań i zainstaluj na obecnej — Twoje dane pozostaną nienaruszone.",
+    "download": "Pobierz",
+    "later": "Później",
+    "upToDate": "Wszystko aktualne",
+    "upToDateBody": "Masz najnowszą wersję ({{version}}).",
+    "failed": "Nie udało się sprawdzić aktualizacji. Sprawdź połączenie z internetem i spróbuj ponownie."
   }
 }

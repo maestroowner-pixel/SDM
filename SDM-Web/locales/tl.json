@@ -693,5 +693,15 @@
     "cropTitle": "I-drag ang mga sulok para i-crop",
     "cropDone": "Tapos",
     "cropCancel": "Kanselahin"
+  },
+  "update": {
+    "check": "Tingnan kung may update",
+    "available": "May bagong update",
+    "availableBody": "Available na ang bersyon {{version}}. Ang gamit mo ay {{current}}.\n\nI-download ito mula sa releases page at i-install sa ibabaw ng kasalukuyan — mananatili ang iyong data.",
+    "download": "I-download",
+    "later": "Mamaya",
+    "upToDate": "Napapanahon",
+    "upToDateBody": "Ginagamit mo na ang pinakabagong bersyon ({{version}}).",
+    "failed": "Hindi matingnan ang mga update. Suriin ang iyong koneksyon sa internet at subukan muli."
   }
 }

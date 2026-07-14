@@ -693,5 +693,15 @@
     "cropTitle": "Drag the corners to crop",
     "cropDone": "Done",
     "cropCancel": "Cancel"
+  },
+  "update": {
+    "check": "Check for updates",
+    "available": "Update available",
+    "availableBody": "Version {{version}} is out. You are running {{current}}.\n\nDownload it from the releases page and install over the current version — your data stays where it is.",
+    "download": "Download",
+    "later": "Later",
+    "upToDate": "Up to date",
+    "upToDateBody": "You are running the latest version ({{version}}).",
+    "failed": "Could not check for updates. Check your internet connection and try again."
   }
 }

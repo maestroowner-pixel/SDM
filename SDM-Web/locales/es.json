@@ -681,5 +681,15 @@
     "cropTitle": "Arrastra las esquinas para recortar",
     "cropDone": "Listo",
     "cropCancel": "Cancelar"
+  },
+  "update": {
+    "check": "Buscar actualizaciones",
+    "available": "Actualización disponible",
+    "availableBody": "Ya está disponible la versión {{version}}. Tienes la {{current}}.\n\nDescárgala desde la página de versiones e instálala sobre la actual: tus datos se conservan.",
+    "download": "Descargar",
+    "later": "Más tarde",
+    "upToDate": "Todo actualizado",
+    "upToDateBody": "Tienes la última versión ({{version}}).",
+    "failed": "No se pudieron buscar actualizaciones. Comprueba tu conexión a internet e inténtalo de nuevo."
   }
 }
