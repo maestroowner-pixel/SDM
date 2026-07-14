@@ -5,7 +5,7 @@
   "description": "Seafarer Documents Manager — desktop build (Electron shell around SDM Web)",
   "main": "main.js",
   "scripts": {
-    "build:web": "cd ../SDM-Web && npx expo export -p web --clear && rm -rf ../SDM-Desktop/app && cp -R dist ../SDM-Desktop/app",
+    "build:web": "cd ../SDM-Web && npx expo export -p web --clear && rm -rf ../SDM-Desktop/app && cp -R dist ../SDM-Desktop/app && node ../SDM-Desktop/prepare-assets.js",
     "start": "npm run build:web && electron .",
     "dist:win": "npm run build:web && electron-builder --win --x64",
     "dist:mac": "npm run build:web && electron-builder --mac"
