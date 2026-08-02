@@ -685,7 +685,7 @@
   "attach": {
     "title": "Maglakip ng file",
     "fromScans": "Mula sa aking mga scan",
-    "fromFiles": "Mula sa mga file ng telepono",
+    "fromFiles": "Mula sa mga file ng computer",
     "camera": "I-scan gamit ang camera",
     "noScans": "Wala pang naka-save na scan. Gamitin ang + button sa Scans screen para gumawa.",
     "pickerTitle": "Pumili ng scan",

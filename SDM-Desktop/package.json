@@ -1,6 +1,6 @@
 {
   "name": "sdm-desktop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Seafarer Documents Manager — desktop build (Electron shell around SDM Web)",
   "main": "main.js",
@@ -8,7 +8,8 @@
     "build:web": "cd ../SDM-Web && npx expo export -p web --clear && rm -rf ../SDM-Desktop/app && cp -R dist ../SDM-Desktop/app && node ../SDM-Desktop/prepare-assets.js",
     "start": "npm run build:web && electron .",
     "dist:win": "npm run build:web && electron-builder --win --x64",
-    "dist:mac": "npm run build:web && electron-builder --mac"
+    "dist:mac": "npm run build:web && electron-builder --mac",
+    "dist:mac:unsigned": "npm run build:web && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac -c.mac.notarize=false -c.mac.hardenedRuntime=false"
   },
   "devDependencies": {
     "electron": "^33.2.0",
@@ -45,9 +46,33 @@
       "artifactName": "SDM-Setup-win-x64.exe"
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
       "icon": "icon.png",
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "artifactName": "SDM-mac-${arch}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "notarize": true
+    },
+    "dmg": {
+      "artifactName": "SDM-mac-${arch}.${ext}"
     }
   },
   "dependencies": {

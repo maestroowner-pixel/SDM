@@ -1,5 +1,5 @@
 // screens/DPScreen.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -61,6 +61,15 @@ function displayDate(iso: string): string {
   const [y, m, d] = iso.split('-');
   if (!y || !m || !d) return iso;
   return `${d}/${m}/${y}`;
+}
+
+// Ключ сортировки yyyymmdd. Считается из displayDate, чтобы разбор форматов жил
+// в одном месте: в логе могут лежать и yyyy-mm-dd, и dd/mm/yyyy — лексикографическое
+// сравнение самих строк расставило бы такие даты вперемешку.
+function sortKey(date: string): string {
+  const [d, m, y] = displayDate(date).split('/');
+  if (!y || !m || !d) return date;
+  return `${y}${m.padStart(2, '0')}${d.padStart(2, '0')}`;
 }
 
 // ─── Цвета ───────────────────────────────────────────────────────────────────
@@ -192,7 +201,12 @@ const DPScreen: React.FC = () => {
 
   // Данные из контекста (персистентные)
   const info = state.dpInfo;
-  const days = state.dpDays;
+  // Сортировка на отрисовке, а не при добавлении: так по возрастанию даты идёт и то,
+  // что уже лежало в хранилище с прошлых версий, где сортировки не было.
+  const days = useMemo(
+    () => [...state.dpDays].sort((a, b) => sortKey(a.date).localeCompare(sortKey(b.date))),
+    [state.dpDays]
+  );
 
   const setInfo = (updater: DPScreenInfo | ((prev: DPScreenInfo) => DPScreenInfo)) => {
     const next = typeof updater === 'function' ? updater(info) : updater;
@@ -228,9 +242,7 @@ const DPScreen: React.FC = () => {
       alertMsg('Error', 'This date already exists in the log');
       return;
     }
-    setDays(prev =>
-      [...prev, createEmptyDay(newDate)].sort((a, b) => a.date.localeCompare(b.date))
-    );
+    setDays(prev => [...prev, createEmptyDay(newDate)]);
     setAddModal(false);
   };
 

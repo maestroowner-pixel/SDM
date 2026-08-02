@@ -667,7 +667,7 @@
   "attach": {
     "title": "Joindre un fichier",
     "fromScans": "Depuis mes scans",
-    "fromFiles": "Depuis les fichiers du téléphone",
+    "fromFiles": "Depuis les fichiers de l’ordinateur",
     "camera": "Scanner avec la caméra",
     "noScans": "Aucun scan enregistré. Utilisez le bouton + sur l'écran Scans pour en créer un.",
     "pickerTitle": "Choisir un scan",

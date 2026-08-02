@@ -685,7 +685,7 @@
   "attach": {
     "title": "Załącz plik",
     "fromScans": "Z moich skanów",
-    "fromFiles": "Z plików telefonu",
+    "fromFiles": "Z plików komputera",
     "camera": "Skanuj aparatem",
     "noScans": "Brak zapisanych skanów. Utwórz je przyciskiem + na ekranie Scans.",
     "pickerTitle": "Wybierz skan",

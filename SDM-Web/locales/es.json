@@ -673,7 +673,7 @@
   "attach": {
     "title": "Adjuntar archivo",
     "fromScans": "De mis escaneos",
-    "fromFiles": "De archivos del teléfono",
+    "fromFiles": "De archivos del ordenador",
     "camera": "Escanear con cámara",
     "noScans": "Aún no hay escaneos guardados. Usa el botón + en la pantalla Scans para crear uno.",
     "pickerTitle": "Elige un escaneo",

@@ -21,7 +21,7 @@ import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import { useSubscription } from '../hooks/useSubscription';
 import * as DocumentPicker from 'expo-document-picker';
-import { storeUploadedFile } from '../utils/scanUtils';
+import { storeUploadedAttachment, isImageUpload } from '../utils/scanUtils';
 import { deleteBlob, openAttachment } from '../utils/attachmentStore';
 import { alertMsg, confirmAsync } from '../utils/webAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -233,7 +233,8 @@ export const SeaServiceScreen: React.FC<SeaServiceScreenProps> = ({ onOpenPaywal
     resetForm();
   };
 
-  // Web: attach = upload a file (PDF or image), stored as a blob in IndexedDB.
+  // Web: attach = upload a file, stored as a blob in IndexedDB. Images are
+  // auto-converted into a compact PDF, so the 10MB cap only guards raw PDFs.
   const handleAttachFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -244,14 +245,17 @@ export const SeaServiceScreen: React.FC<SeaServiceScreenProps> = ({ onOpenPaywal
       if (result.canceled || !result.assets?.length) return;
 
       const file = result.assets[0];
-      if (file.size && file.size > 10 * 1024 * 1024) {
+      const name = file.name || `attachment_${attachedFiles.length + 1}`;
+      const isImage = isImageUpload(name, file.mimeType);
+
+      if (!isImage && file.size && file.size > 10 * 1024 * 1024) {
         alertMsg(t('common.error'), 'File size exceeds 10MB limit. Please choose a smaller file.');
         return;
       }
 
       const resp = await fetch(file.uri);
       const blob = await resp.blob();
-      const stored = await storeUploadedFile(blob, file.name || `attachment_${attachedFiles.length + 1}`, file.size || blob.size);
+      const stored = await storeUploadedAttachment(blob, name, file.size || blob.size, file.mimeType);
       setAttachedFiles(prev => [...prev, stored]);
     } catch (error) {
       console.error('Error picking document:', error);

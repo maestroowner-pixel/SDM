@@ -681,7 +681,7 @@
   "attach": {
     "title": "Datei anhängen",
     "fromScans": "Aus meinen Scans",
-    "fromFiles": "Aus Telefondateien",
+    "fromFiles": "Aus Computerdateien",
     "camera": "Mit Kamera scannen",
     "noScans": "Noch keine gespeicherten Scans. Erstelle einen mit der +-Taste im Scans-Bildschirm.",
     "pickerTitle": "Scan auswählen",

@@ -637,7 +637,7 @@
   "attach": {
     "title": "附加文件",
     "fromScans": "从我的扫描件",
-    "fromFiles": "从手机文件",
+    "fromFiles": "从电脑文件",
     "camera": "用相机扫描",
     "noScans": "还没有已保存的扫描件。请在 Scans 界面用 + 按钮创建。",
     "pickerTitle": "选择扫描件",

@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import { storeUploadedFile } from '../utils/scanUtils';
+import { storeUploadedAttachment, isImageUpload } from '../utils/scanUtils';
 import { deleteBlob, openAttachment } from '../utils/attachmentStore';
 import { alertMsg, confirmAsync } from '../utils/webAlert';
 import { useData, Document } from '../contexts/DataContext';
@@ -300,7 +300,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     resetForm();
   };
 
-  // Web: attach = upload a file (PDF or image), stored as a blob in IndexedDB.
+  // Web: attach = upload a file, stored as a blob in IndexedDB. Images are
+  // auto-converted into a compact PDF, so the 10MB cap only guards raw PDFs.
   const handleAttachFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -311,9 +312,11 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       if (result.canceled || !result.assets?.length) return;
 
       const file = result.assets[0];
+      const name = file.name || `attachment_${attachedFiles.length + 1}`;
+      const isImage = isImageUpload(name, file.mimeType);
 
       // 10MB limit per attachment.
-      if (file.size && file.size > 10 * 1024 * 1024) {
+      if (!isImage && file.size && file.size > 10 * 1024 * 1024) {
         alertMsg(t('common.error'), 'File size exceeds 10MB limit. Please choose a smaller file.');
         return;
       }
@@ -321,7 +324,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       // Read the picked file into a Blob and persist it.
       const resp = await fetch(file.uri);
       const blob = await resp.blob();
-      const stored = await storeUploadedFile(blob, file.name || `attachment_${attachedFiles.length + 1}`, file.size || blob.size);
+      const stored = await storeUploadedAttachment(blob, name, file.size || blob.size, file.mimeType);
 
       setAttachedFiles(prev => [...prev, stored]);
     } catch (error) {

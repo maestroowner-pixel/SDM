@@ -685,7 +685,7 @@
   "attach": {
     "title": "Attach file",
     "fromScans": "From my scans",
-    "fromFiles": "From phone files",
+    "fromFiles": "From computer files",
     "camera": "Scan with camera",
     "noScans": "No saved scans yet. Use the + button on the Scans screen to create one.",
     "pickerTitle": "Choose a scan",
