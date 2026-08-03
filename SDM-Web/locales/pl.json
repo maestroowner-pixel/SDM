@@ -710,5 +710,12 @@
     "readyBody": "Wersja {{version}} jest gotowa do instalacji. Uruchomić aplikację ponownie teraz?",
     "restart": "Uruchom ponownie",
     "notNow": "Nie teraz"
+  },
+  "print": {
+    "title": "Drukuj dokument",
+    "message": "Zapisz dokument jako PDF lub wyślij go do drukarki.",
+    "savePdf": "Zapisz jako PDF",
+    "toPrinter": "Drukuj",
+    "saved": "Zapisano"
   }
 }

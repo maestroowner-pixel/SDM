@@ -710,5 +710,12 @@
     "readyBody": "Handa nang i-install ang bersyon {{version}}. I-restart ang app ngayon?",
     "restart": "I-restart",
     "notNow": "Mamaya na"
+  },
+  "print": {
+    "title": "I-print ang dokumento",
+    "message": "I-save ang dokumento bilang PDF o ipadala ito sa printer.",
+    "savePdf": "I-save bilang PDF",
+    "toPrinter": "I-print",
+    "saved": "Na-save"
   }
 }

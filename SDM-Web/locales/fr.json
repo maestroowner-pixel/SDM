@@ -692,5 +692,12 @@
     "readyBody": "La version {{version}} est prête à être installée. Redémarrer l'application maintenant ?",
     "restart": "Redémarrer",
     "notNow": "Pas maintenant"
+  },
+  "print": {
+    "title": "Imprimer le document",
+    "message": "Enregistrez le document au format PDF ou envoyez-le à une imprimante.",
+    "savePdf": "Enregistrer en PDF",
+    "toPrinter": "Imprimer",
+    "saved": "Enregistré"
   }
 }

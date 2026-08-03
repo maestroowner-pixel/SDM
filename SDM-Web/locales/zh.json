@@ -662,5 +662,12 @@
     "readyBody": "{{version}} 版本已可安装。现在重启应用吗？",
     "restart": "立即重启",
     "notNow": "暂不"
+  },
+  "print": {
+    "title": "打印文档",
+    "message": "将文档保存为 PDF，或发送到打印机。",
+    "savePdf": "保存为 PDF",
+    "toPrinter": "打印",
+    "saved": "已保存"
   }
 }

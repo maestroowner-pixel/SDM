@@ -710,5 +710,12 @@
     "readyBody": "Version {{version}} is ready to install. Restart the app now?",
     "restart": "Restart now",
     "notNow": "Not now"
+  },
+  "print": {
+    "title": "Print document",
+    "message": "Save the document as a PDF file, or send it to a printer.",
+    "savePdf": "Save as PDF",
+    "toPrinter": "Print",
+    "saved": "Saved"
   }
 }

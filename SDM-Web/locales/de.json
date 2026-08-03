@@ -706,5 +706,12 @@
     "readyBody": "Version {{version}} kann installiert werden. App jetzt neu starten?",
     "restart": "Neu starten",
     "notNow": "Später"
+  },
+  "print": {
+    "title": "Dokument drucken",
+    "message": "Das Dokument als PDF speichern oder an einen Drucker senden.",
+    "savePdf": "Als PDF speichern",
+    "toPrinter": "Drucken",
+    "saved": "Gespeichert"
   }
 }

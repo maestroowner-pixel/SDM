@@ -698,5 +698,12 @@
     "readyBody": "La versión {{version}} está lista para instalarse. ¿Reiniciar la aplicación ahora?",
     "restart": "Reiniciar",
     "notNow": "Ahora no"
+  },
+  "print": {
+    "title": "Imprimir documento",
+    "message": "Guarda el documento como PDF o envíalo a una impresora.",
+    "savePdf": "Guardar como PDF",
+    "toPrinter": "Imprimir",
+    "saved": "Guardado"
   }
 }

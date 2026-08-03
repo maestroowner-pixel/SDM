@@ -16,6 +16,7 @@ npm run dist:win
 
 ```sh
 npm run dist:mac              # подписанная и нотаризованная сборка
+APPLE_KEYCHAIN_PROFILE=SDM ./scripts/notarize-dmg.sh release/*.dmg   # ← обязательный второй шаг
 npm run dist:mac:unsigned     # локальная проверка, без сертификата
 ```
 
@@ -23,6 +24,25 @@ npm run dist:mac:unsigned     # локальная проверка, без се
 
 `.zip` обязательны: обновление на macOS ставит Squirrel.Mac, а он умеет только zip —
 `latest-mac.yml` ссылается именно на них. DMG нужен людям для первой установки.
+
+**Второй шаг пропускать нельзя.** electron-builder нотаризует `.app` и только потом
+кладёт его в образ, так что сам DMG остаётся неподписанным. На машине сборщика это
+незаметно, но у скачанного файла есть quarantine-флаг, и Gatekeeper проверяет сперва
+образ: тикета нет — «Apple не может проверить на наличие вредоносного ПО», и открыть
+приложение нельзя вообще. `scripts/notarize-dmg.sh` подписывает, нотаризует и
+staple-ит образы, а в конце проверяет их тем же путём, каким пойдёт Finder.
+
+После него sha512 и размер образов меняются — записи `*.dmg` в `latest-mac.yml`
+надо пересчитать, иначе манифест разойдётся с файлами. Проверка:
+
+```sh
+node -e 'const fs=require("fs"),cp=require("child_process");
+const re=/url: (\S+)\s+sha512: (\S+)\s+size: (\d+)/g;
+const txt=fs.readFileSync("release/latest-mac.yml","utf8"); let m;
+while((m=re.exec(txt))){const s=fs.statSync("release/"+m[1]).size;
+const h=cp.execSync(`shasum -a 512 "release/${m[1]}" | cut -d" " -f1 | xxd -r -p | base64`).toString().trim();
+console.log((s===+m[3]&&h===m[2]?"ok  ":"РАЗОШЛОСЬ ")+m[1]);}'
+```
 
 ### Что требуется для подписи
 

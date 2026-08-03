@@ -1,6 +1,6 @@
 {
   "name": "sdm-desktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Seafarer Documents Manager — desktop build (Electron shell around SDM Web)",
   "main": "main.js",

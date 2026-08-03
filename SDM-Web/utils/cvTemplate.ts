@@ -99,6 +99,15 @@ const getVesselTypeLabel = (value: string): string => {
   return found ? found.label : value;
 };
 
+// Поле свободное: кто-то пишет «12000», кто-то «12000 kW», кто-то «2 × 5400 kW».
+// Голое число без единицы в резюме читается плохо, поэтому к чистым числам
+// дописываем kW; всё, где единица уже указана, оставляем как ввёл пользователь.
+const formatEnginePower = (raw: string): string => {
+  const v = String(raw || '').trim();
+  if (!v) return '-';
+  return /^[\d\s.,]+$/.test(v) ? `${v} kW` : v;
+};
+
 const wrapAfterFiveWords = (text: string): string => {
   if (!text) return '';
   const words = text.split(' ');
@@ -170,6 +179,11 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       </table>
     </div>` : '';
 
+  // Мощность ГД — обязательный пункт в резюме механика и лишний шум у палубных.
+  // Поэтому колонка появляется, только если поле заполнено хотя бы в одной записи:
+  // механик её увидит, не настраивая ничего, у остальных таблица не разъезжается.
+  const showEnginePower = sortedSeaService.some((s: any) => String(s.enginePower || '').trim());
+
   const seaServiceHtml = sortedSeaService.length > 0 ? `
     <div class="section">
       <h2>${t('cv.sections.seaService')}</h2>
@@ -178,6 +192,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
           <th>${t('seaService.form.vesselName')}</th>
           <th>${t('seaService.form.position')}</th>
           <th>${t('seaService.form.vesselType')}</th>
+          ${showEnginePower ? `<th>${t('seaService.form.enginePower')}</th>` : ''}
           <th>${t('seaService.form.signOn')}</th>
           <th>${t('seaService.form.signOff')}</th>
         </tr></thead>
@@ -186,6 +201,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
             <td>${s.vesselName || '-'}</td>
             <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
             <td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>
+            ${showEnginePower ? `<td>${formatEnginePower(s.enginePower)}</td>` : ''}
             <td>${formatDate(s.signOn)}</td>
             <td>${formatDate(s.signOff)}</td>
           </tr>`).join('')}

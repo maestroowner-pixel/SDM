@@ -18,6 +18,12 @@ const on = (channel) => (cb) => {
 
 contextBridge.exposeInMainWorld('sdmDesktop', {
   version: arg ? arg.slice('--sdm-version='.length) : null,
+  printer: {
+    /** Показывает диалог сохранения и пишет PDF. → { saved, path? } */
+    savePdf: (html, fileName) => ipcRenderer.invoke('print:pdf', { html, fileName }),
+    /** Открывает системный диалог печати. → { printed, reason? } */
+    toPrinter: (html) => ipcRenderer.invoke('print:printer', { html }),
+  },
   updater: {
     check: () => ipcRenderer.invoke('update:check'),
     download: () => ipcRenderer.invoke('update:download'),

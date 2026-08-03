@@ -4,9 +4,10 @@
 // which break under file://. So we serve the built app from a custom privileged
 // `app://` scheme — that resolves absolute paths correctly and gives the page a
 // real origin, which localStorage / IndexedDB (attachments) / Firebase need.
-const { app, BrowserWindow, shell, protocol, net, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, protocol, net, ipcMain, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
+const fs = require('fs/promises');
 const { pathToFileURL } = require('url');
 
 const APP_DIR = path.join(__dirname, 'app'); // built web assets (copied from SDM-Web/dist)
@@ -42,6 +43,65 @@ function wireUpdater(win) {
 
   ipcMain.handle('update:download', async () => { await autoUpdater.downloadUpdate(); });
   ipcMain.handle('update:install', () => { autoUpdater.quitAndInstall(); });
+}
+
+// ── Печать ───────────────────────────────────────────────────────────────────
+//
+// В браузере документы (CV, QR-лист, confirmation letter) печатаются через скрытый
+// iframe и window.print(). В Electron это не работает: window.print() уходит в
+// webContents верхнего фрейма, то есть в интерфейс приложения, а не в iframe с
+// документом. Поэтому здесь HTML рендерится в отдельном невидимом окне, и уже с
+// него снимается либо PDF, либо системный диалог печати.
+
+/** Рендерит HTML в скрытом окне и отдаёт его webContents в fn. Окно всегда закрывается. */
+async function withRenderedPage(html, fn) {
+  const tmp = path.join(app.getPath('temp'), `sdm-print-${Date.now()}.html`);
+  await fs.writeFile(tmp, html, 'utf8');
+
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: { contextIsolation: true, nodeIntegration: false, javascript: false },
+  });
+
+  try {
+    await win.loadFile(tmp);
+    return await fn(win.webContents);
+  } finally {
+    if (!win.isDestroyed()) win.destroy();
+    fs.unlink(tmp).catch(() => {});
+  }
+}
+
+// preferCSSPageSize — чтобы @page { size: A4; margin: … } из самого документа
+// побеждал: вёрстка писем рассчитана именно на эти поля.
+const PDF_OPTIONS = { printBackground: true, preferCSSPageSize: true };
+
+function wirePrinting() {
+  ipcMain.handle('print:pdf', async (event, { html, fileName }) => {
+    const parent = BrowserWindow.fromWebContents(event.sender);
+    const { canceled, filePath } = await dialog.showSaveDialog(parent, {
+      defaultPath: `${fileName || 'document'}.pdf`,
+      filters: [{ name: 'PDF', extensions: ['pdf'] }],
+    });
+    if (canceled || !filePath) return { saved: false };
+
+    const pdf = await withRenderedPage(html, (wc) => wc.printToPDF(PDF_OPTIONS));
+    await fs.writeFile(filePath, pdf);
+    return { saved: true, path: filePath };
+  });
+
+  ipcMain.handle('print:printer', async (_event, { html }) =>
+    withRenderedPage(
+      html,
+      (wc) =>
+        new Promise((resolve) => {
+          // silent: false → системный диалог выбора принтера.
+          wc.print({ silent: false, printBackground: true }, (success, reason) =>
+            resolve({ printed: success, reason: success ? undefined : reason })
+          );
+        })
+    )
+  );
 }
 
 protocol.registerSchemesAsPrivileged([
@@ -119,6 +179,7 @@ app.whenReady().then(() => {
     }
   });
 
+  wirePrinting();
   createWindow();
 
   app.on('activate', () => {
