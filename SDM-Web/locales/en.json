@@ -134,7 +134,9 @@
       "customPosition": "Specify Position",
       "nearestAirport": "Nearest Airport",
       "availabilityDate": "Availability Date",
-      "customPositionPlaceholder": "Enter your position"
+      "customPositionPlaceholder": "Enter your position",
+      "mobilePhone2": "Mobile Phone 2",
+      "mobilePhone3": "Mobile Phone 3"
     },
     "alerts": {
       "permissionRequired": "Permission Required",
@@ -287,7 +289,17 @@
       "dpSystemPlaceholder": "e.g., Kongsberg, Navis",
       "commentsPlaceholder": "Additional information",
       "customPosition": "Specify Position",
-      "customPositionPlaceholder": "Enter your position"
+      "customPositionPlaceholder": "Enter your position",
+      "propulsionType": "Propulsion Type",
+      "propulsionTypePlaceholder": "Select propulsion type",
+      "sailingArea": "Sailing Area",
+      "sailingAreaPlaceholder": "Select sailing area",
+      "otherOption": "Other (enter manually)",
+      "clearSelection": "Clear",
+      "reeferPower": "Reefer Plant Power",
+      "reeferPowerPlaceholder": "e.g. 850 kW",
+      "teu": "Container Capacity (TEU)",
+      "teuPlaceholder": "e.g. 4500"
     },
     "alerts": {
       "deleteTitle": "Delete Sea Service",
@@ -400,7 +412,11 @@
       "document": "Document",
       "number": "Number",
       "issueDate": "Issue Date",
-      "expiryDate": "Expiry Date"
+      "expiryDate": "Expiry Date",
+      "teu": "TEU",
+      "machinery": "Machinery",
+      "area": "Area",
+      "reefer": "Reefer"
     },
     "includes": {
       "personalInfo": "Personal Information",

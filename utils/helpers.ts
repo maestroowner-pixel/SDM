@@ -245,3 +245,7 @@ export const formatDateForFilename = (date: Date): string => {
   
   return `${year}${month}${day}`;
 };
+
+// Main phone plus the optional extra mobiles, filled ones only, in order.
+export const allPhones = (p: { phone?: string; mobilePhone2?: string; mobilePhone3?: string } | null | undefined): string[] =>
+  [p?.phone, p?.mobilePhone2, p?.mobilePhone3].map((v) => String(v || '').trim()).filter(Boolean);

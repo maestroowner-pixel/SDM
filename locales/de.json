@@ -133,7 +133,9 @@
       "customPosition": "Position Angeben",
       "customPositionPlaceholder": "Geben Sie Ihre Position ein",
       "nearestAirport": "Nächstgelegener Flughafen",
-      "availabilityDate": "Verfügbarkeitsdatum"
+      "availabilityDate": "Verfügbarkeitsdatum",
+      "mobilePhone2": "Mobiltelefon 2",
+      "mobilePhone3": "Mobiltelefon 3"
     },
     "alerts": {
       "permissionRequired": "Berechtigung Erforderlich",
@@ -272,7 +274,17 @@
       "dpSystemPlaceholder": "z.B. Kongsberg, Navis",
       "commentsPlaceholder": "Zusätzliche Informationen",
       "customPosition": "Position Angeben",
-      "customPositionPlaceholder": "Geben Sie Ihre Position ein"
+      "customPositionPlaceholder": "Geben Sie Ihre Position ein",
+      "propulsionType": "Antriebsart",
+      "propulsionTypePlaceholder": "Antriebsart wählen",
+      "sailingArea": "Fahrtgebiet",
+      "sailingAreaPlaceholder": "Fahrtgebiet wählen",
+      "otherOption": "Andere (manuell eingeben)",
+      "clearSelection": "Löschen",
+      "reeferPower": "Leistung der Kühlanlage",
+      "reeferPowerPlaceholder": "z. B. 850 kW",
+      "teu": "Containerkapazität (TEU)",
+      "teuPlaceholder": "z. B. 4500"
     },
     "alerts": {
       "deleteTitle": "Seedienstzeit Löschen",
@@ -395,7 +407,13 @@
       "errorTitle": "Fehler",
       "errorMessage": "Fehler beim Generieren des Lebenslaufs"
     },
-    "scanContact": "Scannen, um meinen Kontakt zu speichern"
+    "scanContact": "Scannen, um meinen Kontakt zu speichern",
+    "table": {
+      "teu": "TEU",
+      "machinery": "Maschinenanlage",
+      "area": "Fahrtgebiet",
+      "reefer": "Kühlanlage"
+    }
   },
   "education": {
     "title": "Ausbildung",

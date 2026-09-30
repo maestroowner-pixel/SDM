@@ -57,6 +57,11 @@ export interface SeaService {
   grossTonnage: string;
   engineType: string;
   enginePower: string;
+  // Optional: records saved before these fields existed simply lack them.
+  propulsionType?: string;
+  sailingArea?: string;
+  reeferPower?: string;
+  teu?: string;
   position: string;
   customPosition?: string;
   signOn: string;
@@ -76,6 +81,9 @@ export interface PersonalInfo {
   birthPlace: string;
   nationality: string;
   phone: string;
+  // Extra mobile numbers; optional so older records/backups stay valid.
+  mobilePhone2?: string;
+  mobilePhone3?: string;
   email: string;
   whatsapp: string;
   telegram: string;
@@ -175,7 +183,7 @@ const defaultState: AppState = {
   seaService: [],
   personal: {
     firstName: '', lastName: '', middleName: '', birthDate: '', birthPlace: '', nationality: '',
-    phone: '', email: '', whatsapp: '', telegram: '', teams: '', address: '', city: '',
+    phone: '', mobilePhone2: '', mobilePhone3: '', email: '', whatsapp: '', telegram: '', teams: '', address: '', city: '',
     country: '', postalCode: '', visaUSA: '', visaSchengen: '', visaAustralia: '',
     appliedPosition: '', customPosition: '', vesselType: '', customVesselType: '',
     minDayRate: '', minDayRateCurrency: '$', isRateNegotiable: false, photo: '',

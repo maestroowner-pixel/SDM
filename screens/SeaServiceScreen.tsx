@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useData, SeaService } from '../contexts/DataContext';
 import SimpleDatePicker from '../components/SimpleDatePicker';
 import { VesselTypeInput, VESSEL_TYPES } from '../components/VesselTypeInput';
+import { OptionWithOtherInput, PROPULSION_TYPES, SAILING_AREAS } from '../components/OptionWithOtherInput';
 
 const getVesselTypeLabel = (value: string): string => {
   const found = VESSEL_TYPES.find(t => t.value === value);
@@ -134,14 +135,14 @@ export const SeaServiceScreen: React.FC = () => {
 
   const [formData, setFormData] = useState({
     vesselName: '', vesselType: '', customVesselType: '', flag: '', grossTonnage: '',
-    engineType: '', enginePower: '', position: '', customPosition: '', signOn: '',
+    engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', position: '', customPosition: '', signOn: '',
     signOff: '', company: '', dpClass: '', dpSystem: '', comments: '',
   });
 
   const resetForm = () => {
     setFormData({
       vesselName: '', vesselType: '', customVesselType: '', flag: '', grossTonnage: '',
-      engineType: '', enginePower: '', position: '', customPosition: '', signOn: '',
+      engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', position: '', customPosition: '', signOn: '',
       signOff: '', company: '', dpClass: '', dpSystem: '', comments: '',
     });
     setEditingService(null);
@@ -163,6 +164,10 @@ export const SeaServiceScreen: React.FC = () => {
       grossTonnage: service.grossTonnage,
       engineType: service.engineType,
       enginePower: service.enginePower,
+      propulsionType: service.propulsionType || '',
+      sailingArea: service.sailingArea || '',
+      reeferPower: service.reeferPower || '',
+      teu: service.teu || '',
       position: service.position,
       customPosition: service.customPosition || '',
       signOn: service.signOn,
@@ -209,8 +214,15 @@ export const SeaServiceScreen: React.FC = () => {
     }
 
     const serviceData = {
+      // Start from the stored record so fields this form doesn't know about
+      // (e.g. written by a newer SDM Web via sync) survive an edit.
+      ...editingService,
       id: editingService?.id || Date.now().toString(),
       ...formData,
+      propulsionType: formData.propulsionType || undefined,
+      sailingArea: formData.sailingArea || undefined,
+      reeferPower: formData.reeferPower || undefined,
+      teu: formData.teu || undefined,
       // FIX: явно переносим optional-поля, чтобы они не потерялись
       customPosition: formData.customPosition || undefined,
       customVesselType: formData.customVesselType || undefined,
@@ -618,6 +630,16 @@ export const SeaServiceScreen: React.FC = () => {
                   placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                 />
 
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.teu')}</Text>
+                <TextInput
+                  style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
+                  value={formData.teu}
+                  onChangeText={(v) => setFormData({ ...formData, teu: v })}
+                  keyboardType="numeric"
+                  placeholder={t('seaService.form.teuPlaceholder')}
+                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                />
+
                 <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.engineType')}</Text>
                 <TextInput
                   style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
@@ -633,6 +655,38 @@ export const SeaServiceScreen: React.FC = () => {
                   onChangeText={(v) => setFormData({ ...formData, enginePower: v })}
                   keyboardType="numeric"
                   placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.reeferPower')}</Text>
+                <TextInput
+                  style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
+                  value={formData.reeferPower}
+                  onChangeText={(v) => setFormData({ ...formData, reeferPower: v })}
+                  keyboardType="numeric"
+                  placeholder={t('seaService.form.reeferPowerPlaceholder')}
+                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.propulsionType')}</Text>
+                <OptionWithOtherInput
+                  value={formData.propulsionType}
+                  onChangeText={(v) => setFormData({ ...formData, propulsionType: v })}
+                  isDark={isDark}
+                  options={PROPULSION_TYPES}
+                  placeholder={t('seaService.form.propulsionTypePlaceholder')}
+                  otherLabel={t('seaService.form.otherOption')}
+                  clearLabel={t('seaService.form.clearSelection')}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.sailingArea')}</Text>
+                <OptionWithOtherInput
+                  value={formData.sailingArea}
+                  onChangeText={(v) => setFormData({ ...formData, sailingArea: v })}
+                  isDark={isDark}
+                  options={SAILING_AREAS}
+                  placeholder={t('seaService.form.sailingAreaPlaceholder')}
+                  otherLabel={t('seaService.form.otherOption')}
+                  clearLabel={t('seaService.form.clearSelection')}
                 />
 
                 <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.dpClass')}</Text>

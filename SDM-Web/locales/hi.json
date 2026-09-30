@@ -134,7 +134,9 @@
       "customPosition": "पद निर्दिष्ट करें",
       "nearestAirport": "निकटतम हवाई अड्डा",
       "availabilityDate": "उपलब्धता की तारीख",
-      "customPositionPlaceholder": "अपना पद दर्ज करें"
+      "customPositionPlaceholder": "अपना पद दर्ज करें",
+      "mobilePhone2": "मोबाइल फ़ोन 2",
+      "mobilePhone3": "मोबाइल फ़ोन 3"
     },
     "alerts": {
       "permissionRequired": "अनुमति आवश्यक",
@@ -287,7 +289,17 @@
       "dpSystemPlaceholder": "उदा., Kongsberg, Navis",
       "commentsPlaceholder": "अतिरिक्त जानकारी",
       "customPosition": "पद निर्दिष्ट करें",
-      "customPositionPlaceholder": "अपना पद दर्ज करें"
+      "customPositionPlaceholder": "अपना पद दर्ज करें",
+      "propulsionType": "प्रणोदन प्रकार",
+      "propulsionTypePlaceholder": "प्रणोदन प्रकार चुनें",
+      "sailingArea": "नौवहन क्षेत्र",
+      "sailingAreaPlaceholder": "नौवहन क्षेत्र चुनें",
+      "otherOption": "अन्य (स्वयं दर्ज करें)",
+      "clearSelection": "साफ़ करें",
+      "reeferPower": "रेफ्रिजरेशन प्लांट की शक्ति",
+      "reeferPowerPlaceholder": "जैसे 850 kW",
+      "teu": "कंटेनर क्षमता (TEU)",
+      "teuPlaceholder": "जैसे 4500"
     },
     "alerts": {
       "deleteTitle": "सी सर्विस हटाएं",
@@ -400,7 +412,11 @@
       "document": "दस्तावेज़",
       "number": "संख्या",
       "issueDate": "जारी करने की तिथि",
-      "expiryDate": "समाप्ति तिथि"
+      "expiryDate": "समाप्ति तिथि",
+      "teu": "TEU",
+      "machinery": "मशीनरी",
+      "area": "क्षेत्र",
+      "reefer": "रीफर"
     },
     "includes": {
       "personalInfo": "व्यक्तिगत जानकारी",

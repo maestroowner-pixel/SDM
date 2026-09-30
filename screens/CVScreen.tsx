@@ -5,9 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import { useData } from '../contexts/DataContext'; 
+import { useData, SeaService } from '../contexts/DataContext';
 import { Button } from '../components/Button';
-import { formatDate, formatDateForFilename } from '../utils/helpers';
+import { formatDate, formatDateForFilename, allPhones } from '../utils/helpers';
 import { VESSEL_TYPES } from '../components/VesselTypeInput';
 import { Ionicons } from '@expo/vector-icons';
 import { playSuccessSound } from '../utils/sound';
@@ -36,7 +36,7 @@ const makeQrDataUrl = (data: string): string => {
 // vCard с контактами для QR на CV (как на экране QR) — чтобы можно было
 // отсканировать и сразу сохранить контакт в телефон. Пусто, если контактов нет.
 const buildVCard = (p: any, title?: string): string => {
-  const hasContact = p?.firstName || p?.lastName || p?.phone || p?.email;
+  const hasContact = p?.firstName || p?.lastName || allPhones(p).length > 0 || p?.email;
   if (!hasContact) return '';
   const fullName = `${p.firstName || ''} ${p.lastName || ''}`.trim();
   const telegramHandle = p.telegram ? (String(p.telegram).startsWith('@') ? p.telegram : `@${p.telegram}`) : '';
@@ -47,7 +47,7 @@ const buildVCard = (p: any, title?: string): string => {
     `N:${p.lastName || ''};${p.firstName || ''};${p.middleName || ''};;`,
     `FN:${fullName}`,
     (title || p.appliedPosition) ? `TITLE:${title || p.appliedPosition}` : '',
-    p.phone ? `TEL;TYPE=CELL:${p.phone}` : '',
+    ...allPhones(p).map((n: string) => `TEL;TYPE=CELL:${n}`),
     p.email ? `EMAIL:${p.email}` : '',
     telegramHandle ? `X-SOCIALPROFILE;TYPE=telegram:${telegramHandle}` : '',
     whatsappNumber ? `X-SOCIALPROFILE;TYPE=whatsapp:${p.whatsapp}` : '',
@@ -66,10 +66,14 @@ const getVesselTypeLabel = (value: string): string => {
 // Поле свободное: кто-то пишет «12000», кто-то «12000 kW», кто-то «2 × 5400 kW».
 // Голое число без единицы в резюме читается плохо, поэтому к чистым числам
 // дописываем kW; всё, где единица уже указана, оставляем как ввёл пользователь.
-const formatEnginePower = (raw: string): string => {
+// Numeric fields are free text: someone types «12000», someone «12000 kW»,
+// someone «2 × 5400 kW». A bare number reads badly in a CV, so the customary
+// unit is appended to plain numbers only; anything else is kept as typed.
+// Empty → '' so the parts can be joined into one cell.
+const withUnit = (raw: string | undefined, unit: string): string => {
   const v = String(raw || '').trim();
-  if (!v) return '-';
-  return /^[\d\s.,]+$/.test(v) ? `${v} kW` : v;
+  if (!v) return '';
+  return /^[\d\s.,]+$/.test(v) ? `${v} ${unit}` : v;
 };
 
 const wrapAfterFiveWords = (text: string): string => {
@@ -118,6 +122,8 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
   const generateHTML = (design: 1|2|3|4 = 1) => {
     const { personal, biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
+    // Main phone plus the extra mobiles, e.g. «+380 50 111 22 33, +44 7700 900123».
+    const phones = allPhones(personal).join(', ');
 
     const fullName = [personal.firstName, personal.middleName, personal.lastName]
       .filter(Boolean).join(' ') || t('cv.defaultName');
@@ -178,10 +184,22 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       return timeB - timeA;
     });
 
-    // Мощность ГД — обязательный пункт в резюме механика и лишний шум у палубных.
-    // Поэтому колонка появляется, только если поле заполнено хотя бы в одной записи:
-    // механик её увидит, не настраивая ничего, у остальных таблица не разъезжается.
-    const showEnginePower = sortedSeaService.some(s => String(s.enginePower || '').trim());
+    // Engine, power, propulsion and reefer plant share one «Machinery» cell with
+    // only the filled parts: separate columns made up to 11 columns, which don't
+    // fit A4. Every optional column appears only when filled in at least one
+    // record, so a deck officer's CV keeps the short table.
+    const machinery = (s: SeaService) => {
+      const reefer = withUnit(s.reeferPower, 'kW');
+      return [
+        String(s.engineType || '').trim(),
+        withUnit(s.enginePower, 'kW'),
+        String(s.propulsionType || '').trim(),
+        reefer ? `${t('cv.table.reefer')} ${reefer}` : '',
+      ].filter(Boolean).join(' · ');
+    };
+    const showMachinery = sortedSeaService.some(s => machinery(s));
+    const showTeu = sortedSeaService.some(s => String(s.teu || '').trim());
+    const showSailingArea = sortedSeaService.some(s => String(s.sailingArea || '').trim());
 
     const seaServiceHtml = sortedSeaService.length > 0 ? `
       <div class="section">
@@ -192,7 +210,9 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
               <th>${t('seaService.form.vesselName')}</th>
               <th>${t('seaService.form.position')}</th>
               <th>${t('seaService.form.vesselType')}</th>
-              ${showEnginePower ? `<th>${t('seaService.form.enginePower')}</th>` : ''}
+              ${showTeu ? `<th>${t('cv.table.teu')}</th>` : ''}
+              ${showMachinery ? `<th>${t('cv.table.machinery')}</th>` : ''}
+              ${showSailingArea ? `<th>${t('cv.table.area')}</th>` : ''}
               <th>${t('seaService.form.signOn')}</th>
               <th>${t('seaService.form.signOff')}</th>
             </tr>
@@ -203,12 +223,35 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
               <td>${s.vesselName || '-'}</td>
               <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
               <td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>
-              ${showEnginePower ? `<td>${formatEnginePower(s.enginePower)}</td>` : ''}
-              <td>${formatDate(s.signOn)}</td>
-              <td>${formatDate(s.signOff)}</td>
+              ${showTeu ? `<td style="white-space:nowrap">${withUnit(s.teu, 'TEU') || '-'}</td>` : ''}
+              ${showMachinery ? `<td>${machinery(s) || '-'}</td>` : ''}
+              ${showSailingArea ? `<td>${String(s.sailingArea || '').trim() || '-'}</td>` : ''}
+              <td style="white-space:nowrap">${formatDate(s.signOn)}</td>
+              <td style="white-space:nowrap">${formatDate(s.signOff)}</td>
             </tr>`).join('')}
           </tbody>
         </table>
+      </div>` : '';
+
+    // Layouts with a left sidebar leave the main column ~⅔ of A4: an 8-column
+    // table there is unreadable, so they get one block per contract instead.
+    const voyageBlocksHtml = sortedSeaService.length > 0 ? `
+      <div class="section">
+        <h2>${t('cv.sections.seaService')}</h2>
+        ${sortedSeaService.map(s => {
+          const position = s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-');
+          const vesselType = s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
+          const sub = [vesselType, withUnit(s.teu, 'TEU')].filter(Boolean).join(' · ');
+          const mach = machinery(s);
+          const area = String(s.sailingArea || '').trim();
+          return `
+        <div class="voyage">
+          <div class="v-top"><span class="v-vessel">${s.vesselName || '-'}</span><span class="v-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}</span></div>
+          <div class="v-pos">${position}${sub ? ` <span class="v-sub">· ${sub}</span>` : ''}</div>
+          ${mach ? `<div class="v-line"><span class="v-label">${t('cv.table.machinery')}:</span> ${mach}</div>` : ''}
+          ${area ? `<div class="v-line"><span class="v-label">${t('cv.table.area')}:</span> ${area}</div>` : ''}
+        </div>`;
+        }).join('')}
       </div>` : '';
 
     // ── Ближайший родственник ─────────────────────────────────────────────────
@@ -295,7 +338,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
     ${photoHtml}
     <h1>${fullName}</h1>
     <div class="contact-summary">
-      ${personal.phone ? `<span>${t('personal.fields.phone')}: ${personal.phone} | </span>` : ''}
+      ${phones ? `<span>${t('personal.fields.phone')}: ${phones} | </span>` : ''}
       ${personal.email ? `<span>${t('personal.fields.email')}: ${personal.email}</span>` : ''}
     </div>
     ${positionLine ? `<p style="font-size:14px;margin-top:5px;"><strong>${positionLine}</strong></p>` : ''}
@@ -314,7 +357,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
   </div>
   <div class="section">
     <h2>${t('personal.sections.contactInformation')}</h2>
-    <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span> ${personal.phone || '-'}</div>
+    <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span> ${phones || '-'}</div>
     <div class="info-row"><span class="info-label">${t('personal.fields.email')}:</span> ${personal.email || '-'}</div>
     ${personal.whatsapp ? `<div class="info-row"><span class="info-label">${t('personal.fields.whatsapp')}:</span> ${personal.whatsapp}</div>` : ''}
     ${personal.address ? `<div class="info-row"><span class="info-label">${t('personal.fields.address')}:</span> ${[personal.address, personal.city, personal.country].filter(Boolean).join(', ')}</div>` : ''}
@@ -356,8 +399,8 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       <div class="top-name">${fullName}</div>
       ${positionLine ? `<div class="top-position">${positionLine}</div>` : ''}
       <div class="top-contact">
-        ${personal.phone ? `${t('personal.fields.phone')}: ${personal.phone}` : ''}
-        ${personal.phone && personal.email ? ' &nbsp;|&nbsp; ' : ''}
+        ${phones ? `${t('personal.fields.phone')}: ${phones}` : ''}
+        ${phones && personal.email ? ' &nbsp;|&nbsp; ' : ''}
         ${personal.email ? `${t('personal.fields.email')}: ${personal.email}` : ''}
       </div>
     </div>
@@ -382,7 +425,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
     </div>
     <div class="section">
       <h2>${t('personal.sections.contactInformation')}</h2>
-      <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span><span class="info-val">${personal.phone || '-'}</span></div>
+      <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span><span class="info-val">${phones || '-'}</span></div>
       <div class="info-row"><span class="info-label">${t('personal.fields.email')}:</span><span class="info-val">${personal.email || '-'}</span></div>
       ${personal.whatsapp ? `<div class="info-row"><span class="info-label">${t('personal.fields.whatsapp')}:</span><span class="info-val">${personal.whatsapp}</span></div>` : ''}
       ${personal.address ? `<div class="info-row"><span class="info-label">${t('personal.fields.address')}:</span><span class="info-val">${[personal.address, personal.city, personal.country].filter(Boolean).join(', ')}</span></div>` : ''}
@@ -473,6 +516,14 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
   table { width: 100%; border-collapse: collapse; margin-top: 6px; }
   th { background: #2f3338; color: #fff; text-align: left; padding: 6px 8px; font-size: 10px; font-weight: 600; }
   td { border-bottom: 1px solid #e0e0e0; padding: 7px 8px; font-size: 10px; vertical-align: top; }
+  .voyage { border-left:3px solid #2f3338; background:#f5f6f7; padding:6px 10px; margin-bottom:8px; page-break-inside:avoid; }
+  .v-top { display:flex; justify-content:space-between; gap:8px; }
+  .v-vessel { font-weight:bold; font-size:11.5px; }
+  .v-dates { font-size:10px; color:#666; white-space:nowrap; }
+  .v-pos { font-size:10.5px; margin-top:2px; }
+  .v-sub { color:#777; }
+  .v-line { font-size:10px; margin-top:3px; color:#333; }
+  .v-label { color:#777; font-weight:bold; }
   .section { margin-bottom: 18px; }
   .info-row { display: flex; margin-bottom: 5px; page-break-inside: avoid; }
   .info-label { font-weight: 700; width: 140px; flex-shrink: 0; color: #555; font-size: 10px; }
@@ -496,7 +547,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
         <div class="sb-section">
           <div class="sb-title">${t('personal.sections.contactInformation')}</div>
-          ${personal.phone ? `<div class="contact-row"><span class="ic">${phoneSvg}</span><span>${personal.phone}</span></div>` : ''}
+          ${phones ? `<div class="contact-row"><span class="ic">${phoneSvg}</span><span>${phones}</span></div>` : ''}
           ${personal.email ? `<div class="contact-row"><span class="ic">${mailSvg}</span><span>${personal.email}</span></div>` : ''}
           ${personal.whatsapp ? `<div class="contact-row"><span class="ic wa">${waSvg}</span><span>${personal.whatsapp}</span></div>` : ''}
         </div>
@@ -521,7 +572,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
         <h1>${fullName}</h1>
         ${positionLine ? `<div class="red">${positionLine}</div>` : ''}
         <div class="divider"></div>
-        <div class="summary">${[personal.phone, personal.email].filter(Boolean).join('  |  ')}</div>
+        <div class="summary">${[phones, personal.email].filter(Boolean).join('  |  ')}</div>
       </div>
       <div class="r-body">
         <div class="qr-row">
@@ -536,7 +587,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
           <div class="info-row"><span class="info-label">${t('personal.fields.availabilityDate')}:</span><span>${personal.availabilityDate ? formatDate(personal.availabilityDate) : '-'}</span></div>
         </div>
 
-        ${seaServiceHtml}${documentsHtml}${nextOfKinHtml}${notesHtml}
+        ${voyageBlocksHtml}${documentsHtml}${nextOfKinHtml}${notesHtml}
       </div>
     </main>
 
@@ -585,7 +636,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       <div class="name-line"><strong>${fullName.split(' ').slice(0,-1).join(' ')} </strong>${fullName.split(' ').slice(-1)[0]}</div>
       ${positionLine ? `<div class="position-line">${positionLine}</div>` : ''}
       <div class="contact-line">
-        ${[personal.phone, personal.email, personal.whatsapp ? `WhatsApp: ${personal.whatsapp}` : ''].filter(Boolean).join('  ·  ')}
+        ${[phones, personal.email, personal.whatsapp ? `WhatsApp: ${personal.whatsapp}` : ''].filter(Boolean).join('  ·  ')}
       </div>
     </div>
     ${personal.photo ? `<img class="header-photo" src="${personal.photo}" />` : ''}
@@ -608,7 +659,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
   <div class="section">
     <h2>${t('personal.sections.contactInformation')}</h2>
     <div class="divider"></div>
-    <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span><span class="info-val">${personal.phone || '-'}</span></div>
+    <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span><span class="info-val">${phones || '-'}</span></div>
     <div class="info-row"><span class="info-label">${t('personal.fields.email')}:</span><span class="info-val">${personal.email || '-'}</span></div>
     ${personal.whatsapp ? `<div class="info-row"><span class="info-label">${t('personal.fields.whatsapp')}:</span><span class="info-val">${personal.whatsapp}</span></div>` : ''}
     ${personal.address ? `<div class="info-row"><span class="info-label">${t('personal.fields.address')}:</span><span class="info-val">${[personal.address, personal.city, personal.country].filter(Boolean).join(', ')}</span></div>` : ''}

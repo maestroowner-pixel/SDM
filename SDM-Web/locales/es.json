@@ -101,7 +101,9 @@
       "customPosition": "Especificar Posición",
       "customPositionPlaceholder": "Ingrese su posición",
       "nearestAirport": "Aeropuerto más cercano",
-      "availabilityDate": "Fecha de disponibilidad"
+      "availabilityDate": "Fecha de disponibilidad",
+      "mobilePhone2": "Teléfono Móvil 2",
+      "mobilePhone3": "Teléfono Móvil 3"
     },
     "alerts": {
       "permissionRequired": "Permiso Requerido",
@@ -262,7 +264,17 @@
       "dpSystemPlaceholder": "ej., Kongsberg, Navis",
       "commentsPlaceholder": "Información adicional",
       "customPosition": "Especificar Posición",
-      "customPositionPlaceholder": "Ingrese su posición"
+      "customPositionPlaceholder": "Ingrese su posición",
+      "propulsionType": "Tipo de Propulsión",
+      "propulsionTypePlaceholder": "Seleccione el tipo de propulsión",
+      "sailingArea": "Zona de Navegación",
+      "sailingAreaPlaceholder": "Seleccione la zona de navegación",
+      "otherOption": "Otro (introducir manualmente)",
+      "clearSelection": "Borrar",
+      "reeferPower": "Potencia de la Planta Frigorífica",
+      "reeferPowerPlaceholder": "p. ej. 850 kW",
+      "teu": "Capacidad de Contenedores (TEU)",
+      "teuPlaceholder": "p. ej. 4500"
     },
     "alerts": {
       "deleteTitle": "Eliminar Servicio Marítimo",
@@ -387,7 +399,11 @@
       "document": "Documento",
       "number": "Número",
       "issueDate": "Fecha de Emisión",
-      "expiryDate": "Fecha de Vencimiento"
+      "expiryDate": "Fecha de Vencimiento",
+      "teu": "TEU",
+      "machinery": "Maquinaria",
+      "area": "Zona",
+      "reefer": "Frigorífica"
     },
     "includes": {
       "personalInfo": "Información Personal",

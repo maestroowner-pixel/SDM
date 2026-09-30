@@ -134,7 +134,9 @@
       "customPosition": "Tukuyin ang Posisyon",
       "nearestAirport": "Pinakamalapit na Paliparan",
       "availabilityDate": "Petsa ng Availability",
-      "customPositionPlaceholder": "Ilagay ang iyong posisyon"
+      "customPositionPlaceholder": "Ilagay ang iyong posisyon",
+      "mobilePhone2": "Mobile Phone 2",
+      "mobilePhone3": "Mobile Phone 3"
     },
     "alerts": {
       "permissionRequired": "Kailangan ng Pahintulot",
@@ -287,7 +289,17 @@
       "dpSystemPlaceholder": "hal., Kongsberg, Navis",
       "commentsPlaceholder": "Karagdagang impormasyon",
       "customPosition": "Tukuyin ang Posisyon",
-      "customPositionPlaceholder": "Ilagay ang iyong posisyon"
+      "customPositionPlaceholder": "Ilagay ang iyong posisyon",
+      "propulsionType": "Uri ng Propulsion",
+      "propulsionTypePlaceholder": "Pumili ng uri ng propulsion",
+      "sailingArea": "Lugar ng Paglalayag",
+      "sailingAreaPlaceholder": "Pumili ng lugar ng paglalayag",
+      "otherOption": "Iba pa (ilagay nang manu-mano)",
+      "clearSelection": "I-clear",
+      "reeferPower": "Lakas ng Reefer Plant",
+      "reeferPowerPlaceholder": "hal. 850 kW",
+      "teu": "Kapasidad ng Container (TEU)",
+      "teuPlaceholder": "hal. 4500"
     },
     "alerts": {
       "deleteTitle": "Burahin ang Sea Service",
@@ -400,7 +412,11 @@
       "document": "Dokumento",
       "number": "Numero",
       "issueDate": "Petsa ng Pag-isyu",
-      "expiryDate": "Petsa ng Pagkapaso"
+      "expiryDate": "Petsa ng Pagkapaso",
+      "teu": "TEU",
+      "machinery": "Makinarya",
+      "area": "Lugar",
+      "reefer": "Reefer"
     },
     "includes": {
       "personalInfo": "Personal na Impormasyon",

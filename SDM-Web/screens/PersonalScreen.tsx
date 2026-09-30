@@ -176,6 +176,8 @@ export const PersonalScreen: React.FC = () => {
               <View style={styles.tabletCol}>
                 <Section title={t('personal.sections.contactInformation')}>
                   <InfoRow label={t('personal.fields.phone')} value={state.personal.phone} />
+                  {!!state.personal.mobilePhone2 && <InfoRow label={t('personal.fields.mobilePhone2')} value={state.personal.mobilePhone2} />}
+                  {!!state.personal.mobilePhone3 && <InfoRow label={t('personal.fields.mobilePhone3')} value={state.personal.mobilePhone3} />}
                   <InfoRow label={t('personal.fields.email')} value={state.personal.email} />
                   <InfoRow label={t('personal.fields.whatsapp')} value={state.personal.whatsapp} />
                   <InfoRow label={t('personal.fields.telegram')} value={state.personal.telegram} />
@@ -205,6 +207,8 @@ export const PersonalScreen: React.FC = () => {
 
             <Section title={t('personal.sections.contactInformation')}>
               <InfoRow label={t('personal.fields.phone')} value={state.personal.phone} />
+              {!!state.personal.mobilePhone2 && <InfoRow label={t('personal.fields.mobilePhone2')} value={state.personal.mobilePhone2} />}
+              {!!state.personal.mobilePhone3 && <InfoRow label={t('personal.fields.mobilePhone3')} value={state.personal.mobilePhone3} />}
               <InfoRow label={t('personal.fields.email')} value={state.personal.email} />
               <InfoRow label={t('personal.fields.whatsapp')} value={state.personal.whatsapp} />
               <InfoRow label={t('personal.fields.telegram')} value={state.personal.telegram} />
@@ -244,6 +248,8 @@ export const PersonalScreen: React.FC = () => {
         <FormInput label={t('personal.fields.placeOfBirth')} value={form.birthPlace} onChangeText={(v) => setForm({ ...form, birthPlace: v })} />
         <FormInput label={t('personal.fields.nationality')} value={form.nationality} onChangeText={(v) => setForm({ ...form, nationality: v })} />
         <FormInput label={t('personal.fields.phone')} value={form.phone} onChangeText={(v) => setForm({ ...form, phone: v })} keyboardType="phone-pad" />
+        <FormInput label={t('personal.fields.mobilePhone2')} value={form.mobilePhone2 || ''} onChangeText={(v) => setForm({ ...form, mobilePhone2: v })} keyboardType="phone-pad" />
+        <FormInput label={t('personal.fields.mobilePhone3')} value={form.mobilePhone3 || ''} onChangeText={(v) => setForm({ ...form, mobilePhone3: v })} keyboardType="phone-pad" />
         <FormInput label={t('personal.fields.email')} value={form.email} onChangeText={(v) => setForm({ ...form, email: v })} keyboardType="email-address" autoCapitalize="none" />
         <FormInput label={t('personal.fields.whatsapp')} value={form.whatsapp} onChangeText={(v) => setForm({ ...form, whatsapp: v })} keyboardType="phone-pad" />
         <FormInput label={t('personal.fields.telegram')} value={form.telegram} onChangeText={(v) => setForm({ ...form, telegram: v })} />

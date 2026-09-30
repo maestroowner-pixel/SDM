@@ -2,7 +2,7 @@
 // constructor". Produces a print-ready A4 CV whose layout, accent colour, font,
 // and feature toggles come from a CvDesignConfig.
 import qrcode from 'qrcode-generator';
-import { formatDate } from './helpers';
+import { formatDate, allPhones } from './helpers';
 import { t } from './i18n';
 import { VESSEL_TYPES } from '../components/VesselTypeInput';
 
@@ -73,7 +73,7 @@ const makeQrDataUrl = (data: string): string => {
 };
 
 const buildVCard = (p: any, title?: string): string => {
-  const hasContact = p?.firstName || p?.lastName || p?.phone || p?.email;
+  const hasContact = p?.firstName || p?.lastName || allPhones(p).length > 0 || p?.email;
   if (!hasContact) return '';
   const fullName = `${p.firstName || ''} ${p.lastName || ''}`.trim();
   const telegramHandle = p.telegram ? (String(p.telegram).startsWith('@') ? p.telegram : `@${p.telegram}`) : '';
@@ -83,7 +83,7 @@ const buildVCard = (p: any, title?: string): string => {
     `N:${p.lastName || ''};${p.firstName || ''};${p.middleName || ''};;`,
     `FN:${fullName}`,
     (title || p.appliedPosition) ? `TITLE:${title || p.appliedPosition}` : '',
-    p.phone ? `TEL;TYPE=CELL:${p.phone}` : '',
+    ...allPhones(p).map((n: string) => `TEL;TYPE=CELL:${n}`),
     p.email ? `EMAIL:${p.email}` : '',
     telegramHandle ? `X-SOCIALPROFILE;TYPE=telegram:${telegramHandle}` : '',
     whatsappNumber ? `X-SOCIALPROFILE;TYPE=whatsapp:${p.whatsapp}` : '',
@@ -102,10 +102,14 @@ const getVesselTypeLabel = (value: string): string => {
 // Поле свободное: кто-то пишет «12000», кто-то «12000 kW», кто-то «2 × 5400 kW».
 // Голое число без единицы в резюме читается плохо, поэтому к чистым числам
 // дописываем kW; всё, где единица уже указана, оставляем как ввёл пользователь.
-const formatEnginePower = (raw: string): string => {
+// Numeric fields are free text: someone types «12000», someone «12000 kW»,
+// someone «2 × 5400 kW». A bare number reads badly in a CV, so the customary
+// unit is appended to plain numbers only; anything else is kept as typed.
+// Empty → '' so the parts can be joined into one cell.
+const withUnit = (raw: string | undefined, unit: string): string => {
   const v = String(raw || '').trim();
-  if (!v) return '-';
-  return /^[\d\s.,]+$/.test(v) ? `${v} kW` : v;
+  if (!v) return '';
+  return /^[\d\s.,]+$/.test(v) ? `${v} ${unit}` : v;
 };
 
 const wrapAfterFiveWords = (text: string): string => {
@@ -127,6 +131,8 @@ const fontStack = (font: 'sans' | 'serif') =>
 // ── Shared, layout-independent content blocks ────────────────────────────────
 const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
   const { personal, biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
+  // Main phone plus the extra mobiles, e.g. «+380 50 111 22 33, +44 7700 900123».
+  const phones = allPhones(personal).join(', ');
 
   const fullName = [personal.firstName, personal.middleName, personal.lastName]
     .filter(Boolean).join(' ') || t('cv.defaultName');
@@ -179,10 +185,43 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       </table>
     </div>` : '';
 
-  // Мощность ГД — обязательный пункт в резюме механика и лишний шум у палубных.
-  // Поэтому колонка появляется, только если поле заполнено хотя бы в одной записи:
-  // механик её увидит, не настраивая ничего, у остальных таблица не разъезжается.
-  const showEnginePower = sortedSeaService.some((s: any) => String(s.enginePower || '').trim());
+  // Engine, power, propulsion and reefer plant share one «Machinery» cell with
+  // only the filled parts: separate columns made up to 11 columns, which don't
+  // fit A4. Every optional column appears only when filled in at least one
+  // record, so a deck officer's CV keeps the short table.
+  const machinery = (s: any) => {
+    const reefer = withUnit(s.reeferPower, 'kW');
+    return [
+      String(s.engineType || '').trim(),
+      withUnit(s.enginePower, 'kW'),
+      String(s.propulsionType || '').trim(),
+      reefer ? `${t('cv.table.reefer')} ${reefer}` : '',
+    ].filter(Boolean).join(' · ');
+  };
+  const showMachinery = sortedSeaService.some((s: any) => machinery(s));
+  const showTeu = sortedSeaService.some((s: any) => String(s.teu || '').trim());
+  const showSailingArea = sortedSeaService.some((s: any) => String(s.sailingArea || '').trim());
+
+  // Layouts with a left sidebar leave the main column ~⅔ of A4: an 8-column
+  // table there is unreadable, so they get one block per contract instead.
+  const voyageBlocksHtml = sortedSeaService.length > 0 ? `
+    <div class="section">
+      <h2>${t('cv.sections.seaService')}</h2>
+      ${sortedSeaService.map((s: any) => {
+        const position = s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-');
+        const vesselType = s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
+        const sub = [vesselType, withUnit(s.teu, 'TEU')].filter(Boolean).join(' · ');
+        const mach = machinery(s);
+        const area = String(s.sailingArea || '').trim();
+        return `
+      <div class="voyage">
+        <div class="v-top"><span class="v-vessel">${s.vesselName || '-'}</span><span class="v-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}</span></div>
+        <div class="v-pos">${position}${sub ? ` <span class="v-sub">· ${sub}</span>` : ''}</div>
+        ${mach ? `<div class="v-line"><span class="v-label">${t('cv.table.machinery')}:</span> ${mach}</div>` : ''}
+        ${area ? `<div class="v-line"><span class="v-label">${t('cv.table.area')}:</span> ${area}</div>` : ''}
+      </div>`;
+      }).join('')}
+    </div>` : '';
 
   const seaServiceHtml = sortedSeaService.length > 0 ? `
     <div class="section">
@@ -192,7 +231,9 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
           <th>${t('seaService.form.vesselName')}</th>
           <th>${t('seaService.form.position')}</th>
           <th>${t('seaService.form.vesselType')}</th>
-          ${showEnginePower ? `<th>${t('seaService.form.enginePower')}</th>` : ''}
+          ${showTeu ? `<th>${t('cv.table.teu')}</th>` : ''}
+          ${showMachinery ? `<th>${t('cv.table.machinery')}</th>` : ''}
+          ${showSailingArea ? `<th>${t('cv.table.area')}</th>` : ''}
           <th>${t('seaService.form.signOn')}</th>
           <th>${t('seaService.form.signOff')}</th>
         </tr></thead>
@@ -201,9 +242,11 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
             <td>${s.vesselName || '-'}</td>
             <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
             <td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>
-            ${showEnginePower ? `<td>${formatEnginePower(s.enginePower)}</td>` : ''}
-            <td>${formatDate(s.signOn)}</td>
-            <td>${formatDate(s.signOff)}</td>
+            ${showTeu ? `<td style="white-space:nowrap">${withUnit(s.teu, 'TEU') || '-'}</td>` : ''}
+            ${showMachinery ? `<td>${machinery(s) || '-'}</td>` : ''}
+            ${showSailingArea ? `<td>${String(s.sailingArea || '').trim() || '-'}</td>` : ''}
+            <td style="white-space:nowrap">${formatDate(s.signOn)}</td>
+            <td style="white-space:nowrap">${formatDate(s.signOff)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -259,7 +302,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
   const contactInfo = `
     <div class="section">
       <h2>${t('personal.sections.contactInformation')}</h2>
-      <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span> ${personal.phone || '-'}</div>
+      <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span> ${phones || '-'}</div>
       <div class="info-row"><span class="info-label">${t('personal.fields.email')}:</span> ${personal.email || '-'}</div>
       ${personal.whatsapp ? `<div class="info-row"><span class="info-label">${t('personal.fields.whatsapp')}:</span> ${personal.whatsapp}</div>` : ''}
       ${personal.address ? `<div class="info-row"><span class="info-label">${t('personal.fields.address')}:</span> ${[personal.address, personal.city, personal.country].filter(Boolean).join(', ')}</div>` : ''}
@@ -277,8 +320,8 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
   const hasPhysical = !!(biometrics && (biometrics.height || biometrics.weight || biometrics.shoeSize || biometrics.bloodType));
 
   return {
-    personal, biometrics, fullName, positionLine, appQrUrl, contactQrUrl,
-    documentsHtml, seaServiceHtml, nextOfKinHtml, educationInner, educationHtml,
+    personal, phones, biometrics, fullName, positionLine, appQrUrl, contactQrUrl,
+    documentsHtml, seaServiceHtml, voyageBlocksHtml, nextOfKinHtml, educationInner, educationHtml,
     notesHtml, personalDetails, contactInfo, careerPrefs, contactQrCell, hasPhysical,
   };
 };
@@ -344,8 +387,8 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
           <div class="top-name">${b.fullName}</div>
           ${b.positionLine ? `<div class="top-position">${b.positionLine}</div>` : ''}
           <div class="top-contact">
-            ${b.personal.phone ? `${t('personal.fields.phone')}: ${b.personal.phone}` : ''}
-            ${b.personal.phone && b.personal.email ? ' &nbsp;|&nbsp; ' : ''}
+            ${b.phones ? `${t('personal.fields.phone')}: ${b.phones}` : ''}
+            ${b.phones && b.personal.email ? ' &nbsp;|&nbsp; ' : ''}
             ${b.personal.email ? `${t('personal.fields.email')}: ${b.personal.email}` : ''}
           </div>
         </div>
@@ -372,7 +415,7 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
       <div class="banner">
         <h1>${b.fullName}</h1>
         ${b.positionLine ? `<div class="pos">${b.positionLine}</div>` : ''}
-        <div class="ct">${[b.personal.phone && `${t('personal.fields.phone')}: ${b.personal.phone}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' &nbsp;|&nbsp; ')}</div>
+        <div class="ct">${[b.phones && `${t('personal.fields.phone')}: ${b.phones}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' &nbsp;|&nbsp; ')}</div>
       </div>
       ${b.careerPrefs}${b.personalDetails}${b.contactInfo}${sectionsBody(b)}`;
     return page(cfg, extraCss, `<div class="wrap">${header}</div>`, false);
@@ -397,7 +440,7 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
       <h1>${b.fullName}</h1>
       ${b.positionLine ? `<p style="font-size:14px;margin-top:5px;"><strong>${b.positionLine}</strong></p>` : ''}
       <div style="font-size:10px;color:#555;margin-top:6px;">
-        ${[b.personal.phone && `${t('personal.fields.phone')}: ${b.personal.phone}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' | ')}
+        ${[b.phones && `${t('personal.fields.phone')}: ${b.phones}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' | ')}
       </div>
     </div>
     ${b.careerPrefs}${b.personalDetails}${b.contactInfo}${sectionsBody(b)}`;
@@ -462,6 +505,14 @@ const sidebarLayout = (b: any, cfg: CvDesignConfig): string => {
     th { background:${accent}; color:#fff; padding:6px 8px; text-align:left; font-size:10px; }
     td { border-bottom:1px solid #e3e3e3; padding:6px 8px; font-size:10px; }
     ${zebra}
+    .voyage { border-left:3px solid ${accent}; background:${hexToRgba(accent, 0.05)}; padding:6px 10px; margin-bottom:8px; page-break-inside:avoid; }
+    .v-top { display:flex; justify-content:space-between; gap:8px; }
+    .v-vessel { font-weight:bold; font-size:11.5px; }
+    .v-dates { font-size:10px; color:#666; white-space:nowrap; }
+    .v-pos { font-size:10.5px; margin-top:2px; }
+    .v-sub { color:#777; }
+    .v-line { font-size:10px; margin-top:3px; color:#333; }
+    .v-label { color:#777; font-weight:bold; }
     .info-row { display:flex; margin-bottom:5px; }
     .info-label { font-weight:bold; width:140px; flex-shrink:0; color:#555; }
     .app-qr { display:flex; align-items:center; margin-bottom:10px; }
@@ -475,7 +526,7 @@ const sidebarLayout = (b: any, cfg: CvDesignConfig): string => {
         ${(cfg.showPhoto && b.personal.photo) ? `<img class="sb-photo" src="${b.personal.photo}"/>` : ''}
         <div class="sb-section">
           <div class="sb-title">${t('personal.sections.contactInformation')}</div>
-          ${b.personal.phone ? `<div class="sb-row"><span>${t('personal.fields.phone')}:</span> ${b.personal.phone}</div>` : ''}
+          ${b.phones ? `<div class="sb-row"><span>${t('personal.fields.phone')}:</span> ${b.phones}</div>` : ''}
           ${b.personal.email ? `<div class="sb-row"><span>${t('personal.fields.email')}:</span> ${b.personal.email}</div>` : ''}
           ${b.personal.nationality ? `<div class="sb-row"><span>${t('personal.fields.nationality')}:</span> ${b.personal.nationality}</div>` : ''}
           ${b.personal.birthDate ? `<div class="sb-row"><span>${t('personal.fields.dateOfBirth')}:</span> ${formatDate(b.personal.birthDate)}</div>` : ''}
@@ -488,7 +539,7 @@ const sidebarLayout = (b: any, cfg: CvDesignConfig): string => {
       <div class="main">
         ${appQrRow(b)}
         ${b.careerPrefs}
-        ${b.seaServiceHtml}${b.documentsHtml}${b.nextOfKinHtml}${b.notesHtml}
+        ${b.voyageBlocksHtml}${b.documentsHtml}${b.nextOfKinHtml}${b.notesHtml}
       </div>
     </div>
   </body></html>`;

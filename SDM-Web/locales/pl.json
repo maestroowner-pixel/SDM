@@ -134,7 +134,9 @@
       "customPosition": "Określ stanowisko",
       "nearestAirport": "Najbliższe lotnisko",
       "availabilityDate": "Data dostępności",
-      "customPositionPlaceholder": "Wpisz swoje stanowisko"
+      "customPositionPlaceholder": "Wpisz swoje stanowisko",
+      "mobilePhone2": "Telefon komórkowy 2",
+      "mobilePhone3": "Telefon komórkowy 3"
     },
     "alerts": {
       "permissionRequired": "Wymagane uprawnienia",
@@ -287,7 +289,17 @@
       "dpSystemPlaceholder": "np. Kongsberg, Navis",
       "commentsPlaceholder": "Dodatkowe informacje",
       "customPosition": "Określ stanowisko",
-      "customPositionPlaceholder": "Wpisz swoje stanowisko"
+      "customPositionPlaceholder": "Wpisz swoje stanowisko",
+      "propulsionType": "Typ napędu",
+      "propulsionTypePlaceholder": "Wybierz typ napędu",
+      "sailingArea": "Rejon żeglugi",
+      "sailingAreaPlaceholder": "Wybierz rejon żeglugi",
+      "otherOption": "Inne (wpisz ręcznie)",
+      "clearSelection": "Wyczyść",
+      "reeferPower": "Moc instalacji chłodniczej",
+      "reeferPowerPlaceholder": "np. 850 kW",
+      "teu": "Pojemność kontenerowa (TEU)",
+      "teuPlaceholder": "np. 4500"
     },
     "alerts": {
       "deleteTitle": "Usuń praktykę",
@@ -400,7 +412,11 @@
       "document": "Dokument",
       "number": "Numer",
       "issueDate": "Data wyd.",
-      "expiryDate": "Data ważn."
+      "expiryDate": "Data ważn.",
+      "teu": "TEU",
+      "machinery": "Siłownia",
+      "area": "Rejon",
+      "reefer": "Chłodnia"
     },
     "includes": {
       "personalInfo": "Informacje osobiste",

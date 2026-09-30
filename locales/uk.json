@@ -134,7 +134,9 @@
       "customPosition": "Вказати посаду",
       "nearestAirport": "Найближчий аеропорт",
       "availabilityDate": "Дата готовності",
-      "customPositionPlaceholder": "Введіть вашу посаду"
+      "customPositionPlaceholder": "Введіть вашу посаду",
+      "mobilePhone2": "Мобільний телефон 2",
+      "mobilePhone3": "Мобільний телефон 3"
     },
     "alerts": {
       "permissionRequired": "Необхідний дозвіл",
@@ -287,7 +289,17 @@
       "dpSystemPlaceholder": "напр., Kongsberg, Navis",
       "commentsPlaceholder": "Додаткова інформація",
       "customPosition": "Вказати посаду",
-      "customPositionPlaceholder": "Введіть вашу посаду"
+      "customPositionPlaceholder": "Введіть вашу посаду",
+      "propulsionType": "Тип рушія",
+      "propulsionTypePlaceholder": "Оберіть тип рушія",
+      "sailingArea": "Район плавання",
+      "sailingAreaPlaceholder": "Оберіть район плавання",
+      "otherOption": "Інше (ввести вручну)",
+      "clearSelection": "Очистити",
+      "reeferPower": "Потужність рефрижераторної установки",
+      "reeferPowerPlaceholder": "напр. 850 kW",
+      "teu": "Місткість контейнерів (TEU)",
+      "teuPlaceholder": "напр. 4500"
     },
     "alerts": {
       "deleteTitle": "Видалити запис про стаж",
@@ -400,7 +412,11 @@
       "document": "Документ",
       "number": "Номер",
       "issueDate": "Дата видачі",
-      "expiryDate": "Дійсний до"
+      "expiryDate": "Дійсний до",
+      "teu": "TEU",
+      "machinery": "Машинна установка",
+      "area": "Район",
+      "reefer": "Реф."
     },
     "includes": {
       "personalInfo": "Особиста інформація",

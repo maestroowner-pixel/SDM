@@ -86,7 +86,9 @@
       "customPosition": "指定职位",
       "customPositionPlaceholder": "输入您的职位",
       "nearestAirport": "最近的机场",
-      "availabilityDate": "可用日期"
+      "availabilityDate": "可用日期",
+      "mobilePhone2": "手机 2",
+      "mobilePhone3": "手机 3"
     },
     "alerts": {
       "permissionRequired": "需要权限",
@@ -240,7 +242,17 @@
       "dpSystemPlaceholder": "例如：Kongsberg, Navis",
       "commentsPlaceholder": "附加信息",
       "customPosition": "指定职位",
-      "customPositionPlaceholder": "输入您的职位"
+      "customPositionPlaceholder": "输入您的职位",
+      "propulsionType": "推进类型",
+      "propulsionTypePlaceholder": "选择推进类型",
+      "sailingArea": "航区",
+      "sailingAreaPlaceholder": "选择航区",
+      "otherOption": "其他（手动输入）",
+      "clearSelection": "清除",
+      "reeferPower": "冷藏装置功率",
+      "reeferPowerPlaceholder": "例如 850 kW",
+      "teu": "集装箱容量 (TEU)",
+      "teuPlaceholder": "例如 4500"
     },
     "alerts": {
       "deleteTitle": "删除海上服务",
@@ -352,7 +364,11 @@
       "document": "文件",
       "number": "编号",
       "issueDate": "签发日期",
-      "expiryDate": "到期日期"
+      "expiryDate": "到期日期",
+      "teu": "TEU",
+      "machinery": "动力装置",
+      "area": "航区",
+      "reefer": "冷藏"
     },
     "includes": {
       "personalInfo": "个人信息",

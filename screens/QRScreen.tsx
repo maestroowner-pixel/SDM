@@ -11,6 +11,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { useData } from '../contexts/DataContext';
 import { Ionicons } from '@expo/vector-icons';
 import { t } from '../utils/i18n'; // Импорт функции локализации
+import { allPhones } from '../utils/helpers';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 
 // Импорт фонового изображения медуз
@@ -38,7 +39,7 @@ export const QRScreen: React.FC = () => {
       `N:${personal.lastName};${personal.firstName};${personal.middleName};;`,
       `FN:${fullName}`,
       personal.appliedPosition ? `TITLE:${personal.appliedPosition}` : '',
-      personal.phone       ? `TEL;TYPE=CELL:${personal.phone}` : '',
+      ...allPhones(personal).map((n) => `TEL;TYPE=CELL:${n}`),
       personal.email       ? `EMAIL:${personal.email}` : '',
       telegramHandle       ? `X-SOCIALPROFILE;TYPE=telegram:${telegramHandle}` : '',
       whatsappNumber       ? `X-SOCIALPROFILE;TYPE=whatsapp:${personal.whatsapp}` : '',
@@ -49,7 +50,7 @@ export const QRScreen: React.FC = () => {
     ].filter(Boolean).join('\n');
   };
 
-  const hasContactInfo = personal.firstName || personal.lastName || personal.phone || personal.email;
+  const hasContactInfo = personal.firstName || personal.lastName || allPhones(personal).length > 0 || personal.email;
 
   return (
     <SafeAreaView style={{ flex: 1, paddingTop: 2 }}>
@@ -91,10 +92,10 @@ export const QRScreen: React.FC = () => {
                 )}
 
                 <View style={styles.contactPreview}>
-                  {personal.phone ? (
+                  {allPhones(personal).length ? (
                     <View style={styles.contactRow}>
                       <Ionicons name="call-outline" size={15} color={isDark ? '#64b5f6' : '#1976d2'} />
-                      <Text style={[styles.contactText, isDark ? styles.textMuted : styles.textMutedLight]}>{personal.phone}</Text>
+                      <Text style={[styles.contactText, isDark ? styles.textMuted : styles.textMutedLight]}>{allPhones(personal).join(', ')}</Text>
                     </View>
                   ) : null}
                   {personal.email ? (

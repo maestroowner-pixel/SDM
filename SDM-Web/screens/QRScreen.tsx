@@ -16,7 +16,7 @@ import { t } from '../utils/i18n'; // Импорт функции локализ
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import { printHtml } from '../utils/webPrint';
 import { alertMsg } from '../utils/webAlert';
-import { formatDateForFilename } from '../utils/helpers';
+import { formatDateForFilename, allPhones } from '../utils/helpers';
 
 // Импорт фонового изображения медуз
 const GHOST_JELLYFISH_IMAGE = require('../assets/images/ghost-jellyfish.png');
@@ -43,7 +43,7 @@ export const QRScreen: React.FC = () => {
       `N:${personal.lastName};${personal.firstName};${personal.middleName};;`,
       `FN:${fullName}`,
       personal.appliedPosition ? `TITLE:${personal.appliedPosition}` : '',
-      personal.phone       ? `TEL;TYPE=CELL:${personal.phone}` : '',
+      ...allPhones(personal).map((n) => `TEL;TYPE=CELL:${n}`),
       personal.email       ? `EMAIL:${personal.email}` : '',
       telegramHandle       ? `X-SOCIALPROFILE;TYPE=telegram:${telegramHandle}` : '',
       whatsappNumber       ? `X-SOCIALPROFILE;TYPE=whatsapp:${personal.whatsapp}` : '',
@@ -54,7 +54,7 @@ export const QRScreen: React.FC = () => {
     ].filter(Boolean).join('\n');
   };
 
-  const hasContactInfo = personal.firstName || personal.lastName || personal.phone || personal.email;
+  const hasContactInfo = personal.firstName || personal.lastName || allPhones(personal).length > 0 || personal.email;
 
   const [saving, setSaving] = useState(false);
 
@@ -72,6 +72,8 @@ export const QRScreen: React.FC = () => {
       const row = (label: string, val?: string) =>
         val ? rows.push(`<div class="row"><span class="lbl">${label}:</span> ${val}</div>`) : undefined;
       row(t('personal.fields.phone'), personal.phone);
+      row(t('personal.fields.mobilePhone2'), personal.mobilePhone2);
+      row(t('personal.fields.mobilePhone3'), personal.mobilePhone3);
       row(t('personal.fields.email'), personal.email);
       row(t('personal.fields.whatsapp'), personal.whatsapp);
       row(t('personal.fields.telegram'), personal.telegram
@@ -156,10 +158,10 @@ export const QRScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <View style={styles.contactPreview}>
-                  {personal.phone ? (
+                  {allPhones(personal).length ? (
                     <View style={styles.contactRow}>
                       <Ionicons name="call-outline" size={15} color={isDark ? '#64b5f6' : '#1976d2'} />
-                      <Text style={[styles.contactText, isDark ? styles.textMuted : styles.textMutedLight]}>{personal.phone}</Text>
+                      <Text style={[styles.contactText, isDark ? styles.textMuted : styles.textMutedLight]}>{allPhones(personal).join(', ')}</Text>
                     </View>
                   ) : null}
                   {personal.email ? (
