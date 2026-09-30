@@ -65,17 +65,6 @@ function applyKeyPatch() {
   }
 }
 
-// Читаем versionName и versionCode из build.gradle
-function getGradleInfo() {
-  const gradlePath = require('path').join(__dirname, '../android/app/build.gradle');
-  if (!fs.existsSync(gradlePath)) return null;
-  const content = fs.readFileSync(gradlePath, 'utf8');
-  const nameMatch = content.match(/versionName\s+"([^"]+)"/);
-  const codeMatch = content.match(/versionCode\s+(\d+)/);
-  if (nameMatch && codeMatch) return { name: nameMatch[1], code: codeMatch[1] };
-  return null;
-}
-
 
 console.log('🚀 Building preview/testing APK...\n');
 
@@ -157,40 +146,12 @@ try {
   process.exit(1);
 }
 
-// 5. Переименовываем и копируем APK
-console.log('\n📋 Renaming and copying APK...');
-
-const apkSourcePath = path.join(__dirname, '../android/app/build/outputs/apk/release/app-release.apk');
-const outputsDir = path.join(__dirname, '../outputs');
-const gradle4 = getGradleInfo();
-const gradleVersion4 = gradle4 ? gradle4.name : version;
-const gradleCode4 = gradle4 ? gradle4.code : '';
-const newFileName = `SDM-v${gradleVersion4}-${gradleCode4}-${buildType}.apk`;
-const apkDestPath = path.join(outputsDir, newFileName);
-
+// 5. Копируем APK в outputs/ (имя: SDM-v<ver>-<code>-<дата>-<flavor>.apk)
+console.log('\n📋 Copying APK to outputs...');
 try {
-  if (!fs.existsSync(outputsDir)) {
-    fs.mkdirSync(outputsDir, { recursive: true });
-    console.log('   ✅ Created outputs directory');
-  }
-
-  if (!fs.existsSync(apkSourcePath)) {
-    console.error(`❌ APK not found at: ${apkSourcePath}`);
-    process.exit(1);
-  }
-
-  fs.copyFileSync(apkSourcePath, apkDestPath);
-  
-  console.log('   ✅ APK renamed and copied successfully!');
-  console.log(`   📦 ${newFileName}`);
-  console.log(`   📁 Location: ${apkDestPath}`);
-  
-  const stats = fs.statSync(apkDestPath);
-  const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-  console.log(`   💾 Size: ${fileSizeMB} MB`);
-  
+  require('./artifact').copyArtifactToOutputs('apk', buildType);
 } catch (error) {
-  console.error('❌ Copy/rename failed:', error.message);
+  console.error('❌ Copy failed:', error.message);
   process.exit(1);
 }
 

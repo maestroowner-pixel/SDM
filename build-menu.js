@@ -137,50 +137,30 @@ async function executeCommand(command, description) {
 
 
 async function buildAndRename(buildCmd, ext, flavor) {
-  const gradle = getGradleVersion();
-  const label = gradle ? `v${gradle.name}-${gradle.code}` : 'unknown';
   const desc = ext === 'aab' ? `Building AAB (${flavor})` : `Building APK (${flavor})`;
+  const startedAt = Date.now();
   await executeCommand(buildCmd, desc);
 
-  // Ищем свежесобранный файл
-  const outputDirs = [
-    path.join(__dirname, `android/app/build/outputs/${ext === 'aab' ? 'bundle' : 'apk'}`),
-    path.join(__dirname, `outputs`),
-  ];
-  const patterns = ext === 'aab'
-    ? ['app-release.aab', 'app-production-release.aab']
-    : ['app-release.apk', 'app-production-release.apk', 'app-release-unsigned.apk'];
-
+  // The build script already copied the file into outputs/ under its final
+  // name (SDM-v<ver>-<code>-<date>-<flavor>.<ext>, see scripts/artifact.js).
+  // Just point at it — renaming here would strip the date again.
+  const outputsDir = path.join(__dirname, 'outputs');
   let found = null;
-  for (const dir of outputDirs) {
-    if (!fs.existsSync(dir)) continue;
-    for (const p of patterns) {
-      const candidate = path.join(dir, p);
-      if (fs.existsSync(candidate)) { found = candidate; break; }
-    }
-    if (!found) {
-      // fallback: самый свежий .ext в папке
-      try {
-        const files = fs.readdirSync(dir)
-          .filter(f => f.endsWith('.' + ext))
-          .map(f => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs }))
-          .sort((a, b) => b.t - a.t);
-        if (files.length) found = path.join(dir, files[0].f);
-      } catch (e) {}
-    }
-    if (found) break;
-  }
+  try {
+    found = fs.readdirSync(outputsDir)
+      .filter(f => f.endsWith('.' + ext))
+      .map(f => ({ f, t: fs.statSync(path.join(outputsDir, f)).mtimeMs }))
+      .filter(x => x.t >= startedAt)
+      .sort((a, b) => b.t - a.t)[0];
+  } catch (e) {}
 
   if (found) {
-    const newName = `SDM-${label}-${flavor}.${ext}`;
-    const dest = path.join(path.dirname(found), newName);
-    fs.renameSync(found, dest);
     console.log(colors.green + `
-📁 Renamed → ${newName}` + colors.reset);
-    console.log(colors.cyan + `   Path: ${dest}` + colors.reset);
+📁 ${found.f}` + colors.reset);
+    console.log(colors.cyan + `   Path: ${path.join(outputsDir, found.f)}` + colors.reset);
   } else {
     console.log(colors.yellow + `
-⚠️  Could not find output file to rename` + colors.reset);
+⚠️  No new .${ext} in outputs/ — check the build log above` + colors.reset);
   }
 }
 async function handleChoice(choice) {

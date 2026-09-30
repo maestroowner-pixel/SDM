@@ -64,17 +64,6 @@ function applyKeyPatch() {
   }
 }
 
-// Читаем versionName и versionCode из build.gradle
-function getGradleInfo() {
-  const gradlePath = require('path').join(__dirname, '../android/app/build.gradle');
-  if (!fs.existsSync(gradlePath)) return null;
-  const content = fs.readFileSync(gradlePath, 'utf8');
-  const nameMatch = content.match(/versionName\s+"([^"]+)"/);
-  const codeMatch = content.match(/versionCode\s+(\d+)/);
-  if (nameMatch && codeMatch) return { name: nameMatch[1], code: codeMatch[1] };
-  return null;
-}
-
 
 console.log('🚀 Starting production AAB build...\n');
 
@@ -141,29 +130,13 @@ try {
   process.exit(1);
 }
 
-// 5. Копируем AAB
+// 5. Копируем AAB в outputs/ (имя: SDM-v<ver>-<code>-<дата>-<flavor>.aab)
 console.log('\n📋 Copying AAB to outputs...');
 try {
-  execSync('node scripts/copy-aab.js', { stdio: 'inherit' });
+  require('./artifact').copyArtifactToOutputs('aab', envVars.APP_VARIANT || 'preview');
 } catch (error) {
-  console.error('❌ Copy failed');
+  console.error('❌ Copy failed:', error.message);
   process.exit(1);
 }
 
-// Переименовываем AAB согласно build.gradle
-const aabSrc = path.join(__dirname, '../android/app/build/outputs/bundle/release/app-release.aab');
-const outputsDir2 = path.join(__dirname, '../outputs');
-if (fs.existsSync(aabSrc)) {
-  const gradle2 = getGradleInfo();
-  const gVer = gradle2 ? gradle2.name : (envVars.APP_VERSION || '0.0.0');
-  const gCode = gradle2 ? gradle2.code : '';
-  const buildType2 = envVars.APP_VARIANT || 'preview';
-  const renamed = `SDM-v${gVer}-${gCode}-${buildType2}.aab`;
-  if (!fs.existsSync(outputsDir2)) fs.mkdirSync(outputsDir2, { recursive: true });
-  fs.copyFileSync(aabSrc, path.join(outputsDir2, renamed));
-  console.log('\n📁 Renamed → ' + renamed);
-}
-
 console.log('\n✅ Production AAB build complete!');
-const buildType = envVars.APP_VARIANT || 'preview'; // preview, testing, dev
-const newFileName = `seafarer-documents-manager-${version}-${buildType}.aab`;

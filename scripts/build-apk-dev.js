@@ -128,12 +128,12 @@ try {
   process.exit(1);
 }
 
-// 5. Копируем APK
+// 5. Копируем APK в outputs/ (имя: SDM-v<ver>-<code>-<дата>-<flavor>.apk)
 console.log('\n📋 Copying APK to outputs...');
 try {
-  execSync('node scripts/copy-apk.js', { stdio: 'inherit' });
+  require('./artifact').copyArtifactToOutputs('apk', envVars.APP_VARIANT || 'development');
 } catch (error) {
-  console.error('❌ Copy failed');
+  console.error('❌ Copy failed:', error.message);
   process.exit(1);
 }
 

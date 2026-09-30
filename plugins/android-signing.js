@@ -19,8 +19,11 @@ const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugin
 // build.gradle reads them via findProperty(); if they're absent the release
 // build falls back to the debug keystore instead of failing configuration.
 
+// Heap: the template's -Xmx2048m makes R8 (:app:minifyReleaseWithR8) die with
+// "OutOfMemoryError: Java heap space" since the SDK 56 patch bump.
 const GRADLE_PROPERTIES = {
   reactNativeArchitectures: 'armeabi-v7a,arm64-v8a,x86,x86_64',
+  'org.gradle.jvmargs': '-Xmx4096m -XX:MaxMetaspaceSize=1024m',
 };
 
 function withHardenedGradleProperties(config) {

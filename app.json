@@ -2,7 +2,7 @@
   "expo": {
     "name": "Seafarer Documents Manager",
     "slug": "seafarer.documents.manager",
-    "version": "3.1.7",
+    "version": "3.1.9",
     "orientation": "all",
     "icon": "./assets/images/icon.png",
     "scheme": "seafarer-docs",
@@ -10,8 +10,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "seafarer.documents.manager",
+      "appleTeamId": "VL4B4R8D84",
       "deploymentTarget": "16.4",
-      "buildNumber": "301071",
+      "buildNumber": "301091",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
         "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility.",
@@ -21,7 +22,7 @@
     },
     "android": {
       "package": "seafarer.documents.manager",
-      "versionCode": 301071
+      "versionCode": 301091
     },
     "plugins": [
       [
@@ -42,13 +43,14 @@
             "newArchEnabled": true,
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
-            "buildToolsVersion": "35.0.0",
+            "buildToolsVersion": "36.0.0",
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "extraProguardRules": "-keep class com.reactnativepdf.** { *; }\n-keep class com.ReactNativeBlobUtil.** { *; }\n-keep class com.google.mlkit.** { *; }\n-dontwarn com.google.mlkit.**\n-keep class com.revenuecat.purchases.** { *; }\n-keep class com.swmansion.reanimated.** { *; }\n-keep class com.swmansion.rnscreens.** { *; }\n-keep class com.horcrux.svg.** { *; }"
           },
           "ios": {
-            "usePrecompiledModules": false
+            "usePrecompiledModules": false,
+            "enableSceneSupport": true
           }
         }
       ],
@@ -72,6 +74,7 @@
       ],
       "./plugins/remove-audio-boot-receivers",
       "./plugins/android-signing",
+      "./plugins/android-artifact-name",
       "./plugins/ios-fix-codegen-cycle",
       "./plugins/android-large-screen-fix",
       "./plugins/android-device-compat"

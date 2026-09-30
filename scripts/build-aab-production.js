@@ -65,17 +65,6 @@ function applyKeyPatch() {
   }
 }
 
-// Читаем versionName и versionCode из build.gradle
-function getGradleInfo() {
-  const gradlePath = require('path').join(__dirname, '../android/app/build.gradle');
-  if (!fs.existsSync(gradlePath)) return null;
-  const content = fs.readFileSync(gradlePath, 'utf8');
-  const nameMatch = content.match(/versionName\s+"([^"]+)"/);
-  const codeMatch = content.match(/versionCode\s+(\d+)/);
-  if (nameMatch && codeMatch) return { name: nameMatch[1], code: codeMatch[1] };
-  return null;
-}
-
 
 console.log('🚀 Building CLEAN production AAB (no testing screen)...\n');
 
@@ -265,44 +254,12 @@ try {
   process.exit(1);
 }
 
-// 5. Переименовываем и копируем AAB
-console.log('\n📋 Renaming and copying AAB...');
-
-const aabSourcePath = path.join(__dirname, '../android/app/build/outputs/bundle/release/app-release.aab');
-const outputsDir = path.join(__dirname, '../outputs');
-const gradle = getGradleInfo();
-const gradleVersion = gradle ? gradle.name : version;
-const gradleCode = gradle ? gradle.code : '';
-const newFileName = `SDM-v${gradleVersion}-${gradleCode}-production.aab`;
-const aabDestPath = path.join(outputsDir, newFileName);
-
+// 5. Копируем AAB в outputs/ (имя: SDM-v<ver>-<code>-<дата>-<flavor>.aab)
+console.log('\n📋 Copying AAB to outputs...');
 try {
-  // Создаём папку outputs если её нет
-  if (!fs.existsSync(outputsDir)) {
-    fs.mkdirSync(outputsDir, { recursive: true });
-    console.log('   ✅ Created outputs directory');
-  }
-
-  // Проверяем существование исходного файла
-  if (!fs.existsSync(aabSourcePath)) {
-    console.error(`❌ AAB not found at: ${aabSourcePath}`);
-    process.exit(1);
-  }
-
-  // Копируем и переименовываем
-  fs.copyFileSync(aabSourcePath, aabDestPath);
-  
-  console.log('   ✅ AAB renamed and copied successfully!');
-  console.log(`   📦 ${newFileName}`);
-  console.log(`   📁 Location: ${aabDestPath}`);
-  
-  // Показываем размер файла
-  const stats = fs.statSync(aabDestPath);
-  const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-  console.log(`   💾 Size: ${fileSizeMB} MB`);
-  
+  require('./artifact').copyArtifactToOutputs('aab', 'production');
 } catch (error) {
-  console.error('❌ Copy/rename failed:', error.message);
+  console.error('❌ Copy failed:', error.message);
   process.exit(1);
 }
 

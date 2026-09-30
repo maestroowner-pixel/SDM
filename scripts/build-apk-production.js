@@ -65,17 +65,6 @@ function applyKeyPatch() {
   }
 }
 
-// Читаем versionName и versionCode из build.gradle
-function getGradleInfo() {
-  const gradlePath = require('path').join(__dirname, '../android/app/build.gradle');
-  if (!fs.existsSync(gradlePath)) return null;
-  const content = fs.readFileSync(gradlePath, 'utf8');
-  const nameMatch = content.match(/versionName\s+"([^"]+)"/);
-  const codeMatch = content.match(/versionCode\s+(\d+)/);
-  if (nameMatch && codeMatch) return { name: nameMatch[1], code: codeMatch[1] };
-  return null;
-}
-
 
 console.log('🚀 Building production APK (NO testing screen)...\n');
 
@@ -167,26 +156,13 @@ try {
   process.exit(1);
 }
 
-// 5. Копируем APK
+// 5. Копируем APK в outputs/ (имя: SDM-v<ver>-<code>-<дата>-<flavor>.apk)
 console.log('\n📋 Copying APK to outputs...');
 try {
-  execSync('node scripts/copy-apk.js', { stdio: 'inherit' });
+  require('./artifact').copyArtifactToOutputs('apk', 'production');
 } catch (error) {
-  console.error('❌ Copy failed');
+  console.error('❌ Copy failed:', error.message);
   process.exit(1);
-}
-
-// Переименовываем APK согласно build.gradle
-const apkSrc = path.join(__dirname, '../android/app/build/outputs/apk/release/app-release.apk');
-const outputsDir3 = path.join(__dirname, '../outputs');
-if (fs.existsSync(apkSrc)) {
-  const gradle3 = getGradleInfo();
-  const gVer3 = gradle3 ? gradle3.name : (envVars.APP_VERSION || '0.0.0');
-  const gCode3 = gradle3 ? gradle3.code : '';
-  const renamed3 = `SDM-v${gVer3}-${gCode3}-production.apk`;
-  if (!fs.existsSync(outputsDir3)) fs.mkdirSync(outputsDir3, { recursive: true });
-  fs.copyFileSync(apkSrc, path.join(outputsDir3, renamed3));
-  console.log('\n📁 Renamed → ' + renamed3);
 }
 
 console.log('\n✅ Production APK build complete (no testing screen)!');
