@@ -1,6 +1,6 @@
 // utils/legacyMpcCleanup.ts
 //
-// Модуль MPC (UK 12nm Midnight Position Check) удалён в 3.1.9 (301093+).
+// Модуль MPC (UK 12nm Midnight Position Check) удалён в 3.2.0 (302001).
 // У тех, кто включал авто-запись, в системе остался ежедневный пуш около
 // полуночи и Android-канал для него — снимаем их при первом запуске новой версии.
 // Записи MPC в AsyncStorage не трогаем.
