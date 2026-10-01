@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "seafarer.documents.manager",
-      "versionCode": 301091
+      "versionCode": 301092
     },
     "plugins": [
       [
