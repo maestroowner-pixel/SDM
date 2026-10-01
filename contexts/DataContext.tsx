@@ -147,7 +147,6 @@ export interface AppState {
   notes: string;
   theme: 'light' | 'dark';
   showDPScreen: boolean;
-  showMPCScreen: boolean;
   dpInfo: DPScreenInfo;
   dpDays: DPDayRecord[];
 }
@@ -196,7 +195,6 @@ const defaultState: AppState = {
   includeNotesInCV: false,
   theme: 'dark',
   showDPScreen: false,
-  showMPCScreen: false,
   dpDays: [],
   dpInfo: {
     company: '', fullName: '', dob: '', rank: '', vesselName: '', grt: '', imo: '', dpClass: '',
@@ -223,7 +221,6 @@ interface DataContextType {
   toggleIncludeNotesInCV: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
   toggleDPScreen: () => void;
-  toggleMPCScreen: () => void;
   updateDPInfo: (info: DPScreenInfo) => void;
   updateDPDays: (days: DPDayRecord[]) => void;
   exportData: () => string;
@@ -306,7 +303,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const toggleIncludeNotesInCV = () => setState(prev => ({ ...prev, includeNotesInCV: !prev.includeNotesInCV }));
   const setTheme = (theme: 'light' | 'dark') => setState(prev => ({ ...prev, theme }));
   const toggleDPScreen = () => setState(prev => ({ ...prev, showDPScreen: !prev.showDPScreen }));
-  const toggleMPCScreen = () => setState(prev => ({ ...prev, showMPCScreen: !prev.showMPCScreen }));
   const updateDPInfo = (dpInfo: DPScreenInfo) => setState(prev => ({ ...prev, dpInfo }));
   const updateDPDays = (dpDays: DPDayRecord[]) => setState(prev => ({ ...prev, dpDays }));
 
@@ -348,7 +344,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateSeaService, addSeaService, updateSeaServiceItem, deleteSeaService,
       updatePersonal, updateBiometrics, updateEducation, updateNextOfKin,
       updateNotes, toggleIncludeNotesInCV, setTheme,
-      toggleDPScreen, updateDPInfo, updateDPDays, toggleMPCScreen,
+      toggleDPScreen, updateDPInfo, updateDPDays,
       exportData, importData, clearAllData,
     }}>
       {children}

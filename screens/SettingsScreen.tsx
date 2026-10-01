@@ -69,7 +69,7 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall }) => {
-  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleMPCScreen } = useData();
+  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
   const { user, logout, isConfigured: authConfigured } = useAuth();
@@ -732,24 +732,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                   />
                 }
               />
-              <SettingRow
-                icon="navigate"
-                title="MPC — 12nm UK Midnight Position Check (Beta)"
-                subtitle={state.showMPCScreen ? 'Enabled — restart app to apply' : 'Disabled'}
-                rightElement={
-                  <Switch
-                    value={state.showMPCScreen}
-                    onValueChange={toggleMPCScreen}
-                    trackColor={{ false: '#767577', true: '#64b5f6' }}
-                    thumbColor={state.showMPCScreen ? '#1976d2' : '#f4f3f4'}
-                  />
-                }
-              />
-              {Platform.OS === 'ios' && (
-                <Text style={[styles.mpcIosHint, isDark ? styles.textMuted : styles.textMutedLight]}>
-                  {t('mpc.iosBackgroundHint')}
-                </Text>
-              )}
             </View>
 
             {/* DATA MANAGEMENT */}
@@ -1185,13 +1167,6 @@ const styles = StyleSheet.create({
   },
   textMuted: {
     color: 'rgba(255, 255, 255, 0.6)'
-  },
-  mpcIosHint: {
-    fontSize: 12,
-    lineHeight: 17,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    paddingTop: 4,
   },
   textMutedLight: { 
     color: 'rgba(0, 0, 0, 0.5)' 

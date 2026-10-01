@@ -29,8 +29,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 // Нативное управление сплеш-скрином
 import * as SplashScreenNative from 'expo-splash-screen';
 
-import * as Notifications from 'expo-notifications';
-import { flagMpcAutoRecord } from '../utils/mpcFallback';
+import { cleanupRemovedMpc } from '../utils/legacyMpcCleanup';
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet';
 import { DataProvider, useData } from '../contexts/DataContext';
@@ -90,7 +89,6 @@ import { CVScreen } from '../screens/CVScreen';
 import { ScansScreen } from '../screens/ScansScreen';
 import { SettingsScreen }  from '../screens/SettingsScreen';
 import DPScreen from '../screens/DPScreen';
-import MPCScreen from '../screens/MPCScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import * as Application from 'expo-application';
@@ -114,7 +112,7 @@ if (isTestVisible) {
   TestingScreen = require('../screens/TestingScreen').TestingScreen;
 }
 
-type TabType = 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'settings' | 'test' | 'dp' | 'mpc';
+type TabType = 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'settings' | 'test' | 'dp';
 
 const allTabs: { id: TabType; icon: string; label: string }[] = [
   { id: 'personal',   icon: 'person',          label: 'personal.title' },
@@ -128,7 +126,6 @@ const allTabs: { id: TabType; icon: string; label: string }[] = [
   { id: 'cv',         icon: 'document',        label: 'cv.title' },
   { id: 'scans',      icon: 'document-attach', label: 'scans.title' },
   { id: 'dp',         icon: 'compass',         label: 'DP Log' },
-  { id: 'mpc',        icon: 'navigate',        label: 'Midnight Position Check' },
   { id: 'test',       icon: 'flask',           label: 'Test' },
   { id: 'settings',   icon: 'settings',        label: 'settings.title' },
 ];
@@ -217,21 +214,17 @@ const MainApp: React.FC = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [isReady, setIsReady] = useState(false);
   
-  const { state, toggleMPCScreen } = useData();
+  const { state } = useData();
   const insets = useSafeAreaInsets();
 
-  // Актуальная видимость вкладки MPC для слушателя уведомлений (без устаревшего замыкания)
-  const showMPCRef = useRef(state.showMPCScreen);
-  showMPCRef.current = state.showMPCScreen;
   const isDark = state.theme === 'dark';
   const isTablet = useTablet();
 
   const tabs = React.useMemo(() => {
     let result = isTestVisible ? allTabs : allTabs.filter(t => t.id !== 'test');
     if (!state.showDPScreen)  result = result.filter(t => t.id !== 'dp');
-    if (!state.showMPCScreen) result = result.filter(t => t.id !== 'mpc');
     return result;
-  }, [state.showDPScreen, state.showMPCScreen]);
+  }, [state.showDPScreen]);
 
   React.useEffect(() => {
     if (!tabs.find(t => t.id === activeTab)) setActiveTabSafe('personal');
@@ -254,6 +247,7 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     async function prepare() {
       const startTime = Date.now();
+      cleanupRemovedMpc(); // сама ловит ошибки, ждать не нужно
       try {
         await SubscriptionService.initialize();
       } catch (e) {
@@ -267,24 +261,6 @@ const MainApp: React.FC = () => {
       }
     }
     prepare();
-  }, []);
-
-  // Тап по полночному пушу MPC → открыть экран MPC и автоматически снять GPS.
-  // Работает и на тёплом запуске (listener), и на холодном (getLast…).
-  useEffect(() => {
-    const handle = async (response: Notifications.NotificationResponse | null) => {
-      const data = response?.notification?.request?.content?.data as any;
-      if (data?.mpc) {
-        await flagMpcAutoRecord();
-        // Если вкладка MPC скрыта в настройках — принудительно включаем её,
-        // иначе переход не сработает (её нет в списке вкладок).
-        if (!showMPCRef.current) toggleMPCScreen();
-        setActiveTabSafe('mpc');
-      }
-    };
-    Notifications.getLastNotificationResponseAsync().then(handle).catch(() => {});
-    const sub = Notifications.addNotificationResponseReceivedListener((r) => { handle(r); });
-    return () => sub.remove();
   }, []);
 
   // ТА САМАЯ ФУНКЦИЯ, КОТОРАЯ СКРЫВАЕТ СПЛЕШ
@@ -366,7 +342,6 @@ const MainApp: React.FC = () => {
       case 'cv':         return <CVScreen         {...screenProps} onDisableSwipe={disableSwipeTemporarily} />;
       case 'scans':      return <ScansScreen />;
       case 'dp':         return <DPScreen />;
-      case 'mpc':        return <MPCScreen />;
       case 'test':       return isTestVisible ? <TestingScreen {...screenProps} /> : null;
       case 'settings':   return <SettingsScreen   {...screenProps} />;
       default:           return <PersonalScreen   {...screenProps} />;

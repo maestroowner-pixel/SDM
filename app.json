@@ -12,17 +12,21 @@
       "bundleIdentifier": "seafarer.documents.manager",
       "appleTeamId": "VL4B4R8D84",
       "deploymentTarget": "16.4",
-      "buildNumber": "301091",
+      "buildNumber": "301093",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
-        "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "SDM uses your location in the background to automatically record your vessel's midnight position for the Midnight Position Check log. This runs once daily at 00:00 London time.",
-        "NSLocationAlwaysUsageDescription": "SDM uses your location in the background to automatically record your vessel's midnight position for the Midnight Position Check log."
+        "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility."
       }
     },
     "android": {
       "package": "seafarer.documents.manager",
-      "versionCode": 301092
+      "versionCode": 301093,
+      "blockedPermissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE_LOCATION"
+      ]
     },
     "plugins": [
       [
@@ -52,16 +56,6 @@
             "usePrecompiledModules": false,
             "enableSceneSupport": true
           }
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationWhenInUsePermission": "SDM uses your location to check if the vessel is inside or outside UK territorial waters (12nm) for the Midnight Position Check log.",
-          "locationAlwaysAndWhenInUsePermission": "SDM uses your location in the background to automatically record your vessel's midnight position at 00:00 London time.",
-          "locationAlwaysPermission": "SDM uses your location in the background to automatically record your vessel's midnight position at 00:00 London time.",
-          "isIosBackgroundLocationEnabled": true,
-          "isAndroidBackgroundLocationEnabled": true
         }
       ],
       [
