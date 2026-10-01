@@ -348,6 +348,7 @@
   "cv": {
     "title": "Generar CV",
     "generateButton": "Generar y Compartir PDF",
+    "quickShare": "Enviar CV",
     "generating": "Generando PDF...",
     "alerts": {
       "successTitle": "Éxito",

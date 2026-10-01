@@ -14,6 +14,8 @@ import { playSuccessSound } from '../utils/sound';
 import { t } from '../utils/i18n';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { consumeCvQuickShare, CV_DESIGN_KEY } from '../utils/cvQuickShare';
 import qrcode from 'qrcode-generator';
 
 const GHOST_ROSE_IMAGE = require('../assets/images/ghost-rose.png');
@@ -104,9 +106,14 @@ const CV_DESIGNS = [
   { id: 4, name: 'Offshore',  accent: '#e23a2e', bg: '#ececee' },
 ] as const;
 
-export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableSwipe }) => {
+export const CVScreen: React.FC<{
+  onDisableSwipe?: () => void;
+  onOpenPaywall?: () => void;
+  /** Счётчик запросов быстрой отправки (меню иконки / seafarer-docs://cv/send) */
+  shareRequest?: number;
+}> = ({ onDisableSwipe, onOpenPaywall, shareRequest = 0 }) => {
   const { state, updatePersonal } = useData();
-  const { isPremium } = useSubscription();
+  const { isPremium, loading: premiumLoading } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [cvDesign, setCvDesign] = useState<1|2|3|4>(1);
   const isDark = state.theme === 'dark';
@@ -119,6 +126,21 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       setLastGeneratedDate(state.personal.lastCVGeneratedDate);
     }
   }, [state.personal.lastCVGeneratedDate]);
+
+  const selectDesign = (design: 1|2|3|4) => {
+    setCvDesign(design);
+    AsyncStorage.setItem(CV_DESIGN_KEY, String(design)).catch(() => {});
+  };
+
+  const loadDesign = async (): Promise<1|2|3|4> => {
+    try {
+      const saved = Number(await AsyncStorage.getItem(CV_DESIGN_KEY));
+      if (saved >= 1 && saved <= 4) return saved as 1|2|3|4;
+    } catch {}
+    return 1;
+  };
+
+  useEffect(() => { loadDesign().then(setCvDesign); }, []);
 
   const generateHTML = (design: 1|2|3|4 = 1) => {
     const { personal, biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
@@ -670,10 +692,10 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 </body></html>`;
   };
 
-  const generatePDF = async () => {
+  const generatePDF = async (design: 1|2|3|4 = cvDesign) => {
     try {
       setLoading(true);
-      const html = generateHTML(cvDesign);
+      const html = generateHTML(design);
       const { uri } = await Print.printToFileAsync({ html });
 
       const dateStr = formatDateForFilename(new Date());
@@ -711,6 +733,18 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
   };
 
   const hasData = state.personal.firstName || state.seaService.length > 0 || state.documents.length > 0;
+
+  // Быстрая отправка: флаг ставит app/index.tsx. Ждём статус подписки, иначе
+  // Premium-пользователь на холодном старте получил бы paywall.
+  useEffect(() => {
+    if (premiumLoading) return;
+    (async () => {
+      if (!(await consumeCvQuickShare())) return;
+      if (!isPremium) { onOpenPaywall?.(); return; }
+      if (!hasData) { alertMsg(t('cv.title'), t('cv.emptyMessage')); return; }
+      await generatePDF(await loadDesign());
+    })();
+  }, [shareRequest, premiumLoading]);
 
   return (
     <SafeAreaView style={{ flex: 1, paddingTop: 2 }}>
@@ -793,7 +827,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
                         <TouchableOpacity
                           key={d.id}
                           style={[styles.designCard, cvDesign === d.id && { borderColor: d.accent, borderWidth: 2 }, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : d.bg }]}
-                          onPress={() => setCvDesign(d.id)}
+                          onPress={() => selectDesign(d.id)}
                         >
                           <View style={[styles.designCardStripe, { backgroundColor: d.accent }]} />
                           <Text style={[styles.designCardName, { color: d.accent }]}>{d.name}</Text>
@@ -805,7 +839,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
                   <Button
                     title={loading ? t('common.loading') : t('cv.generateButton')}
-                    onPress={generatePDF}
+                    onPress={() => generatePDF()}
                     loading={loading}
                     icon="share-outline"
                     style={{ marginTop: 16, width: '100%' }}

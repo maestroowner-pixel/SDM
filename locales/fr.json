@@ -347,6 +347,7 @@
     "trialNotice": "En mode d'essai, les informations complètes des documents et contacts sont restreintes",
     "lastGenerated": "Dernière Génération",
     "generateButton": "Générer et Partager le PDF",
+    "quickShare": "Envoyer le CV",
     "willInclude": "Le CV comprendra:",
     "generating": "Génération du PDF...",
     "alerts": {

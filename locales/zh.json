@@ -320,6 +320,7 @@
     "trialNotice": "试用模式下，完整的文档信息和联系方式受限",
     "lastGenerated": "上次生成",
     "generateButton": "生成并分享PDF",
+    "quickShare": "发送简历",
     "generating": "正在生成PDF...",
     "willInclude": "简历将包括：",
     "emptyMessage": "首先添加一些信息以生成您的简历",

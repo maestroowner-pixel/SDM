@@ -12,7 +12,8 @@ import {
   FlatList,
   Dimensions, 
   Animated, 
-  Modal 
+  Modal,
+  Linking
 } from 'react-native';
 import { 
   GestureHandlerRootView, 
@@ -30,6 +31,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as SplashScreenNative from 'expo-splash-screen';
 
 import { cleanupRemovedMpc } from '../utils/legacyMpcCleanup';
+import * as QuickActions from 'expo-quick-actions';
+import { flagCvQuickShare, isCvSendUrl, syncCvQuickAction, CV_QUICK_ACTION_ID } from '../utils/cvQuickShare';
 import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet';
 import { DataProvider, useData } from '../contexts/DataContext';
@@ -213,6 +216,8 @@ const MainApp: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  // Растёт при каждом запросе быстрой отправки CV — CVScreen реагирует, даже если уже открыт
+  const [cvShareRequest, setCvShareRequest] = useState(0);
   
   const { state } = useData();
   const insets = useSafeAreaInsets();
@@ -250,6 +255,7 @@ const MainApp: React.FC = () => {
       cleanupRemovedMpc(); // сама ловит ошибки, ждать не нужно
       try {
         await SubscriptionService.initialize();
+        await syncCvQuickAction(await SubscriptionService.getIsPremiumSafe());
       } catch (e) {
         console.warn(e);
       } finally {
@@ -261,6 +267,21 @@ const MainApp: React.FC = () => {
       }
     }
     prepare();
+  }, []);
+
+  // Быстрая отправка CV: пункт меню иконки или ссылка seafarer-docs://cv/send
+  // (холодный и тёплый запуск). Premium проверяет сам CVScreen.
+  useEffect(() => {
+    const openCvShare = async () => {
+      await flagCvQuickShare();
+      setActiveTabSafe('cv');
+      setCvShareRequest(n => n + 1);
+    };
+    if (QuickActions.initial?.id === CV_QUICK_ACTION_ID) openCvShare();
+    const qaSub = QuickActions.addListener(a => { if (a.id === CV_QUICK_ACTION_ID) openCvShare(); });
+    Linking.getInitialURL().then(url => { if (isCvSendUrl(url)) openCvShare(); }).catch(() => {});
+    const urlSub = Linking.addEventListener('url', ({ url }) => { if (isCvSendUrl(url)) openCvShare(); });
+    return () => { qaSub.remove(); urlSub.remove(); };
   }, []);
 
   // ТА САМАЯ ФУНКЦИЯ, КОТОРАЯ СКРЫВАЕТ СПЛЕШ
@@ -339,7 +360,7 @@ const MainApp: React.FC = () => {
       case 'nextOfKin':  return <NextOfKinScreen  {...screenProps} />;
       case 'notes':      return <NotesScreen      {...screenProps} />;
       case 'qr':         return <QRScreen         {...screenProps} />;
-      case 'cv':         return <CVScreen         {...screenProps} onDisableSwipe={disableSwipeTemporarily} />;
+      case 'cv':         return <CVScreen         {...screenProps} onDisableSwipe={disableSwipeTemporarily} shareRequest={cvShareRequest} />;
       case 'scans':      return <ScansScreen />;
       case 'dp':         return <DPScreen />;
       case 'test':       return isTestVisible ? <TestingScreen {...screenProps} /> : null;
@@ -416,7 +437,11 @@ const MainApp: React.FC = () => {
           presentationStyle="pageSheet"
           onRequestClose={() => setShowPaywall(false)}
         >
-          <PaywallScreen onClose={() => setShowPaywall(false)} />
+          <PaywallScreen onClose={() => {
+            setShowPaywall(false);
+            // После покупки в меню иконки должен появиться «Send CV»
+            SubscriptionService.getIsPremiumSafe().then(syncCvQuickAction).catch(() => {});
+          }} />
         </Modal>
       </LinearGradient>
     </GestureHandlerRootView>
