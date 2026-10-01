@@ -47,14 +47,16 @@ export function useMidnightTask() {
 
   const requestAndStart = async (): Promise<boolean> => {
     try {
-      await Notifications.requestPermissionsAsync();
-
+      // Location prompts go first: Play requires them to follow the in-app
+      // disclosure immediately, with no other system dialog in between.
       const { status: fg } = await Location.requestForegroundPermissionsAsync();
       if (fg !== 'granted') return false;
 
       // Background location — обязательно для работы задачи ночью
       const { status: bg } = await Location.requestBackgroundPermissionsAsync();
       if (bg !== 'granted') return false;
+
+      await Notifications.requestPermissionsAsync();
 
       // Миграция: снимаем старую BackgroundFetch регистрацию если осталась
       const oldRegistered = await TaskManager.isTaskRegisteredAsync(MPC_BACKGROUND_TASK);

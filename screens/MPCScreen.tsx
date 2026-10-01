@@ -362,6 +362,35 @@ const MPCScreen: React.FC = () => {
     setPendingLocationAction(null);
   };
 
+  // Prominent disclosure (Google Play User Data policy): must appear right before the
+  // system location prompt, so when the GPS button is pressed inside the Add/Edit sheet
+  // it is rendered inside that sheet instead of in a modal hidden behind it.
+  const renderLocationDisclosure = () => (
+    <View style={s.disclosureOverlay}>
+      <View style={[s.disclosureBox, { backgroundColor: tc.modalBg, borderColor: tc.accent }]}>
+        <Ionicons name="location-outline" size={36} color={tc.accent} style={{ alignSelf: 'center', marginBottom: 12 }} />
+        <Text style={[s.disclosureTitle, { color: tc.text }]}>
+          {pendingLocationAction === 'auto' ? t('mpc.disclosureAutoTitle') : t('mpc.disclosureGpsTitle')}
+        </Text>
+        <Text style={[s.disclosureBody, { color: tc.sub }]}>
+          {pendingLocationAction === 'auto' ? t('mpc.disclosureAutoBody') : t('mpc.disclosureGpsBody')}
+        </Text>
+        <View style={s.disclosureButtons}>
+          <TouchableOpacity
+            style={[s.disclosureBtnSecondary, { borderColor: tc.accent }]}
+            onPress={onLocationDisclosureDecline}>
+            <Text style={[s.disclosureBtnSecondaryTxt, { color: tc.accent }]}>{t('mpc.disclosureDecline')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.disclosureBtnPrimary, { backgroundColor: tc.accent }]}
+            onPress={onLocationDisclosureAccept}>
+            <Text style={[s.disclosureBtnPrimaryTxt, { color: isDark ? '#000' : '#fff' }]}>{t('mpc.disclosureAllow')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   // ── Добавить ───────────────────────────────────────────────────────────────
   const openAdd = () => {
     setFormDate(todayStr());
@@ -747,6 +776,9 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
             {renderForm(false)}
             {/* Dialogs raised from inside this modal must render here, not at the root */}
             <DialogHost />
+            {showLocationDisclosure && (
+              <View style={StyleSheet.absoluteFill}>{renderLocationDisclosure()}</View>
+            )}
           </SafeAreaView>
         </Modal>
 
@@ -774,35 +806,16 @@ Generated: ${today} · Territorial Waters Status (12nm / UK)</div>
             {renderForm(true)}
             {/* Dialogs raised from inside this modal must render here, not at the root */}
             <DialogHost />
+            {showLocationDisclosure && (
+              <View style={StyleSheet.absoluteFill}>{renderLocationDisclosure()}</View>
+            )}
           </SafeAreaView>
         </Modal>
 
         {/* ═══ МОДАЛ: Location Disclosure (Google Play Prominent Disclosure) ═══ */}
-        <Modal visible={showLocationDisclosure} animationType="fade" transparent
+        <Modal visible={showLocationDisclosure && !addModal && !editModal} animationType="fade" transparent
           onRequestClose={onLocationDisclosureDecline}>
-          <View style={s.disclosureOverlay}>
-            <View style={[s.disclosureBox, { backgroundColor: tc.modalBg, borderColor: tc.accent }]}>
-              <Ionicons name="location-outline" size={36} color={tc.accent} style={{ alignSelf: 'center', marginBottom: 12 }} />
-              <Text style={[s.disclosureTitle, { color: tc.text }]}>
-                {pendingLocationAction === 'auto' ? t('mpc.disclosureAutoTitle') : t('mpc.disclosureGpsTitle')}
-              </Text>
-              <Text style={[s.disclosureBody, { color: tc.sub }]}>
-                {pendingLocationAction === 'auto' ? t('mpc.disclosureAutoBody') : t('mpc.disclosureGpsBody')}
-              </Text>
-              <View style={s.disclosureButtons}>
-                <TouchableOpacity
-                  style={[s.disclosureBtnSecondary, { borderColor: tc.accent }]}
-                  onPress={onLocationDisclosureDecline}>
-                  <Text style={[s.disclosureBtnSecondaryTxt, { color: tc.accent }]}>{t('mpc.disclosureDecline')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.disclosureBtnPrimary, { backgroundColor: tc.accent }]}
-                  onPress={onLocationDisclosureAccept}>
-                  <Text style={[s.disclosureBtnPrimaryTxt, { color: isDark ? '#000' : '#fff' }]}>{t('mpc.disclosureAllow')}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          {renderLocationDisclosure()}
         </Modal>
 
       </ImageBackground>
