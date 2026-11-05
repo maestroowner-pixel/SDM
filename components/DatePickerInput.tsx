@@ -41,7 +41,7 @@ const SimpleDatePicker: React.FC<Props> = ({ label, value, onChange, isDark }) =
     <View style={styles.container}>
       <Text style={[styles.label, isDark ? {color: '#94a3b8'} : {color: '#666'}]}>{label}</Text>
       
-      {/* Поле, на которое нажимает Ваша светлость */}
+      {/* Поле, на которое нажимает пользователь */}
       <TouchableOpacity 
         style={[styles.inputTrigger, isDark ? styles.inputDark : styles.inputLight]}
         onPress={() => setVisible(true)}

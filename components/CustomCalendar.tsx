@@ -28,7 +28,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   
-  // Палитра Вашей светлости
+  // Палитра
   const THEME = {
     oxford: isDark ? '#1A3A5F' : '#002147', 
     coffee: isDark ? '#4A90C4' : '#6F4E37', 

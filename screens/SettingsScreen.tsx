@@ -48,7 +48,7 @@ const TERMS_URL = 'https://sdm.kuka-lab.com/terms-of-service.php';
 const PRIVACY_URL = 'https://sdm.kuka-lab.com/privacy-policy.php';
 const WEBSITE_URL = 'https://sdm.kuka-lab.com';
 
-// 🛡️ Новые константы для Вашей светлости
+// 🛡️ Новые константы
 const SDM_EXTENSION = '.sdm';
 const SDM_MIME_TYPE = 'application/octet-stream';
 
@@ -347,7 +347,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       if (isOldFormat) {
         const choice = await chooseAsync(
           t('settings.alerts.successTitle'),
-          "Ваша светлость, старый формат импортирован. Рекомендую создать новый бэкап .sdm для защиты.",
+          "Старый формат импортирован. Рекомендую создать новый бэкап .sdm для защиты.",
           [
             { text: "Создать .sdm", value: 'create', style: 'primary' },
             { text: t('common.ok'), value: 'ok', style: 'ghost' },

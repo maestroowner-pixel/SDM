@@ -3,7 +3,7 @@ const path = require('path');
 
 const screensDir = path.join(__dirname, 'screens');
 
-console.log("--- Отчет для Вашей светлости ---");
+console.log("--- Отчет ---");
 
 if (!fs.existsSync(screensDir)) {
     console.log("❌ Папка не найдена: " + screensDir);

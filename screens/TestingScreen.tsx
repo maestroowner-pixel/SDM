@@ -64,7 +64,7 @@ export const TestingScreen: React.FC = () => {
       await (SubscriptionService as any).forceRefresh?.();
       
       await loadStorageStatus();
-      alertMsg("Ваша светлость!", `Премиум (${type}) активирован локально.`);
+      alertMsg("Готово", `Премиум (${type}) активирован локально.`);
     } catch (e) {
       alertMsg("Ошибка", "Система сопротивляется активации.");
     }

@@ -9,7 +9,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-// Цвета для консоли Вашей светлости
+// Цвета для консоли
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
