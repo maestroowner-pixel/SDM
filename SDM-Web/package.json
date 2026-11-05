@@ -39,7 +39,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "expo export -p web --clear",
+    "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting"
   },
   "private": true
 }
