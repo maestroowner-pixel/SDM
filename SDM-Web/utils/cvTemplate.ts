@@ -8,6 +8,17 @@ import { VESSEL_TYPES } from '../components/VesselTypeInput';
 
 export type CvLayout = 'classic' | 'minimal' | 'executive' | 'banner' | 'sidebar';
 
+// Sections the user can show, hide and (where the layout allows) reorder.
+export type CvSectionId =
+  | 'career' | 'personal' | 'contact' | 'seaService' | 'documents'
+  | 'education' | 'physical' | 'nextOfKin' | 'notes';
+
+// Optional table columns. Vessel, position, sign on/off and the document name
+// are the point of a CV, so they can't be hidden.
+export type CvColumnId =
+  | 'vesselType' | 'teu' | 'machinery' | 'area'
+  | 'docNumber' | 'docIssueDate' | 'docExpiryDate';
+
 export interface CvDesignConfig {
   layout: CvLayout;
   accent: string;            // hex, e.g. '#1976d2'
@@ -17,6 +28,13 @@ export interface CvDesignConfig {
   showContactQr: boolean;    // vCard QR
   uppercaseHeadings: boolean;
   zebra: boolean;            // striped tables
+  sectionOrder: CvSectionId[];
+  hiddenSections: CvSectionId[];
+  hiddenColumns: CvColumnId[];
+  // Records are excluded, not included, so a record added later appears in
+  // every saved version until the user takes it out.
+  excludedSeaService: string[];
+  excludedDocuments: string[];
 }
 
 export const CV_LAYOUTS: { id: CvLayout; name: string }[] = [
@@ -47,6 +65,49 @@ export const defaultCvConfig: CvDesignConfig = {
   showContactQr: true,
   uppercaseHeadings: false,
   zebra: true,
+  sectionOrder: ['career', 'personal', 'contact', 'seaService', 'documents', 'education', 'physical', 'nextOfKin', 'notes'],
+  hiddenSections: [],
+  hiddenColumns: [],
+  excludedSeaService: [],
+  excludedDocuments: [],
+};
+
+// The sidebar layout places these in its left column at fixed positions, so
+// they can be hidden there but not reordered.
+const SIDEBAR_FIXED_SECTIONS: CvSectionId[] = ['personal', 'contact', 'education', 'physical'];
+
+// Only the sidebar layout has a place for physical data.
+export const cvSectionsForLayout = (layout: CvLayout, order: CvSectionId[]): CvSectionId[] =>
+  order.filter(id => id !== 'physical' || layout === 'sidebar');
+
+export const isCvSectionMovable = (layout: CvLayout, id: CvSectionId): boolean =>
+  layout !== 'sidebar' || !SIDEBAR_FIXED_SECTIONS.includes(id);
+
+// Swaps a section with its neighbour among `rows`, the movable rows on screen.
+export const moveCvSection = (
+  order: CvSectionId[], id: CvSectionId, dir: -1 | 1, rows: CvSectionId[],
+): CvSectionId[] => {
+  const other = rows[rows.indexOf(id) + dir];
+  if (!rows.includes(id) || !other) return order;
+  return order.map(x => (x === id ? other : x === other ? id : x));
+};
+
+// Stored configs may predate a field or come from a newer build: fill the gaps,
+// drop unknown ids, and keep any section the stored order doesn't know about.
+export const normalizeCvConfig = (raw: any): CvDesignConfig => {
+  const merged = { ...defaultCvConfig, ...(raw && typeof raw === 'object' ? raw : {}) };
+  const list = (v: any): string[] => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : []);
+  const known = defaultCvConfig.sectionOrder;
+  const order = list(merged.sectionOrder).filter((id, i, a) => known.includes(id as CvSectionId) && a.indexOf(id) === i) as CvSectionId[];
+  return {
+    ...merged,
+    layout: CV_LAYOUTS.some(l => l.id === merged.layout) ? merged.layout : defaultCvConfig.layout,
+    sectionOrder: [...order, ...known.filter(id => !order.includes(id))],
+    hiddenSections: list(merged.hiddenSections) as CvSectionId[],
+    hiddenColumns: list(merged.hiddenColumns) as CvColumnId[],
+    excludedSeaService: list(merged.excludedSeaService),
+    excludedDocuments: list(merged.excludedDocuments),
+  };
 };
 
 const CV_QR_TARGET = 'https://sdm.kuka-lab.com';
@@ -125,14 +186,40 @@ const DOCUMENT_ORDER: Record<string, number> = {
   'Other': 8, 'Uncategorized': 9,
 };
 
+export const sortDocumentsForCv = (documents: any[]): any[] => documents.slice().sort(
+  (a: any, b: any) => (DOCUMENT_ORDER[a.category] || 10) - (DOCUMENT_ORDER[b.category] || 10)
+);
+
+export const sortSeaServiceForCv = (seaService: any[]): any[] => [...seaService].sort((a: any, b: any) => {
+  const tA = a.signOff ? new Date(a.signOff).getTime() : 0;
+  const tB = b.signOff ? new Date(b.signOff).getTime() : 0;
+  if (tA === 0 && tB === 0) {
+    const oA = a.signOn ? new Date(a.signOn).getTime() : 0;
+    const oB = b.signOn ? new Date(b.signOn).getTime() : 0;
+    return oB - oA;
+  }
+  if (tA === 0) return -1;
+  if (tB === 0) return 1;
+  return tB - tA;
+});
+
 const fontStack = (font: 'sans' | 'serif') =>
   font === 'serif' ? `Georgia, 'Times New Roman', serif` : `Arial, Helvetica, sans-serif`;
 
 // ── Shared, layout-independent content blocks ────────────────────────────────
 const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
-  const { personal, biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
+  const { biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
+  const isHidden = (id: CvSectionId) => cfg.hiddenSections.includes(id);
+  const hasColumn = (id: CvColumnId) => !cfg.hiddenColumns.includes(id);
+  // A hidden section must not leak through the page header, the sidebar or the
+  // vCard QR, so its fields are blanked here rather than in each layout.
+  const personal = {
+    ...state.personal,
+    ...(isHidden('personal') ? { birthDate: '', birthPlace: '', nationality: '' } : {}),
+    ...(isHidden('contact') ? { email: '', whatsapp: '', address: '', nearestAirport: '' } : {}),
+  };
   // Main phone plus the extra mobiles, e.g. «+380 50 111 22 33, +44 7700 900123».
-  const phones = allPhones(personal).join(', ');
+  const phones = isHidden('contact') ? '' : allPhones(personal).join(', ');
 
   const fullName = [personal.firstName, personal.middleName, personal.lastName]
     .filter(Boolean).join(' ') || t('cv.defaultName');
@@ -146,23 +233,14 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
     : '-';
 
   const appQrUrl = cfg.showAppQr ? makeQrDataUrl(CV_QR_TARGET) : '';
-  const contactQrUrl = cfg.showContactQr ? makeQrDataUrl(buildVCard(personal, positionLine)) : '';
+  const contactQrUrl = (cfg.showContactQr && !isHidden('contact')) ? makeQrDataUrl(buildVCard(personal, positionLine)) : '';
 
-  const sortedDocuments = documents.slice().sort(
-    (a: any, b: any) => (DOCUMENT_ORDER[a.category] || 10) - (DOCUMENT_ORDER[b.category] || 10)
+  const sortedDocuments = isHidden('documents') ? [] : sortDocumentsForCv(
+    documents.filter((d: any) => !cfg.excludedDocuments.includes(d.id))
   );
-  const sortedSeaService = [...seaService].sort((a: any, b: any) => {
-    const tA = a.signOff ? new Date(a.signOff).getTime() : 0;
-    const tB = b.signOff ? new Date(b.signOff).getTime() : 0;
-    if (tA === 0 && tB === 0) {
-      const oA = a.signOn ? new Date(a.signOn).getTime() : 0;
-      const oB = b.signOn ? new Date(b.signOn).getTime() : 0;
-      return oB - oA;
-    }
-    if (tA === 0) return -1;
-    if (tB === 0) return 1;
-    return tB - tA;
-  });
+  const sortedSeaService = isHidden('seaService') ? [] : sortSeaServiceForCv(
+    seaService.filter((s: any) => !cfg.excludedSeaService.includes(s.id))
+  );
 
   const documentsHtml = sortedDocuments.length > 0 ? `
     <div class="section">
@@ -171,14 +249,14 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
         <thead><tr>
           <th>${t('cv.table.document')}</th>
           ${isPremium
-            ? `<th>${t('cv.table.number')}</th><th>${t('cv.table.issueDate')}</th><th>${t('cv.table.expiryDate')}</th>`
+            ? `${hasColumn('docNumber') ? `<th>${t('cv.table.number')}</th>` : ''}${hasColumn('docIssueDate') ? `<th>${t('cv.table.issueDate')}</th>` : ''}${hasColumn('docExpiryDate') ? `<th>${t('cv.table.expiryDate')}</th>` : ''}`
             : `<th style="text-align:center;">Available in Unlimited version</th>`}
         </tr></thead>
         <tbody>
           ${sortedDocuments.map((d: any) => `<tr>
             <td>${wrapAfterFiveWords(d.name)}</td>
             ${isPremium
-              ? `<td>${d.number || '-'}</td><td>${formatDate(d.issueDate)}</td><td>${formatDate(d.expiryDate)}</td>`
+              ? `${hasColumn('docNumber') ? `<td>${d.number || '-'}</td>` : ''}${hasColumn('docIssueDate') ? `<td>${formatDate(d.issueDate)}</td>` : ''}${hasColumn('docExpiryDate') ? `<td>${formatDate(d.expiryDate)}</td>` : ''}`
               : `<td style="text-align:center;color:#d32f2f;">***</td>`}
           </tr>`).join('')}
         </tbody>
@@ -198,9 +276,10 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       reefer ? `${t('cv.table.reefer')} ${reefer}` : '',
     ].filter(Boolean).join(' · ');
   };
-  const showMachinery = sortedSeaService.some((s: any) => machinery(s));
-  const showTeu = sortedSeaService.some((s: any) => String(s.teu || '').trim());
-  const showSailingArea = sortedSeaService.some((s: any) => String(s.sailingArea || '').trim());
+  const showVesselType = hasColumn('vesselType');
+  const showMachinery = hasColumn('machinery') && sortedSeaService.some((s: any) => machinery(s));
+  const showTeu = hasColumn('teu') && sortedSeaService.some((s: any) => String(s.teu || '').trim());
+  const showSailingArea = hasColumn('area') && sortedSeaService.some((s: any) => String(s.sailingArea || '').trim());
 
   // Layouts with a left sidebar leave the main column ~⅔ of A4: an 8-column
   // table there is unreadable, so they get one block per contract instead.
@@ -209,10 +288,10 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       <h2>${t('cv.sections.seaService')}</h2>
       ${sortedSeaService.map((s: any) => {
         const position = s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-');
-        const vesselType = s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
-        const sub = [vesselType, withUnit(s.teu, 'TEU')].filter(Boolean).join(' · ');
-        const mach = machinery(s);
-        const area = String(s.sailingArea || '').trim();
+        const vesselType = !showVesselType ? '' : s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
+        const sub = [vesselType, showTeu ? withUnit(s.teu, 'TEU') : ''].filter(Boolean).join(' · ');
+        const mach = showMachinery ? machinery(s) : '';
+        const area = showSailingArea ? String(s.sailingArea || '').trim() : '';
         return `
       <div class="voyage">
         <div class="v-top"><span class="v-vessel">${s.vesselName || '-'}</span><span class="v-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}</span></div>
@@ -230,7 +309,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
         <thead><tr>
           <th>${t('seaService.form.vesselName')}</th>
           <th>${t('seaService.form.position')}</th>
-          <th>${t('seaService.form.vesselType')}</th>
+          ${showVesselType ? `<th>${t('seaService.form.vesselType')}</th>` : ''}
           ${showTeu ? `<th>${t('cv.table.teu')}</th>` : ''}
           ${showMachinery ? `<th>${t('cv.table.machinery')}</th>` : ''}
           ${showSailingArea ? `<th>${t('cv.table.area')}</th>` : ''}
@@ -241,7 +320,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
           ${sortedSeaService.map((s: any) => `<tr>
             <td>${s.vesselName || '-'}</td>
             <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
-            <td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>
+            ${showVesselType ? `<td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>` : ''}
             ${showTeu ? `<td style="white-space:nowrap">${withUnit(s.teu, 'TEU') || '-'}</td>` : ''}
             ${showMachinery ? `<td>${machinery(s) || '-'}</td>` : ''}
             ${showSailingArea ? `<td>${String(s.sailingArea || '').trim() || '-'}</td>` : ''}
@@ -252,7 +331,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       </table>
     </div>` : '';
 
-  const nextOfKinHtml = (nextOfKin && nextOfKin.name) ? `
+  const nextOfKinHtml = (!isHidden('nextOfKin') && nextOfKin && nextOfKin.name) ? `
     <div class="section">
       <h2>${t('nextOfKin.title')}</h2>
       <div class="info-row"><span class="info-label">${t('nextOfKin.fields.name')}:</span> ${nextOfKin.name}</div>
@@ -263,7 +342,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       ` : `<div style="color:#d32f2f;font-size:10px;">Full details available in Unlimited version</div>`}
     </div>` : '';
 
-  const educationInner = (education && (education.institution || education.degree)) ? `
+  const educationInner = (!isHidden('education') && education && (education.institution || education.degree)) ? `
     <h2>${t('education.title')}</h2>
     ${education.institution ? `<div class="info-row"><span class="info-label">${t('education.fields.institution')}:</span> ${education.institution}</div>` : ''}
     ${education.degree ? `<div class="info-row"><span class="info-label">${t('education.fields.degree')}:</span> ${education.degree}</div>` : ''}
@@ -273,7 +352,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
     ${education.englishLevel ? `<div class="info-row"><span class="info-label">${t('education.fields.englishLevel')}:</span> ${education.englishLevel}</div>` : ''}
     ${education.additionalSkills ? `<div class="info-row"><span class="info-label">${t('education.fields.additionalSkills')}:</span> ${education.additionalSkills}</div>` : ''}` : '';
 
-  const notesHtml = (includeNotesInCV && notes) ? `
+  const notesHtml = (!isHidden('notes') && includeNotesInCV && notes) ? `
     <div class="section">
       <h2>${t('notes.title')}</h2>
       <p style="font-size:10px;line-height:1.6;">${notes.split('\n').join('<br/>')}</p>
@@ -291,7 +370,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       ${contactQrCell}
     </div>` : '';
 
-  const personalDetails = `
+  const personalDetails = isHidden('personal') ? '' : `
     <div class="section">
       <h2>${t('personal.sections.personalDetails')}</h2>
       <div class="info-row"><span class="info-label">${t('personal.fields.dateOfBirth')}:</span> ${formatDate(personal.birthDate)}</div>
@@ -299,7 +378,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       <div class="info-row"><span class="info-label">${t('personal.fields.nationality')}:</span> ${personal.nationality || '-'}</div>
     </div>`;
 
-  const contactInfo = `
+  const contactInfo = isHidden('contact') ? '' : `
     <div class="section">
       <h2>${t('personal.sections.contactInformation')}</h2>
       <div class="info-row"><span class="info-label">${t('personal.fields.phone')}:</span> ${phones || '-'}</div>
@@ -309,7 +388,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       ${personal.nearestAirport ? `<div class="info-row"><span class="info-label">${t('personal.fields.nearestAirport')}:</span> ${personal.nearestAirport}</div>` : ''}
     </div>`;
 
-  const careerPrefs = `
+  const careerPrefs = isHidden('career') ? '' : `
     <div class="pref-box">
       <div class="pref-title">${t('personal.sections.careerPreferences')}</div>
       <div class="info-row"><span class="info-label">${t('seaService.form.vesselType')}:</span><span>${vesselTypeLine}</span></div>
@@ -317,7 +396,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       <div class="info-row"><span class="info-label">${t('personal.fields.availabilityDate')}:</span><span>${personal.availabilityDate ? formatDate(personal.availabilityDate) : '-'}</span></div>
     </div>`;
 
-  const hasPhysical = !!(biometrics && (biometrics.height || biometrics.weight || biometrics.shoeSize || biometrics.bloodType));
+  const hasPhysical = !isHidden('physical') && !!(biometrics && (biometrics.height || biometrics.weight || biometrics.shoeSize || biometrics.bloodType));
 
   return {
     personal, phones, biometrics, fullName, positionLine, appQrUrl, contactQrUrl,
@@ -359,8 +438,15 @@ const appQrRow = (b: any) => b.appQrUrl
   ? `<div class="app-qr"><img src="${b.appQrUrl}" alt="QR"/><span>Generated by Seafarer Documents Manager</span></div>`
   : '';
 
-const sectionsBody = (b: any) =>
-  `${b.seaServiceHtml}${b.documentsHtml}${b.educationHtml}${b.nextOfKinHtml}${b.notesHtml}`;
+// Joins the blocks a layout places in its body, in the user's section order.
+const orderedBlocks = (cfg: CvDesignConfig, blocks: Partial<Record<CvSectionId, string>>) =>
+  cfg.sectionOrder.map(id => blocks[id] || '').join('');
+
+const sectionsBody = (b: any, cfg: CvDesignConfig) => orderedBlocks(cfg, {
+  career: b.careerPrefs, personal: b.personalDetails, contact: b.contactInfo,
+  seaService: b.seaServiceHtml, documents: b.documentsHtml, education: b.educationHtml,
+  nextOfKin: b.nextOfKinHtml, notes: b.notesHtml,
+});
 
 // ── Single-column layouts (classic / minimal / executive / banner) ───────────
 const singleColumn = (b: any, cfg: CvDesignConfig): string => {
@@ -396,7 +482,7 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
       </div>
       <div class="page">
         ${appQrRow(b)}
-        ${b.careerPrefs}${b.personalDetails}${b.contactInfo}${sectionsBody(b)}
+        ${sectionsBody(b, cfg)}
       </div>`;
     return page(cfg, extraCss, header, false);
   }
@@ -417,7 +503,7 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
         ${b.positionLine ? `<div class="pos">${b.positionLine}</div>` : ''}
         <div class="ct">${[b.phones && `${t('personal.fields.phone')}: ${b.phones}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' &nbsp;|&nbsp; ')}</div>
       </div>
-      ${b.careerPrefs}${b.personalDetails}${b.contactInfo}${sectionsBody(b)}`;
+      ${sectionsBody(b, cfg)}`;
     return page(cfg, extraCss, `<div class="wrap">${header}</div>`, false);
   }
 
@@ -443,7 +529,7 @@ const singleColumn = (b: any, cfg: CvDesignConfig): string => {
         ${[b.phones && `${t('personal.fields.phone')}: ${b.phones}`, b.personal.email && `${t('personal.fields.email')}: ${b.personal.email}`].filter(Boolean).join(' | ')}
       </div>
     </div>
-    ${b.careerPrefs}${b.personalDetails}${b.contactInfo}${sectionsBody(b)}`;
+    ${sectionsBody(b, cfg)}`;
   return page(cfg, extraCss, `<div class="wrap">${header}</div>`, false);
 };
 
@@ -524,22 +610,24 @@ const sidebarLayout = (b: any, cfg: CvDesignConfig): string => {
         <div class="name">${b.fullName}</div>
         ${b.positionLine ? `<div class="pos">${b.positionLine}</div>` : ''}
         ${(cfg.showPhoto && b.personal.photo) ? `<img class="sb-photo" src="${b.personal.photo}"/>` : ''}
-        <div class="sb-section">
+        ${(b.phones || b.personal.email || b.personal.nationality || b.personal.birthDate || b.personal.nearestAirport) ? `<div class="sb-section">
           <div class="sb-title">${t('personal.sections.contactInformation')}</div>
           ${b.phones ? `<div class="sb-row"><span>${t('personal.fields.phone')}:</span> ${b.phones}</div>` : ''}
           ${b.personal.email ? `<div class="sb-row"><span>${t('personal.fields.email')}:</span> ${b.personal.email}</div>` : ''}
           ${b.personal.nationality ? `<div class="sb-row"><span>${t('personal.fields.nationality')}:</span> ${b.personal.nationality}</div>` : ''}
           ${b.personal.birthDate ? `<div class="sb-row"><span>${t('personal.fields.dateOfBirth')}:</span> ${formatDate(b.personal.birthDate)}</div>` : ''}
           ${b.personal.nearestAirport ? `<div class="sb-row"><span>${t('personal.fields.nearestAirport')}:</span> ${b.personal.nearestAirport}</div>` : ''}
-        </div>
+        </div>` : ''}
         ${physicalHtml}
         ${eduSidebar}
         ${contactQrDark}
       </div>
       <div class="main">
         ${appQrRow(b)}
-        ${b.careerPrefs}
-        ${b.voyageBlocksHtml}${b.documentsHtml}${b.nextOfKinHtml}${b.notesHtml}
+        ${orderedBlocks(cfg, {
+          career: b.careerPrefs, seaService: b.voyageBlocksHtml, documents: b.documentsHtml,
+          nextOfKin: b.nextOfKinHtml, notes: b.notesHtml,
+        })}
       </div>
     </div>
   </body></html>`;

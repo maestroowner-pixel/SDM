@@ -338,6 +338,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearAllData = async () => {
     setState(defaultState);
+    await AsyncStorage.multiRemove(['cv_versions', 'cv_design_config']).catch(() => {});
     const service = await getNotificationService();
     await service.cancelAllNotifications();
   };
