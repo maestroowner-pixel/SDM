@@ -571,6 +571,29 @@
       "restartMessage": "Mangyaring i-restart ang app upang mailapat ang mga pagbabago sa wika.",
       "restartNow": "I-restart Ngayon",
       "later": "Mamaya"
+    },
+    "crypto": {
+      "titleExport": "I-save ang file",
+      "titleImport": "Naka-encrypt na file",
+      "kindFull": "Buong backup",
+      "kindFullHint": "Lahat, para i-restore sa app na ito.",
+      "kindVessel": "File para sa barko",
+      "kindVesselHint": "Mga detalye, next of kin, dokumento at sea service. Walang biometrics, rate, larawan o tala. Hindi ito mare-restore.",
+      "encrypt": "Protektahan ng password",
+      "plainWarn": "Mababasa ito ng sinumang makakuha ng file, pati mga numero ng pasaporte.",
+      "password": "Password",
+      "repeat": "Ulitin ang password",
+      "tooShort": "Hindi bababa sa {{n}} character.",
+      "mismatch": "Hindi magkatugma ang mga password.",
+      "enterPassword": "Ilagay ang password.",
+      "noRecovery": "Hindi na mababawi ang nakalimutang password, at hindi mabubuksan ang file kung wala ito. Ipadala ito nang hiwalay sa file.",
+      "importHint": "Ilagay ang password na ginamit sa pag-save ng file na ito.",
+      "wrong": "Mali ang password, o sira ang file.",
+      "newerFile": "Gawa ang file na ito sa mas bagong bersyon. I-update ang app.",
+      "vesselNotBackup": "File ito para sa barko, hindi backup. Mabubura ang iba mong data kapag ni-restore.",
+      "working": "Maaaring umabot ng isang minuto sa telepono…",
+      "open": "Buksan",
+      "save": "I-save"
     }
   },
   "splash": {

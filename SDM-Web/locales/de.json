@@ -552,6 +552,29 @@
       "clearSyncedMessage": "Für dieses Konto ist die Cloud-Synchronisierung aktiv. Wenn Sie hier löschen, werden Ihre Daten auch auf allen anderen mit diesem Konto angemeldeten Geräten gelöscht — Telefon, Browser und Computer.\n\nWählen Sie „Nur hier löschen“, um sich zuerst abzumelden und die Kopie in der Cloud zu behalten.",
       "eraseEverywhere": "Überall löschen",
       "eraseHereOnly": "Nur hier löschen"
+    },
+    "crypto": {
+      "titleExport": "Datei speichern",
+      "titleImport": "Verschlüsselte Datei",
+      "kindFull": "Vollständige Sicherung",
+      "kindFullHint": "Alles, zum Wiederherstellen in dieser App.",
+      "kindVessel": "Datei für das Schiff",
+      "kindVesselHint": "Angaben, Angehörige, Dokumente und Seefahrtzeiten. Ohne Biometrie, Tagessatz, Foto und Notizen. Keine Wiederherstellung möglich.",
+      "encrypt": "Mit Passwort schützen",
+      "plainWarn": "Jeder, der diese Datei erhält, kann sie lesen, auch Passnummern.",
+      "password": "Passwort",
+      "repeat": "Passwort wiederholen",
+      "tooShort": "Mindestens {{n}} Zeichen.",
+      "mismatch": "Die Passwörter stimmen nicht überein.",
+      "enterPassword": "Passwort eingeben.",
+      "noRecovery": "Ein vergessenes Passwort lässt sich nicht wiederherstellen, und ohne es öffnet sich die Datei nicht. Getrennt von der Datei übermitteln.",
+      "importHint": "Geben Sie das Passwort ein, mit dem diese Datei gespeichert wurde.",
+      "wrong": "Falsches Passwort oder beschädigte Datei.",
+      "newerFile": "Diese Datei stammt aus einer neueren Version. Bitte App aktualisieren.",
+      "vesselNotBackup": "Dies ist eine Datei für das Schiff, keine Sicherung. Das Wiederherstellen würde Ihre übrigen Daten löschen.",
+      "working": "Auf dem Telefon kann das bis zu einer Minute dauern…",
+      "open": "Öffnen",
+      "save": "Speichern"
     }
   },
   "splash": {

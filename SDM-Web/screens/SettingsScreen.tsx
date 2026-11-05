@@ -15,6 +15,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
+import { BackupChoice, BackupCryptoModal } from '../components/BackupCryptoModal';
+import { decryptSdm, encryptSdm, isEncryptedSdm, isVesselFile, vesselFile } from '../utils/sdmCrypto';
 import { isDesktop, currentVersion, checkForUpdate } from '../utils/updateCheck';
 import { runUpdateFlow } from '../utils/updateFlow';
 import { FLAGS } from '../utils/flags';
@@ -53,6 +55,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const isDark = state.theme === 'dark';
 
   const [exporting, setExporting] = useState(false);
+  // The password dialog: saving a file, or opening an encrypted one.
+  const [cryptoMode, setCryptoMode] = useState<'export' | 'import' | null>(null);
+  const [cryptoBusy, setCryptoBusy] = useState(false);
+  const [cryptoError, setCryptoError] = useState('');
+  const [pendingImport, setPendingImport] = useState('');
   const [importing, setImporting] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
 
@@ -78,24 +85,64 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
 
   const handleExport = () => {
     if (!requirePremium()) return;
+    setCryptoError('');
+    setCryptoMode('export');
+  };
+
+  const saveBackup = async ({ kind, encrypted, password }: BackupChoice) => {
     try {
       setExporting(true);
-      const data = exportData();
+      setCryptoBusy(true);
+      const plain = kind === 'vessel' ? vesselFile(exportData()) : exportData();
+      const random = (n: number) => crypto.getRandomValues(new Uint8Array(n));
+      const data = encrypted ? await encryptSdm(plain, password, random) : plain;
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       const date = new Date().toISOString().split('T')[0];
       a.href = url;
-      a.download = `SDM_backup_${date}.sdm`;
+      a.download = `${kind === 'vessel' ? 'SDM_for_vessel' : 'SDM_backup'}_${date}.sdm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setCryptoMode(null);
     } catch (e) {
       console.error('Export failed:', e);
+      setCryptoMode(null);
       alertMsg(t('common.error'), 'Export failed');
     } finally {
       setExporting(false);
+      setCryptoBusy(false);
+    }
+  };
+
+  const restoreBackup = async (text: string) => {
+    // The file for the vessel is a part of the record: restoring it would wipe the rest.
+    if (isVesselFile(text)) {
+      alertMsg(t('common.error'), t('settings.crypto.vesselNotBackup'));
+      return;
+    }
+    const ok = await importData(text);
+    alertMsg(
+      ok ? t('common.success') : t('common.error'),
+      ok ? (t('settings.alerts.dataRestored') !== 'settings.alerts.dataRestored' ? t('settings.alerts.dataRestored') : 'Data restored') : 'Could not import this backup.'
+    );
+  };
+
+  const openEncrypted = async ({ password }: BackupChoice) => {
+    try {
+      setCryptoBusy(true);
+      setCryptoError('');
+      const content = await decryptSdm(pendingImport, password);
+      setCryptoMode(null);
+      setPendingImport('');
+      await restoreBackup(content);
+    } catch (e: any) {
+      const code = String(e?.message ?? '');
+      setCryptoError(t(code === 'newer-file' ? 'settings.crypto.newerFile' : code === 'bad-file' ? 'settings.alerts.invalidBackup' : 'settings.crypto.wrong'));
+    } finally {
+      setCryptoBusy(false);
     }
   };
 
@@ -131,11 +178,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         return;
       }
 
-      const ok = await importData(text);
-      alertMsg(
-        ok ? t('common.success') : t('common.error'),
-        ok ? (t('settings.alerts.dataRestored') !== 'settings.alerts.dataRestored' ? t('settings.alerts.dataRestored') : 'Data restored') : 'Could not import this backup.'
-      );
+      // Encrypted: the password first, then the same restore.
+      if (isEncryptedSdm(text)) {
+        setPendingImport(text);
+        setCryptoError('');
+        setCryptoMode('import');
+        return;
+      }
+      await restoreBackup(text);
     } catch (e: any) {
       console.error('Import failed:', e);
       alertMsg(t('common.error'), `Import failed: ${e?.message || e}`);
@@ -393,6 +443,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           </Text>
         </View>
       </ScrollView>
+      <BackupCryptoModal
+        mode={cryptoMode}
+        isDark={isDark}
+        busy={cryptoBusy}
+        error={cryptoError}
+        onCancel={() => { setCryptoMode(null); setPendingImport(''); }}
+        onSubmit={(c) => void (cryptoMode === 'import' ? openEncrypted(c) : saveBackup(c))}
+      />
     </SafeAreaView>
   );
 };

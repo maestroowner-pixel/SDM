@@ -19,6 +19,9 @@ import {
   Modal
 } from 'react-native';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
+import { getRandomBytes } from 'expo-crypto';
+import { BackupChoice, BackupCryptoModal } from '../components/BackupCryptoModal';
+import { decryptSdm, encryptSdm, isEncryptedSdm, isVesselFile, vesselFile } from '../utils/sdmCrypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
@@ -95,6 +98,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   }, []);
   
   const [exporting, setExporting] = useState(false);
+  // The password dialog: saving a file, or opening an encrypted one.
+  const [cryptoMode, setCryptoMode] = useState<'export' | 'import' | null>(null);
+  const [cryptoBusy, setCryptoBusy] = useState(false);
+  const [cryptoError, setCryptoError] = useState('');
+  const [pendingImport, setPendingImport] = useState('');
   const [showManual, setShowManual] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [scheduledCount, setScheduledCount] = useState(0);
@@ -250,25 +258,31 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       return;
     }
 
+    if (!exportData() || exportData() === '{}' || exportData() === 'null') {
+      alertMsg(
+        t('settings.alerts.noData'),
+        t('settings.alerts.noDataMessage')
+      );
+      return;
+    }
+    setCryptoError('');
+    setCryptoMode('export');
+  };
+
+  const saveBackup = async ({ kind, encrypted, password }: BackupChoice) => {
     try {
       setExporting(true);
-      const dataToExport = exportData();
-      
-      if (!dataToExport || dataToExport === '{}' || dataToExport === 'null') {
-        alertMsg(
-          t('settings.alerts.noData'),
-          t('settings.alerts.noDataMessage')
-        );
-        setExporting(false);
-        return;
-      }
+      setCryptoBusy(true);
+      const plain = kind === 'vessel' ? vesselFile(exportData()) : exportData();
+      const dataToExport = encrypted ? await encryptSdm(plain, password, getRandomBytes) : plain;
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       // 🛡️ ТЕПЕРЬ .sdm
-      const fileName = `seafarer_backup_${timestamp}${SDM_EXTENSION}`;
+      const fileName = `${kind === 'vessel' ? 'seafarer_for_vessel' : 'seafarer_backup'}_${timestamp}${SDM_EXTENSION}`;
       const fileUri = `${FileSystem.documentDirectory}${fileName}`;
 
       await FileSystem.writeAsStringAsync(fileUri, dataToExport);
+      setCryptoMode(null);
 
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
@@ -293,12 +307,61 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       }
     } catch (error) {
       console.error('Export error:', error);
+      setCryptoMode(null);
       alertMsg(
         t('settings.alerts.errorTitle'),
         t('settings.alerts.exportError')
       );
     } finally {
       setExporting(false);
+      setCryptoBusy(false);
+    }
+  };
+
+  const openEncrypted = async ({ password }: BackupChoice) => {
+    try {
+      setCryptoBusy(true);
+      setCryptoError('');
+      const content = await decryptSdm(pendingImport, password);
+      setCryptoMode(null);
+      setPendingImport('');
+      await restoreBackup(content, false);
+    } catch (error: any) {
+      const code = String(error?.message ?? '');
+      setCryptoError(t(code === 'newer-file' ? 'settings.crypto.newerFile' : code === 'bad-file' ? 'settings.alerts.invalidBackup' : 'settings.crypto.wrong'));
+    } finally {
+      setCryptoBusy(false);
+    }
+  };
+
+  const restoreBackup = async (content: string, isOldFormat: boolean) => {
+    // The file for the vessel is a part of the record: restoring it would wipe the rest.
+    if (isVesselFile(content)) {
+      alertMsg(t('settings.alerts.errorTitle'), t('settings.crypto.vesselNotBackup'));
+      return;
+    }
+    const success = await importData(content);
+
+    if (success) {
+      playSuccessSound();
+      if (isOldFormat) {
+        const choice = await chooseAsync(
+          t('settings.alerts.successTitle'),
+          "Ваша светлость, старый формат импортирован. Рекомендую создать новый бэкап .sdm для защиты.",
+          [
+            { text: "Создать .sdm", value: 'create', style: 'primary' },
+            { text: t('common.ok'), value: 'ok', style: 'ghost' },
+          ]
+        );
+        if (choice === 'create') handleExportBackup();
+      } else {
+        alertMsg(t('settings.alerts.successTitle'), t('settings.alerts.dataRestored'));
+      }
+    } else {
+      alertMsg(
+        t('settings.alerts.errorTitle'),
+        t('settings.alerts.invalidBackup')
+      );
     }
   };
 
@@ -323,31 +386,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
         const selectedFile = result.assets[0];
         const content = await FileSystem.readAsStringAsync(selectedFile.uri);
 
-        const isOldFormat = selectedFile.name.endsWith('.json');
-
-        const success = await importData(content);
-
-        if (success) {
-          playSuccessSound();
-          if (isOldFormat) {
-            const choice = await chooseAsync(
-              t('settings.alerts.successTitle'),
-              "Ваша светлость, старый формат импортирован. Рекомендую создать новый бэкап .sdm для защиты.",
-              [
-                { text: "Создать .sdm", value: 'create', style: 'primary' },
-                { text: t('common.ok'), value: 'ok', style: 'ghost' },
-              ]
-            );
-            if (choice === 'create') handleExportBackup();
-          } else {
-            alertMsg(t('settings.alerts.successTitle'), t('settings.alerts.dataRestored'));
-          }
-        } else {
-          alertMsg(
-            t('settings.alerts.errorTitle'),
-            t('settings.alerts.invalidBackup')
-          );
+        // Encrypted: the password first, then the same restore.
+        if (isEncryptedSdm(content)) {
+          setPendingImport(content);
+          setCryptoError('');
+          setCryptoMode('import');
+          return;
         }
+        await restoreBackup(content, selectedFile.name.endsWith('.json'));
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -910,6 +956,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       >
         <AuthScreen onClose={() => setShowAuth(false)} />
       </Modal>
+      <BackupCryptoModal
+        mode={cryptoMode}
+        isDark={state.theme === 'dark'}
+        busy={cryptoBusy}
+        error={cryptoError}
+        onCancel={() => { setCryptoMode(null); setPendingImport(''); }}
+        onSubmit={(c) => void (cryptoMode === 'import' ? openEncrypted(c) : saveBackup(c))}
+      />
     </SafeAreaView>
   );
 };

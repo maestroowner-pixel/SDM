@@ -523,6 +523,29 @@
       "clearSyncedMessage": "此账户已开启云同步。在此删除也会删除已登录该账户的所有其他设备上的记录——手机、浏览器和电脑。\n\n选择“仅删除此设备”可先退出登录并保留云端副本。",
       "eraseEverywhere": "全部删除",
       "eraseHereOnly": "仅删除此设备"
+    },
+    "crypto": {
+      "titleExport": "保存文件",
+      "titleImport": "加密文件",
+      "kindFull": "完整备份",
+      "kindFullHint": "全部内容，用于在本应用中恢复。",
+      "kindVessel": "给船舶的文件",
+      "kindVesselHint": "个人资料、紧急联系人、证件和海上资历。不含生物特征、薪资期望、照片和备注。无法用于恢复。",
+      "encrypt": "用密码保护",
+      "plainWarn": "任何拿到此文件的人都能读取，包括护照号码。",
+      "password": "密码",
+      "repeat": "再次输入密码",
+      "tooShort": "至少 {{n}} 个字符。",
+      "mismatch": "两次输入的密码不一致。",
+      "enterPassword": "请输入密码。",
+      "noRecovery": "忘记的密码无法找回，没有密码就无法打开文件。请与文件分开发送密码。",
+      "importHint": "请输入保存此文件时使用的密码。",
+      "wrong": "密码错误或文件已损坏。",
+      "newerFile": "此文件由较新版本创建。请更新应用。",
+      "vesselNotBackup": "这是给船舶的文件，不是备份。恢复它会清除您的其他数据。",
+      "working": "在手机上可能需要一分钟左右…",
+      "open": "打开",
+      "save": "保存"
     }
   },
   "splash": {

@@ -571,6 +571,29 @@
       "restartMessage": "Please restart the app to apply language changes.",
       "restartNow": "Restart Now",
       "later": "Later"
+    },
+    "crypto": {
+      "titleExport": "Save a file",
+      "titleImport": "Encrypted file",
+      "kindFull": "Full backup",
+      "kindFullHint": "Everything, to restore in this app.",
+      "kindVessel": "File for the vessel",
+      "kindVesselHint": "Details, next of kin, documents and sea service. No biometrics, rate, photo or notes. Cannot be restored here.",
+      "encrypt": "Protect with a password",
+      "plainWarn": "Anyone who gets this file can read it, including passport numbers.",
+      "password": "Password",
+      "repeat": "Repeat the password",
+      "tooShort": "At least {{n}} characters.",
+      "mismatch": "The passwords do not match.",
+      "enterPassword": "Enter the password.",
+      "noRecovery": "A forgotten password cannot be recovered, and the file cannot be opened without it. Send it separately from the file.",
+      "importHint": "Enter the password this file was saved with.",
+      "wrong": "Wrong password, or the file is damaged.",
+      "newerFile": "This file was made by a newer version. Update the app.",
+      "vesselNotBackup": "This is a file for the vessel, not a backup. Restoring it would erase the rest of your data.",
+      "working": "This can take up to a minute on a phone…",
+      "open": "Open",
+      "save": "Save"
     }
   },
   "splash": {

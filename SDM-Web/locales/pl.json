@@ -571,6 +571,29 @@
       "restartMessage": "Uruchom ponownie aplikację, aby zastosować zmiany języka.",
       "restartNow": "Restart teraz",
       "later": "Później"
+    },
+    "crypto": {
+      "titleExport": "Zapisz plik",
+      "titleImport": "Zaszyfrowany plik",
+      "kindFull": "Pełna kopia",
+      "kindFullHint": "Wszystko, do przywrócenia w tej aplikacji.",
+      "kindVessel": "Plik dla statku",
+      "kindVesselHint": "Dane, osoba bliska, dokumenty i służba na morzu. Bez biometrii, stawki, zdjęcia i notatek. Nie można z niego przywrócić.",
+      "encrypt": "Chroń hasłem",
+      "plainWarn": "Każdy, kto otrzyma ten plik, może go odczytać, w tym numery paszportów.",
+      "password": "Hasło",
+      "repeat": "Powtórz hasło",
+      "tooShort": "Co najmniej {{n}} znaków.",
+      "mismatch": "Hasła nie są zgodne.",
+      "enterPassword": "Wpisz hasło.",
+      "noRecovery": "Zapomnianego hasła nie można odzyskać, a bez niego pliku nie da się otworzyć. Przekaż je osobno od pliku.",
+      "importHint": "Wpisz hasło, z którym zapisano ten plik.",
+      "wrong": "Błędne hasło lub plik jest uszkodzony.",
+      "newerFile": "Plik utworzono w nowszej wersji. Zaktualizuj aplikację.",
+      "vesselNotBackup": "To plik dla statku, nie kopia zapasowa. Przywrócenie usunęłoby pozostałe dane.",
+      "working": "Na telefonie może to potrwać do minuty…",
+      "open": "Otwórz",
+      "save": "Zapisz"
     }
   },
   "splash": {

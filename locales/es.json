@@ -559,6 +559,29 @@
       "restartMessage": "Por favor, reinicia la aplicación para aplicar los cambios de idioma.",
       "restartNow": "Reiniciar Ahora",
       "later": "Más Tarde"
+    },
+    "crypto": {
+      "titleExport": "Guardar archivo",
+      "titleImport": "Archivo cifrado",
+      "kindFull": "Copia completa",
+      "kindFullHint": "Todo, para restaurar en esta app.",
+      "kindVessel": "Archivo para el buque",
+      "kindVesselHint": "Datos, familiar, documentos y servicio en la mar. Sin biometría, tarifa, foto ni notas. No se puede restaurar.",
+      "encrypt": "Proteger con contraseña",
+      "plainWarn": "Quien reciba este archivo puede leerlo, incluidos los números de pasaporte.",
+      "password": "Contraseña",
+      "repeat": "Repita la contraseña",
+      "tooShort": "Al menos {{n}} caracteres.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "enterPassword": "Introduzca la contraseña.",
+      "noRecovery": "Una contraseña olvidada no se puede recuperar y sin ella el archivo no se abre. Envíela por separado.",
+      "importHint": "Introduzca la contraseña con la que se guardó el archivo.",
+      "wrong": "Contraseña incorrecta o archivo dañado.",
+      "newerFile": "Este archivo es de una versión más reciente. Actualice la app.",
+      "vesselNotBackup": "Es un archivo para el buque, no una copia. Restaurarlo borraría el resto de sus datos.",
+      "working": "En un teléfono puede tardar hasta un minuto…",
+      "open": "Abrir",
+      "save": "Guardar"
     }
   },
   "splash": {

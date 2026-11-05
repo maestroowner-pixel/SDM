@@ -551,6 +551,29 @@
       "restartMessage": "Veuillez redémarrer l'application pour appliquer les changements de langue.",
       "restartNow": "Redémarrer Maintenant",
       "later": "Plus Tard"
+    },
+    "crypto": {
+      "titleExport": "Enregistrer un fichier",
+      "titleImport": "Fichier chiffré",
+      "kindFull": "Sauvegarde complète",
+      "kindFullHint": "Tout, à restaurer dans cette application.",
+      "kindVessel": "Fichier pour le navire",
+      "kindVesselHint": "Coordonnées, proche, documents et service en mer. Sans biométrie, tarif, photo ni notes. Ne peut pas être restauré.",
+      "encrypt": "Protéger par mot de passe",
+      "plainWarn": "Quiconque reçoit ce fichier peut le lire, y compris les numéros de passeport.",
+      "password": "Mot de passe",
+      "repeat": "Répétez le mot de passe",
+      "tooShort": "Au moins {{n}} caractères.",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "enterPassword": "Saisissez le mot de passe.",
+      "noRecovery": "Un mot de passe oublié ne peut pas être récupéré, et le fichier ne s'ouvre pas sans lui. Transmettez-le séparément.",
+      "importHint": "Saisissez le mot de passe utilisé pour ce fichier.",
+      "wrong": "Mot de passe incorrect ou fichier endommagé.",
+      "newerFile": "Ce fichier vient d'une version plus récente. Mettez l'application à jour.",
+      "vesselNotBackup": "C'est un fichier pour le navire, pas une sauvegarde. Le restaurer effacerait vos autres données.",
+      "working": "Sur un téléphone, cela peut prendre jusqu'à une minute…",
+      "open": "Ouvrir",
+      "save": "Enregistrer"
     }
   },
   "splash": {
