@@ -201,3 +201,9 @@
 - iOS тоже 3.2.2, чтобы номер совпадал на обеих платформах. Архив для App Store собирать заново.
 - 2026-11-16: пользователь загрузил 3.2.2 (302021) в Google Play и App Store. AAB `outputs/SDM-v3.2.2-302021-2026-11-16-production.aab`, подпись = upload key (9F:90:F3…). iOS-архив собран пользователем в Xcode после `pod install`.
 - После выхода обновления: войти в приложении под подтверждённым email → Premium перенесётся на аккаунт и появится в SDM Web (https://web.kuka-soft.com).
+
+## 2026-11-16 — Desktop (Windows и macOS) больше не поддерживается
+
+- Решение пользователя: поддерживаем только мобильные приложения (iOS, Android) и SDM Web. SDM Desktop (Electron, `SDM-Desktop/`) не собираем и не выпускаем ни для Windows, ни для macOS. Последняя версия 1.0.3.
+- Лендинг: убраны обе карточки «Desktop — Mac» (.dmg), из подзаголовка убран macOS («SDM Web in your browser on any computer»). Выложено, `404.html` синхронизирован.
+- Остатки, можно почистить отдельно: `SDM-Web/utils/updateCheck.ts` и `updateFlow.ts` (обновление Electron, в браузере ничего не делают), ветка `isDesktop()` в SettingsScreen, папка `SDM-Desktop/`, релизы на GitHub (старые установщики ещё скачиваются по прямым ссылкам), `DISTRIBUTION.md`.
