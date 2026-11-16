@@ -5,8 +5,9 @@ import qrcode from 'qrcode-generator';
 import { formatDate, allPhones } from './helpers';
 import { t } from './i18n';
 import { VESSEL_TYPES } from '../components/VesselTypeInput';
+import { buildSeaServiceSection } from './cvSeaService';
 
-export type CvLayout = 'classic' | 'minimal' | 'executive' | 'banner' | 'sidebar';
+export type CvLayout = 'classic' | 'minimal' | 'executive' | 'banner' | 'sidebar' | 'panels';
 
 // Sections the user can show, hide and (where the layout allows) reorder.
 export type CvSectionId =
@@ -17,7 +18,11 @@ export type CvSectionId =
 // are the point of a CV, so they can't be hidden.
 export type CvColumnId =
   | 'vesselType' | 'teu' | 'machinery' | 'area'
-  | 'docNumber' | 'docIssueDate' | 'docExpiryDate';
+  | 'flag' | 'grossTonnage' | 'company' | 'dp' | 'crane' | 'comments'
+  | 'docNumber' | 'docIssueDate' | 'docExpiryDate' | 'docIssuePlace';
+
+// Fields only the panels layout prints; the document table has no room for them.
+export const PANELS_ONLY_COLUMNS: CvColumnId[] = ['docIssuePlace'];
 
 export interface CvDesignConfig {
   layout: CvLayout;
@@ -43,6 +48,7 @@ export const CV_LAYOUTS: { id: CvLayout; name: string }[] = [
   { id: 'executive', name: 'Executive' },
   { id: 'banner',    name: 'Banner' },
   { id: 'sidebar',   name: 'Sidebar' },
+  { id: 'panels',    name: 'Panels' },
 ];
 
 export const ACCENT_PRESETS: { name: string; color: string }[] = [
@@ -76,9 +82,9 @@ export const defaultCvConfig: CvDesignConfig = {
 // they can be hidden there but not reordered.
 const SIDEBAR_FIXED_SECTIONS: CvSectionId[] = ['personal', 'contact', 'education', 'physical'];
 
-// Only the sidebar layout has a place for physical data.
+// Only the sidebar and panels layouts have a place for physical data.
 export const cvSectionsForLayout = (layout: CvLayout, order: CvSectionId[]): CvSectionId[] =>
-  order.filter(id => id !== 'physical' || layout === 'sidebar');
+  order.filter(id => id !== 'physical' || layout === 'sidebar' || layout === 'panels');
 
 export const isCvSectionMovable = (layout: CvLayout, id: CvSectionId): boolean =>
   layout !== 'sidebar' || !SIDEBAR_FIXED_SECTIONS.includes(id);
@@ -263,73 +269,10 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
       </table>
     </div>` : '';
 
-  // Engine, power, propulsion and reefer plant share one «Machinery» cell with
-  // only the filled parts: separate columns made up to 11 columns, which don't
-  // fit A4. Every optional column appears only when filled in at least one
-  // record, so a deck officer's CV keeps the short table.
-  const machinery = (s: any) => {
-    const reefer = withUnit(s.reeferPower, 'kW');
-    return [
-      String(s.engineType || '').trim(),
-      withUnit(s.enginePower, 'kW'),
-      String(s.propulsionType || '').trim(),
-      reefer ? `${t('cv.table.reefer')} ${reefer}` : '',
-    ].filter(Boolean).join(' · ');
-  };
-  const showVesselType = hasColumn('vesselType');
-  const showMachinery = hasColumn('machinery') && sortedSeaService.some((s: any) => machinery(s));
-  const showTeu = hasColumn('teu') && sortedSeaService.some((s: any) => String(s.teu || '').trim());
-  const showSailingArea = hasColumn('area') && sortedSeaService.some((s: any) => String(s.sailingArea || '').trim());
-
-  // Layouts with a left sidebar leave the main column ~⅔ of A4: an 8-column
-  // table there is unreadable, so they get one block per contract instead.
-  const voyageBlocksHtml = sortedSeaService.length > 0 ? `
-    <div class="section">
-      <h2>${t('cv.sections.seaService')}</h2>
-      ${sortedSeaService.map((s: any) => {
-        const position = s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-');
-        const vesselType = !showVesselType ? '' : s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
-        const sub = [vesselType, showTeu ? withUnit(s.teu, 'TEU') : ''].filter(Boolean).join(' · ');
-        const mach = showMachinery ? machinery(s) : '';
-        const area = showSailingArea ? String(s.sailingArea || '').trim() : '';
-        return `
-      <div class="voyage">
-        <div class="v-top"><span class="v-vessel">${s.vesselName || '-'}</span><span class="v-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}</span></div>
-        <div class="v-pos">${position}${sub ? ` <span class="v-sub">· ${sub}</span>` : ''}</div>
-        ${mach ? `<div class="v-line"><span class="v-label">${t('cv.table.machinery')}:</span> ${mach}</div>` : ''}
-        ${area ? `<div class="v-line"><span class="v-label">${t('cv.table.area')}:</span> ${area}</div>` : ''}
-      </div>`;
-      }).join('')}
-    </div>` : '';
-
-  const seaServiceHtml = sortedSeaService.length > 0 ? `
-    <div class="section">
-      <h2>${t('cv.sections.seaService')}</h2>
-      <table>
-        <thead><tr>
-          <th>${t('seaService.form.vesselName')}</th>
-          <th>${t('seaService.form.position')}</th>
-          ${showVesselType ? `<th>${t('seaService.form.vesselType')}</th>` : ''}
-          ${showTeu ? `<th>${t('cv.table.teu')}</th>` : ''}
-          ${showMachinery ? `<th>${t('cv.table.machinery')}</th>` : ''}
-          ${showSailingArea ? `<th>${t('cv.table.area')}</th>` : ''}
-          <th>${t('seaService.form.signOn')}</th>
-          <th>${t('seaService.form.signOff')}</th>
-        </tr></thead>
-        <tbody>
-          ${sortedSeaService.map((s: any) => `<tr>
-            <td>${s.vesselName || '-'}</td>
-            <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
-            ${showVesselType ? `<td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>` : ''}
-            ${showTeu ? `<td style="white-space:nowrap">${withUnit(s.teu, 'TEU') || '-'}</td>` : ''}
-            ${showMachinery ? `<td>${machinery(s) || '-'}</td>` : ''}
-            ${showSailingArea ? `<td>${String(s.sailingArea || '').trim() || '-'}</td>` : ''}
-            <td style="white-space:nowrap">${formatDate(s.signOn)}</td>
-            <td style="white-space:nowrap">${formatDate(s.signOff)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>` : '';
+  // Table for full-width layouts, one card per contract for the sidebar ones.
+  const seaOpts = { accent: cfg.accent, zebra: cfg.zebra, hasColumn };
+  const seaServiceHtml = buildSeaServiceSection(sortedSeaService, seaOpts);
+  const voyageBlocksHtml = buildSeaServiceSection(sortedSeaService, { ...seaOpts, compact: true });
 
   const nextOfKinHtml = (!isHidden('nextOfKin') && nextOfKin && nextOfKin.name) ? `
     <div class="section">
@@ -400,6 +343,7 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
 
   return {
     personal, phones, biometrics, fullName, positionLine, appQrUrl, contactQrUrl,
+    sortedSeaService, sortedDocuments, vesselTypeLine, dayRateLine,
     documentsHtml, seaServiceHtml, voyageBlocksHtml, nextOfKinHtml, educationInner, educationHtml,
     notesHtml, personalDetails, contactInfo, careerPrefs, contactQrCell, hasPhysical,
   };
@@ -633,8 +577,294 @@ const sidebarLayout = (b: any, cfg: CvDesignConfig): string => {
   </body></html>`;
 };
 
+// ── Panels layout (every section a card, every filled field shown) ───────────
+// The other layouts trim records to fit a table row; this one prints the whole
+// record. Values are escaped here because user text lands in the page as HTML.
+const esc = (v: any): string => String(v ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const escLines = (v: any): string => esc(String(v ?? '').trim()).split('\n').join('<br/>');
+
+// Calendar months plus leftover days, as on the sea service screen.
+const monthsAndDays = (signOn: string, signOff: string) => {
+  if (!signOn || !signOff) return { months: 0, days: 0 };
+  const start = new Date(signOn);
+  const end = new Date(signOff);
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return { months: 0, days: 0 };
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (end.getDate() < start.getDate()) months--;
+  const temp = new Date(start);
+  temp.setMonth(temp.getMonth() + months);
+  return { months, days: Math.ceil((end.getTime() - temp.getTime()) / 86400000) };
+};
+
+const formatSpan = (months: number, days: number): string => {
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  const parts = [
+    y ? `${y} ${t('seaService.years')}` : '',
+    m ? `${m} ${t('seaService.months')}` : '',
+    days ? `${days} ${t('seaService.days')}` : '',
+  ].filter(Boolean);
+  return parts.join(' ');
+};
+
+const CATEGORY_KEYS: Record<string, string> = {
+  'Passport': 'passport', "Seaman's Book": 'seamansBook', 'Diplomas': 'diplomas',
+  'Medical Certificates': 'medical', 'STCW Certificates': 'stcw', 'Offshore Certifications': 'offshore',
+  'National Endorsements': 'national', 'Other': 'other', 'Uncategorized': 'uncategorized',
+};
+
+// Eye and hair colours are stored in English; show them in the CV language.
+const colourLabel = (group: 'eyeColors' | 'hairColors', v: string): string => {
+  if (!v) return '';
+  const key = `biometrics.${group}.${v.toLowerCase()}`;
+  const label = t(key);
+  return label === key ? v : label;
+};
+
+const panelsLayout = (state: any, b: any, isPremium: boolean, cfg: CvDesignConfig): string => {
+  const accent = cfg.accent;
+  const fam = fontStack(cfg.font);
+  const hCase = cfg.uppercaseHeadings ? 'uppercase' : 'none';
+  const isHidden = (id: CvSectionId) => cfg.hiddenSections.includes(id);
+  const hasColumn = (id: CvColumnId) => !cfg.hiddenColumns.includes(id);
+  const p = b.personal;
+
+  // Label/value rows with the empty ones left out; a panel with no rows is dropped.
+  const rows = (items: [string, string][]) => items
+    .filter(([, v]) => v && v !== '-')
+    .map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`)
+    .join('');
+  const panel = (title: string, body: string, wide = false, extra = '') => body ? `
+    <section class="panel${wide ? ' wide' : ''}">
+      <div class="p-head"><h2>${esc(title)}</h2>${extra}</div>
+      ${body}
+    </section>` : '';
+
+  const career = isHidden('career') ? '' : panel(t('personal.sections.careerPreferences'), rows([
+    [t('personal.fields.appliedPosition'), esc(b.positionLine)],
+    [t('personal.fields.vesselType'), esc(b.vesselTypeLine)],
+    [t('personal.fields.minDayRate'), esc(String(b.dayRateLine).trim())],
+    [t('personal.fields.availabilityDate'), p.availabilityDate ? formatDate(p.availabilityDate) : ''],
+  ]));
+
+  const personalPanel = isHidden('personal') ? '' : panel(t('personal.sections.personalDetails'), rows([
+    [t('personal.fields.dateOfBirth'), p.birthDate ? formatDate(p.birthDate) : ''],
+    [t('personal.fields.placeOfBirth'), esc(p.birthPlace)],
+    [t('personal.fields.nationality'), esc(p.nationality)],
+  ]));
+
+  const address = [p.address, p.city, p.postalCode, p.country].map(v => String(v || '').trim()).filter(Boolean).join(', ');
+  const telegram = p.telegram ? (String(p.telegram).startsWith('@') ? p.telegram : `@${p.telegram}`) : '';
+  const contactRows = isHidden('contact') ? '' : rows([
+    [t('personal.fields.phone'), allPhones(p).map(esc).join('<br/>')],
+    [t('personal.fields.email'), esc(p.email)],
+    [t('personal.fields.whatsapp'), esc(p.whatsapp)],
+    [t('personal.fields.telegram'), esc(telegram)],
+    [t('personal.fields.msTeams'), esc(p.teams)],
+    [t('personal.fields.address'), esc(address)],
+    [t('personal.fields.nearestAirport'), esc(p.nearestAirport)],
+  ]);
+  const contact = panel(t('personal.sections.contactInformation'), contactRows ? `
+    <div class="contact">
+      <div class="contact-rows">${contactRows}</div>
+      ${b.contactQrUrl ? `<div class="cqr"><img src="${b.contactQrUrl}" alt="Contact QR"/><div>${esc(t('cv.scanContact'))}</div></div>` : ''}
+    </div>` : '');
+
+  const bio = b.biometrics || {};
+  const physical = isHidden('physical') ? '' : panel(t('cv.sections.physicalData'), rows([
+    [t('biometrics.fields.height'), withUnit(esc(bio.height), 'cm')],
+    [t('biometrics.fields.weight'), withUnit(esc(bio.weight), 'kg')],
+    [t('biometrics.fields.shoeSize'), esc(bio.shoeSize)],
+    [t('biometrics.fields.overallSize'), esc(bio.overallSize)],
+    [t('biometrics.fields.eyeColor'), esc(colourLabel('eyeColors', bio.eyeColor))],
+    [t('biometrics.fields.hairColor'), esc(colourLabel('hairColors', bio.hairColor))],
+    [t('biometrics.fields.bloodType'), esc(bio.bloodType)],
+  ]));
+
+  const edu = state.education || {};
+  const education = isHidden('education') ? '' : panel(t('education.title'), rows([
+    [t('education.fields.institution'), esc(edu.institution)],
+    [t('education.fields.degree'), esc(edu.degree)],
+    [t('education.fields.specialization'), esc(edu.specialization)],
+    [t('education.fields.graduationYear'), esc(edu.graduationYear)],
+    [t('education.fields.languages'), esc(edu.languages)],
+    [t('education.fields.additionalSkills'), escLines(edu.additionalSkills)],
+  ]));
+
+  const nok = state.nextOfKin || {};
+  const nextOfKin = (isHidden('nextOfKin') || !nok.name) ? '' : panel(t('nextOfKin.title'), isPremium
+    ? rows([
+      [t('nextOfKin.fields.name'), esc(nok.name)],
+      [t('nextOfKin.fields.relationship'), esc(nok.relationship)],
+      [t('nextOfKin.fields.phone'), esc(nok.phone)],
+      [t('nextOfKin.fields.email'), esc(nok.email)],
+      [t('nextOfKin.fields.address'), esc(nok.address)],
+    ])
+    : `${rows([[t('nextOfKin.fields.name'), esc(nok.name)]])}<div class="locked">Full details available in Unlimited version</div>`);
+
+  // Sea service: one card per contract with every filled field.
+  const contracts: any[] = b.sortedSeaService;
+  let totalMonths = 0;
+  let totalDays = 0;
+  const contractCards = contracts.map((s: any) => {
+    const span = monthsAndDays(s.signOn, s.signOff);
+    totalMonths += span.months;
+    totalDays += span.days;
+    const position = s.position === 'Other' ? (s.customPosition || '') : (s.position || '');
+    const vesselType = s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
+    const facts = rows([
+      ...(hasColumn('flag') ? [[t('seaService.form.flag'), esc(s.flag)]] : []),
+      ...(hasColumn('grossTonnage') ? [[t('seaService.form.grt'), esc(s.grossTonnage)]] : []),
+      ...(hasColumn('teu') ? [[t('cv.table.teu'), esc(s.teu)]] : []),
+      ...(hasColumn('machinery') ? [
+        [t('seaService.form.engineType'), esc(s.engineType)],
+        [t('seaService.form.enginePower'), withUnit(esc(s.enginePower), 'kW')],
+        [t('seaService.form.propulsionType'), esc(s.propulsionType)],
+        [t('seaService.form.reeferPower'), withUnit(esc(s.reeferPower), 'kW')],
+      ] : []),
+      ...(hasColumn('dp') ? [[t('seaService.form.dpClass'), esc(s.dpClass)], [t('seaService.form.dpSystemName'), esc(s.dpSystem)]] : []),
+      ...(hasColumn('crane') ? [
+        [t('seaService.form.craneMake'), esc(s.craneMake)],
+        [t('seaService.form.craneType'), esc(s.craneType)],
+        [t('seaService.form.craneSwl'), withUnit(esc(s.craneSwl), 't')],
+      ] : []),
+      ...(hasColumn('area') ? [[t('seaService.form.sailingArea'), esc(s.sailingArea)]] : []),
+    ] as [string, string][]);
+    const duration = formatSpan(span.months, span.days);
+    return `
+      <div class="contract">
+        <div class="c-top">
+          <div><span class="c-vessel">${esc(s.vesselName) || '-'}</span>${hasColumn('vesselType') && vesselType ? `<span class="tag">${esc(vesselType)}</span>` : ''}</div>
+          <div class="c-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}${duration ? `<div class="c-dur">${esc(duration)}</div>` : ''}</div>
+        </div>
+        <div class="c-pos">${esc(position) || '-'}${hasColumn('company') && s.company ? ` <span class="c-co">· ${esc(s.company)}</span>` : ''}</div>
+        ${facts ? `<div class="facts">${facts}</div>` : ''}
+        ${hasColumn('comments') && String(s.comments || '').trim() ? `<div class="c-note">${escLines(s.comments)}</div>` : ''}
+      </div>`;
+  }).join('');
+  totalMonths += Math.floor(totalDays / 30);
+  const total = formatSpan(totalMonths, totalDays % 30);
+  const seaService = panel(t('cv.sections.seaService'), contractCards, true,
+    total ? `<span class="badge">${esc(t('seaService.totalTime'))}: ${esc(total)}</span>` : '');
+
+  // Documents grouped by category, already in CV order.
+  const docs: any[] = b.sortedDocuments;
+  const groups: { category: string; items: any[] }[] = [];
+  docs.forEach(d => {
+    const cat = d.category || 'Uncategorized';
+    const last = groups[groups.length - 1];
+    if (last && last.category === cat) last.items.push(d); else groups.push({ category: cat, items: [d] });
+  });
+  const docCols: [CvColumnId, string, (d: any) => string][] = [
+    ['docNumber', t('cv.table.number'), d => esc(d.number) || '-'],
+    ['docIssueDate', t('cv.table.issueDate'), d => formatDate(d.issueDate)],
+    ['docExpiryDate', t('cv.table.expiryDate'), d => d.noExpiryDate ? esc(t('documents.form.noExpiryDate')) : formatDate(d.expiryDate)],
+    ['docIssuePlace', t('documents.form.issuePlace'), d => esc(d.issuePlace) || '-'],
+  ];
+  const shownCols = docCols.filter(([id]) => hasColumn(id));
+  const documentsBody = groups.map(g => `
+    <div class="doc-group">
+      <div class="doc-cat">${esc(t(`documents.categories.${CATEGORY_KEYS[g.category] || 'other'}`))} <span>${g.items.length}</span></div>
+      <table class="docs">
+        <thead><tr><th>${esc(t('cv.table.document'))}</th>${isPremium
+          ? shownCols.map(([, label]) => `<th>${esc(label)}</th>`).join('')
+          : '<th style="text-align:center;">Available in Unlimited version</th>'}</tr></thead>
+        <tbody>${g.items.map(d => `<tr><td class="d-name">${esc(d.name)}</td>${isPremium
+          ? shownCols.map(([, , cell]) => `<td>${cell(d)}</td>`).join('')
+          : '<td style="text-align:center;color:#d32f2f;">***</td>'}</tr>`).join('')}</tbody>
+      </table>
+    </div>`).join('');
+  const documentsPanel = panel(t('cv.sections.documents'), documentsBody, true,
+    docs.length ? `<span class="badge">${docs.length}</span>` : '');
+
+  const notes = (!isHidden('notes') && state.includeNotesInCV && state.notes)
+    ? panel(t('notes.title'), `<p class="notes">${escLines(state.notes)}</p>`, true) : '';
+
+  const contacts = [b.phones, p.email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ');
+  const hero = `
+    <header class="hero">
+      ${(cfg.showPhoto && p.photo) ? `<img class="h-photo" src="${esc(p.photo)}" alt=""/>` : ''}
+      <div class="h-main">
+        <h1>${esc(b.fullName)}</h1>
+        ${b.positionLine ? `<div class="h-pos">${esc(b.positionLine)}</div>` : ''}
+        ${contacts ? `<div class="h-ct">${contacts}</div>` : ''}
+      </div>
+      ${b.appQrUrl ? `<div class="h-qr"><img src="${b.appQrUrl}" alt="QR"/><span>Seafarer Documents Manager</span></div>` : ''}
+    </header>`;
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { size: A4; margin: 12mm; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:${fam}; color:#2b2b2b; font-size:10.5px; line-height:1.45; background:#fff; }
+    .hero { display:flex; align-items:center; gap:16px; background:${accent}; color:#fff; border-radius:10px; padding:14px 16px; margin-bottom:10px; page-break-inside:avoid; }
+    .h-photo { width:84px; height:108px; object-fit:cover; border-radius:6px; border:2px solid rgba(255,255,255,0.85); flex-shrink:0; }
+    .h-main { flex:1; min-width:0; }
+    .hero h1 { font-size:23px; line-height:1.15; letter-spacing:.3px; }
+    .h-pos { font-size:13px; font-style:italic; opacity:.9; margin-top:4px; }
+    .h-ct { font-size:10px; opacity:.85; margin-top:6px; }
+    .h-qr { text-align:center; flex-shrink:0; }
+    .h-qr img { width:54px; height:54px; background:#fff; padding:3px; border-radius:4px; display:block; margin:0 auto 3px; }
+    .h-qr span { font-size:7px; opacity:.8; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; grid-auto-flow:row dense; }
+    .panel { border:1px solid ${hexToRgba(accent, 0.25)}; border-top:3px solid ${accent}; border-radius:8px; padding:9px 12px 10px; background:#fff; page-break-inside:avoid; break-inside:avoid; }
+    .panel.wide { grid-column:1 / -1; page-break-inside:auto; break-inside:auto; }
+    .p-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; page-break-after:avoid; break-after:avoid; }
+    h2 { color:${accent}; font-size:12.5px; letter-spacing:.4px; text-transform:${hCase}; }
+    .badge { background:${hexToRgba(accent, 0.12)}; color:${accent}; font-weight:bold; font-size:9.5px; border-radius:10px; padding:2px 9px; white-space:nowrap; }
+    .kv { display:flex; gap:8px; padding:3px 0; border-bottom:1px dotted #e3e3e3; }
+    .kv:last-child { border-bottom:none; }
+    .k { color:#777; width:42%; flex-shrink:0; }
+    .v { font-weight:600; min-width:0; overflow-wrap:anywhere; }
+    .contact { display:flex; gap:10px; align-items:flex-start; }
+    .contact-rows { flex:1; min-width:0; }
+    .cqr { width:92px; text-align:center; flex-shrink:0; font-size:7.5px; color:#777; font-style:italic; line-height:1.3; }
+    .cqr img { width:86px; height:86px; padding:3px; border:1px solid #e0e0e0; border-radius:6px; display:block; margin-bottom:3px; }
+    .locked { color:#d32f2f; font-size:9.5px; margin-top:4px; }
+    .contract { border:1px solid #e6e6e6; border-left:3px solid ${accent}; border-radius:6px; padding:7px 10px; margin-bottom:7px; page-break-inside:avoid; break-inside:avoid; ${cfg.zebra ? `background:${hexToRgba(accent, 0.03)};` : ''} }
+    .contract:last-child { margin-bottom:0; }
+    .c-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .c-vessel { font-weight:bold; font-size:12px; }
+    .tag { display:inline-block; margin-left:7px; font-size:9px; color:${accent}; border:1px solid ${hexToRgba(accent, 0.4)}; border-radius:9px; padding:0 7px; vertical-align:1px; }
+    .c-dates { text-align:right; white-space:nowrap; color:#555; font-size:10px; }
+    .c-dur { color:${accent}; font-weight:bold; font-size:9.5px; }
+    .c-pos { font-weight:600; margin-top:1px; }
+    .c-co { color:#666; font-weight:normal; }
+    .facts { display:grid; grid-template-columns:repeat(3, 1fr); column-gap:14px; margin-top:5px; }
+    .facts .kv { border-bottom:none; padding:1px 0; flex-direction:column; gap:0; }
+    .facts .k { width:auto; font-size:8.5px; text-transform:uppercase; letter-spacing:.3px; }
+    .c-note { margin-top:5px; padding-top:5px; border-top:1px dotted #ddd; color:#444; font-style:italic; }
+    .doc-group { margin-bottom:8px; page-break-inside:avoid; break-inside:avoid; }
+    .doc-group:last-child { margin-bottom:0; }
+    .doc-cat { font-weight:bold; color:#444; margin-bottom:3px; }
+    .doc-cat span { color:#999; font-weight:normal; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:${hexToRgba(accent, 0.12)}; color:${accent}; text-align:left; font-size:9px; padding:4px 7px; }
+    td { padding:4px 7px; border-bottom:1px solid #eee; font-size:9.5px; }
+    td:not(.d-name) { white-space:nowrap; }
+    /* Same column widths in every category, so the groups line up. */
+    table.docs { table-layout:fixed; }
+    table.docs th:first-child { width:${isPremium && shownCols.length ? Math.max(30, 100 - shownCols.length * 16) : 50}%; }
+    table.docs td { overflow:hidden; text-overflow:ellipsis; }
+    table.docs td.d-name { overflow-wrap:anywhere; }
+    ${cfg.zebra ? `tr:nth-child(even) td { background:${hexToRgba(accent, 0.04)}; }` : ''}
+    .notes { line-height:1.6; }
+  </style></head><body>
+    ${hero}
+    <div class="grid">
+      ${orderedBlocks(cfg, {
+        career, personal: personalPanel, contact, seaService, documents: documentsPanel,
+        education, physical, nextOfKin, notes,
+      })}
+    </div>
+  </body></html>`;
+};
+
 export const buildCvHtml = (state: any, isPremium: boolean, cfg: CvDesignConfig): string => {
   const b = buildBlocks(state, isPremium, cfg);
   if (cfg.layout === 'sidebar') return sidebarLayout(b, cfg);
+  if (cfg.layout === 'panels') return panelsLayout(state, b, isPremium, cfg);
   return singleColumn(b, cfg);
 };

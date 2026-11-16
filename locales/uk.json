@@ -299,7 +299,13 @@
       "reeferPower": "Потужність рефрижераторної установки",
       "reeferPowerPlaceholder": "напр. 850 kW",
       "teu": "Місткість контейнерів (TEU)",
-      "teuPlaceholder": "напр. 4500"
+      "teuPlaceholder": "напр. 4500",
+      "craneMake": "Марка / модель крана",
+      "craneMakePlaceholder": "напр. Liebherr RL-K 4200",
+      "craneType": "Тип крана",
+      "craneTypePlaceholder": "Оберіть тип крана",
+      "craneSwl": "SWL крана",
+      "craneSwlPlaceholder": "напр. 250 т"
     },
     "alerts": {
       "deleteTitle": "Видалити запис про стаж",
@@ -416,7 +422,13 @@
       "teu": "TEU",
       "machinery": "Машинна установка",
       "area": "Район",
-      "reefer": "Реф."
+      "reefer": "Реф.",
+      "period": "Період",
+      "contracts": "контрактів",
+      "yShort": "р.",
+      "mShort": "міс.",
+      "dShort": "дн.",
+      "crane": "Кран"
     },
     "includes": {
       "personalInfo": "Особиста інформація",

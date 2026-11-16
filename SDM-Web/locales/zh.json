@@ -252,7 +252,13 @@
       "reeferPower": "冷藏装置功率",
       "reeferPowerPlaceholder": "例如 850 kW",
       "teu": "集装箱容量 (TEU)",
-      "teuPlaceholder": "例如 4500"
+      "teuPlaceholder": "例如 4500",
+      "craneMake": "起重机品牌 / 型号",
+      "craneMakePlaceholder": "例如 Liebherr RL-K 4200",
+      "craneType": "起重机类型",
+      "craneTypePlaceholder": "选择起重机类型",
+      "craneSwl": "起重机 SWL",
+      "craneSwlPlaceholder": "例如 250 t"
     },
     "alerts": {
       "deleteTitle": "删除海上服务",
@@ -368,7 +374,13 @@
       "teu": "TEU",
       "machinery": "动力装置",
       "area": "航区",
-      "reefer": "冷藏"
+      "reefer": "冷藏",
+      "period": "期间",
+      "contracts": "份合同",
+      "yShort": "年",
+      "mShort": "个月",
+      "dShort": "天",
+      "crane": "起重机"
     },
     "includes": {
       "personalInfo": "个人信息",

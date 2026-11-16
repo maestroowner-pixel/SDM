@@ -82,3 +82,81 @@
 - Макет Sidebar не оформляет блок «Карьерные предпочтения»: в его CSS нет `.pref-box`. Так было и раньше.
 
 **Состояние.** Закоммичено в `web` и отправлено в `origin`, на сайт не выложено.
+
+## 2026-11-12 — макет CV «Панели» в SDM Web
+Запрос: в CV мало информации, сделать панелями со всем содержимым.
+
+**Сделано**
+- `utils/cvTemplate.ts`: шестой макет `panels`. Каждый раздел в отдельной карточке, мелкие разделы в две колонки, плавценз, документы и заметки на всю ширину. Печатаются все заполненные поля: у рейса флаг, GT, TEU, двигатель, мощность, движитель, рефустановка, DP (класс и система), район, компания, комментарий, длительность контракта и общий стаж; у документов место выдачи и «без срока действия», сгруппированы по категориям; в контактах Telegram, Teams, город, индекс, страна; физические данные полностью; у родственника адрес.
+- Новые переключатели полей `flag`, `grossTonnage`, `company`, `dp`, `comments`, `docIssuePlace`. Видны в редакторе только для «Панелей» (`PANELS_ONLY_COLUMNS`), остальные макеты их не используют.
+- `screens/CVScreen.tsx`: переключатели в списке колонок.
+
+**Решения**
+- Новый макет, а не переделка существующих: старые CV пользователей не меняются.
+- В «Панелях» значения экранируются (`esc`). В других макетах по-прежнему нет.
+- Уровень английского не выводится: в интерфейсе его не ввести, а ключа перевода нет ни в одном языке.
+- Визы (`visaUSA` и др.) не выводятся: в интерфейсе их не заполнить.
+
+**Проверено**: тестовые данные, отрисовка через headless Chrome в PDF (русский, Premium), 2 страницы A4. Все 6 макетов собираются с Premium и без. `tsc` без ошибок в изменённых файлах.
+
+- Живой прогон: SDM Web (dev-сервер, копия без Firebase, локальный пробный Premium), Chrome через Playwright, 1440 px, русский. Выбор «Panels», предпросмотр (9 панелей, 3 контракта), переключатели «Комментарии» и «Место выдачи» убирают данные из предпросмотра, на Classic новые переключатели скрыты. «Создать» вызывает печать, напечатанный HTML — макет «Панели», в PDF совпадает с предпросмотром. Ошибок страницы нет.
+
+**Не проверено**: системный диалог печати (print() перехвачен), длинные CV на 3+ страницы, другие языки, без Premium в интерфейсе.
+
+**Состояние**: не закоммичено.
+
+## 2026-11-12 — «Панели» в мобильном приложении и APK
+Запрос: «сгенерируй apk». Выбрано: сначала перенести «Панели» в мобильное CV, потом собрать.
+
+**Сделано**
+- `utils/cvPanels.ts` (новый): макет «Панели» для мобильного приложения, перенесён из SDM Web. Настроек редактора нет: все разделы и поля, порядок по умолчанию, акцент `#3949ab`.
+- `screens/CVScreen.tsx`: пятый дизайн «Panels» в выборе дизайна. Экран передаёт уже посчитанные сортировки, QR и строки шапки, поэтому правила сортировки остались в одном месте. CRLF сохранён.
+- APK собран напрямую `APP_MODE=production ./gradlew assembleRelease` в существующем `android/`, без prebuild.
+
+**Решения**
+- `scripts/build-apk-production.js` не использован: он переписывает versionCode на 301052, пишет пустые пароли подписи в `android/gradle.properties` и сужает ABI до двух. Скрипт устарел, его стоит починить или удалить.
+- Версия не поднималась: 3.2.0 (302001).
+- Сборка: `outputs/SDM-v3.2.0-302001-2026-11-12-production.apk` (158 МБ, все 4 ABI). Подпись совпадает с `upload_certificate.pem`, пакет `seafarer.documents.manager`, «Panels» в бандле есть. Gradle без `ANDROID_HOME` падает «SDK location not found»: в `~/.zshrc` строка 3 склеена с `export PATH=…openjdk@17…` (нет перевода строки), неинтерактивная оболочка переменную не получает — задавать `ANDROID_HOME=/Users/pc/Library/Android/sdk` явно.
+
+**Не проверено**: APK на устройстве не ставился, PDF «Панелей» через expo-print на Android не смотрели (CSS grid в WebView печати должен работать, но не проверено).
+
+**Состояние**: не закоммичено.
+
+## 2026-11-12 — Premium из мобильного приложения виден в SDM Web
+Запрос: «почему на аккаунт osypov@mail.com не наследовался премиум», затем «делай вариант 2».
+
+**Причина.** Веб брал Premium только из `subscriptions/{uid}`: ключ Lemon Squeezy или пробный период. Покупка в приложении живёт в RevenueCat под анонимным ID и в Firebase не попадала. Данные именно этого аккаунта не проверялись.
+
+**Сделано**
+- Мобильное: `SubscriptionService.linkAccount(uid)`. После входа с подтверждённой почтой вызывается `Purchases.logIn(uid)`. Если права `premium` у uid нет, выполняется `syncPurchases()`: покупки этого аккаунта магазина переносятся на uid без окон. Вызов идёт из `onAuthStateChanged` (в том числе при запуске с сохранённой сессией) и из `reloadUser` (после подтверждения почты). `initialize()` теперь возвращает общий промис, чтобы привязка ждала настройки SDK.
+- Веб: `SDM-Web/utils/revenuecat.ts`. Запрос `GET api.revenuecat.com/v1/subscribers/{uid}` с публичным Android-ключом (`EXPO_PUBLIC_REVENUECAT_API_KEY` в `.env`), право `premium` активно, если срок не указан или ещё не истёк. Если сеть недоступна, используется последний ответ, сохранённый по uid. В `SubscriptionContext`: Premium = ключ Lemon, или покупка в приложении, или пробный период; тип `mobile`.
+
+**Решения**
+- Не записывать флаг Premium с телефона в Firestore: клиент может выставить его себе сам.
+- Привязка только повышает локальный `premium_status` и никогда не сбрасывает его: вход в аккаунт не должен отнимать покупку, сделанную на этом телефоне. По той же причине при выходе из аккаунта нет `Purchases.logOut()`.
+- Публичный ключ RevenueCat не секретный (он есть в APK). CORS `api.revenuecat.com` разрешает запросы из браузера (проверено preflight с origin sdm.kuka-lab.com).
+- Проверка на клиенте подделывается через инструменты разработчика, как и уже существующая проверка Lemon. Без сервера иначе не сделать.
+
+**Проверено**: `tsc` без ошибок в изменённых файлах (мобильное и веб). Локальный SDM Web перезапущен, ключ в сборке, ошибок страницы нет.
+
+**Не проверено**: реальный запрос к RevenueCat с настоящим uid (GET создаёт покупателя, на выдуманном ID не делали), привязка на телефоне. Нужен новый APK. Пользователям, уже купившим Premium, нужно обновить приложение и открыть его со входом в аккаунт; после переустановки сначала «Восстановить покупки».
+
+**Состояние**: не закоммичено. Собранный ранее APK этих изменений не содержит.
+
+## 2026-11-13 — CV: richer sea service section (all table/sidebar layouts)
+
+- Reason: the user's CV (Osypov) showed sea service as a sparse table. Most contracts had only name/rank/type/dates, and the rest was "-".
+- New shared `utils/cvSeaService.ts`, kept identical in the mobile app and in SDM-Web. It replaces the old table and the voyage blocks.
+- Added a summary: total sea time, contract count, and sea time by rank and by vessel type (chips).
+- Per contract it shows: vessel type · flag · GRT · TEU and the company under the name; DP class/system under the rank; duration under the dates; comments in a separate row. Machinery and area get their own columns only when filled.
+- Web: flag/GRT/company/DP/comments column toggles now work in every layout. `PANELS_ONLY_COLUMNS` keeps only `docIssuePlace`.
+- New i18n keys `cv.table.period/contracts/yShort/mShort/dShort` in 10 locales, in both projects.
+- Totals are summed like the sea service screen (no merging of overlapping contracts).
+- DP in the CV is printed with labels: «DP Class: … · DP System: …» in the accent colour, under the rank (table) or as its own line (cards). In Panels it is two separate rows. A contract's comments go in their own row with a «Comments:» label.
+
+## 2026-11-13 — Краны: поля контракта, строка в CV, журнал крана; релиз 3.2.1
+
+- В контракт (SeaService) добавлены необязательные `craneMake`, `craneType`, `craneSwl`. В форме морского стажа это три поля после DP. Тип выбирается из `CRANE_TYPES` (`OptionWithOtherInput`) или вводится вручную.
+- CV: под должностью строка «Crane: Liebherr … · Offshore Pedestal Crane · SWL 250 t» (голое число SWL дополняется « t»). В Panels это три отдельные строки. В веб-редакторе CV для неё есть переключатель колонки `crane`.
+- Журнал крана `screens/CraneScreen.tsx` (mobile + web), сделан по образцу журнала DP. Сутки — 48 слотов по 30 минут, слот 1 = работа на кране. Состояние хранится в `craneInfo`/`craneDays`, синхронизируется вместе со всем JSON. Вкладка «Crane Log» включается в настройках (`showCraneScreen`). PDF «Crane Operator Hours Log»: шапка (оператор, компания, судно, IMO, кран, контракт), таблица по дням с интервалами времени, итог часов, подписи.
+- Версия приложения 3.2.1 (302011): 3.2.0 уже выпущена. SDM Web 1.0.5 выложен на https://seafarer-document-manager.web.app; в бандле есть журнал крана, проверка RevenueCat и новый раздел стажа. sdm.kuka-lab.com теперь редиректит на лендинг sdm.kuka-soft.com, это не веб-приложение.

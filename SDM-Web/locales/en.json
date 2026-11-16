@@ -299,7 +299,13 @@
       "reeferPower": "Reefer Plant Power",
       "reeferPowerPlaceholder": "e.g. 850 kW",
       "teu": "Container Capacity (TEU)",
-      "teuPlaceholder": "e.g. 4500"
+      "teuPlaceholder": "e.g. 4500",
+      "craneMake": "Crane Make / Model",
+      "craneMakePlaceholder": "e.g. Liebherr RL-K 4200",
+      "craneType": "Crane Type",
+      "craneTypePlaceholder": "Select crane type",
+      "craneSwl": "Crane SWL",
+      "craneSwlPlaceholder": "e.g. 250 t"
     },
     "alerts": {
       "deleteTitle": "Delete Sea Service",
@@ -416,7 +422,13 @@
       "teu": "TEU",
       "machinery": "Machinery",
       "area": "Area",
-      "reefer": "Reefer"
+      "reefer": "Reefer",
+      "period": "Period",
+      "contracts": "contracts",
+      "yShort": "y",
+      "mShort": "m",
+      "dShort": "d",
+      "crane": "Crane"
     },
     "includes": {
       "personalInfo": "Personal Information",

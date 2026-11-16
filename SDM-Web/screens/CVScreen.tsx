@@ -20,7 +20,7 @@ import { alertMsg, confirmAsync } from '../utils/webAlert';
 import { playSuccessSound } from '../utils/sound';
 import {
   buildCvHtml, CvColumnId, CvDesignConfig, CvSectionId, defaultCvConfig, CV_LAYOUTS, ACCENT_PRESETS,
-  cvSectionsForLayout, isCvSectionMovable, moveCvSection, sortDocumentsForCv, sortSeaServiceForCv,
+  cvSectionsForLayout, isCvSectionMovable, moveCvSection, sortDocumentsForCv, sortSeaServiceForCv, PANELS_ONLY_COLUMNS,
 } from '../utils/cvTemplate';
 import {
   CvVersionStore, CV_VERSION_NAME_MAX, activeCvVersion, deleteActiveCvVersion, duplicateActiveCvVersion,
@@ -42,14 +42,21 @@ const SECTION_LABELS: Record<CvSectionId, string> = {
 const COLUMN_LABELS: { group: CvSectionId; items: [CvColumnId, string][] }[] = [
   { group: 'seaService', items: [
     ['vesselType', 'seaService.form.vesselType'],
+    ['flag', 'seaService.form.flag'],
+    ['grossTonnage', 'seaService.form.grt'],
     ['teu', 'cv.table.teu'],
     ['machinery', 'cv.table.machinery'],
+    ['dp', 'seaService.sections.dpSystem'],
+    ['crane', 'cv.table.crane'],
     ['area', 'cv.table.area'],
+    ['company', 'seaService.form.company'],
+    ['comments', 'seaService.form.comments'],
   ] },
   { group: 'documents', items: [
     ['docNumber', 'cv.table.number'],
     ['docIssueDate', 'cv.table.issueDate'],
     ['docExpiryDate', 'cv.table.expiryDate'],
+    ['docIssuePlace', 'documents.form.issuePlace'],
   ] },
 ];
 
@@ -447,7 +454,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void; onOpenPaywall?: (
       {COLUMN_LABELS.filter(g => !effectiveConfig.hiddenSections.includes(g.group)).map(g => (
         <View key={g.group}>
           <SectionLabel>{`${t('cv.editor.columns')}: ${t(SECTION_LABELS[g.group])}`}</SectionLabel>
-          {g.items.map(([id, label]) => (
+          {g.items.filter(([id]) => effectiveConfig.layout === 'panels' || !PANELS_ONLY_COLUMNS.includes(id)).map(([id, label]) => (
             <CheckRow
               key={id}
               checked={!effectiveConfig.hiddenColumns.includes(id)}

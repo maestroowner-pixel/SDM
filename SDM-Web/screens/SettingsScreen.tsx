@@ -47,7 +47,7 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall }) => {
-  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen } = useData();
+  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleCraneScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isConfigured: authConfigured, user, logout } = useAuth();
   const { status: syncStatus, lastSyncAt, enabled: syncEnabled, halt: haltSync } = useSync();
@@ -344,6 +344,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               <Switch
                 value={state.showDPScreen}
                 onValueChange={toggleDPScreen}
+                trackColor={{ false: '#ccc', true: '#1976d2' }}
+                thumbColor="#fff"
+              />
+            </View>
+            <View style={styles.row}>
+              <View style={styles.rowLeft}>
+                <Ionicons name="construct" size={22} color={isDark ? '#ffb300' : '#e08e00'} />
+                <Text style={[styles.rowLabel, { color: titleColor }]}>Crane Log</Text>
+              </View>
+              <Switch
+                value={state.showCraneScreen}
+                onValueChange={toggleCraneScreen}
                 trackColor={{ false: '#ccc', true: '#1976d2' }}
                 thumbColor="#fff"
               />

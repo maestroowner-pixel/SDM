@@ -299,7 +299,13 @@
       "reeferPower": "रेफ्रिजरेशन प्लांट की शक्ति",
       "reeferPowerPlaceholder": "जैसे 850 kW",
       "teu": "कंटेनर क्षमता (TEU)",
-      "teuPlaceholder": "जैसे 4500"
+      "teuPlaceholder": "जैसे 4500",
+      "craneMake": "क्रेन ब्रांड / मॉडल",
+      "craneMakePlaceholder": "जैसे Liebherr RL-K 4200",
+      "craneType": "क्रेन प्रकार",
+      "craneTypePlaceholder": "क्रेन प्रकार चुनें",
+      "craneSwl": "क्रेन SWL",
+      "craneSwlPlaceholder": "जैसे 250 t"
     },
     "alerts": {
       "deleteTitle": "सी सर्विस हटाएं",
@@ -416,7 +422,13 @@
       "teu": "TEU",
       "machinery": "मशीनरी",
       "area": "क्षेत्र",
-      "reefer": "रीफर"
+      "reefer": "रीफर",
+      "period": "अवधि",
+      "contracts": "अनुबंध",
+      "yShort": "व",
+      "mShort": "मा",
+      "dShort": "दि",
+      "crane": "क्रेन"
     },
     "includes": {
       "personalInfo": "व्यक्तिगत जानकारी",

@@ -284,7 +284,13 @@
       "reeferPower": "Leistung der Kühlanlage",
       "reeferPowerPlaceholder": "z. B. 850 kW",
       "teu": "Containerkapazität (TEU)",
-      "teuPlaceholder": "z. B. 4500"
+      "teuPlaceholder": "z. B. 4500",
+      "craneMake": "Kranhersteller / Modell",
+      "craneMakePlaceholder": "z. B. Liebherr RL-K 4200",
+      "craneType": "Krantyp",
+      "craneTypePlaceholder": "Krantyp wählen",
+      "craneSwl": "Kran-SWL",
+      "craneSwlPlaceholder": "z. B. 250 t"
     },
     "alerts": {
       "deleteTitle": "Seedienstzeit Löschen",
@@ -412,7 +418,13 @@
       "teu": "TEU",
       "machinery": "Maschinenanlage",
       "area": "Fahrtgebiet",
-      "reefer": "Kühlanlage"
+      "reefer": "Kühlanlage",
+      "period": "Zeitraum",
+      "contracts": "Verträge",
+      "yShort": "J.",
+      "mShort": "M.",
+      "dShort": "T.",
+      "crane": "Kran"
     }
   },
   "education": {

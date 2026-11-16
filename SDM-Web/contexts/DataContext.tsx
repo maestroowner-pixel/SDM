@@ -62,6 +62,10 @@ export interface SeaService {
   sailingArea?: string;
   reeferPower?: string;
   teu?: string;
+  // Crane operators: make/model, type (knuckle boom, AHC…) and SWL.
+  craneMake?: string;
+  craneType?: string;
+  craneSwl?: string;
   position: string;
   customPosition?: string;
   signOn: string;
@@ -150,6 +154,9 @@ export interface AppState {
   showMPCScreen: boolean;
   dpInfo: DPScreenInfo;
   dpDays: DPDayRecord[];
+  showCraneScreen: boolean;
+  craneInfo: CraneLogInfo;
+  craneDays: DPDayRecord[];  // same day grid as DP; slot 1 = crane operation
 }
 
 // ─── DP типы ─────────────────────────────────────────────────────────────────
@@ -171,6 +178,21 @@ export interface DPScreenInfo {
   grt: string;
   imo: string;
   dpClass: string;
+  contractStart: string;
+  contractEnd: string;
+  signatoryName: string;
+  signatoryRank: string;
+  companyContacts: string;
+}
+
+// Crane operator hours log: header of the log printed for the company to sign.
+export interface CraneLogInfo {
+  company: string;
+  vesselName: string;
+  imo: string;
+  craneMake: string;
+  craneType: string;
+  craneSwl: string;
   contractStart: string;
   contractEnd: string;
   signatoryName: string;
@@ -203,6 +225,12 @@ const defaultState: AppState = {
     contractStart: '', contractEnd: '',
     signatoryName: '', signatoryRank: '', companyContacts: '',
   },
+  showCraneScreen: false,
+  craneDays: [],
+  craneInfo: {
+    company: '', vesselName: '', imo: '', craneMake: '', craneType: '', craneSwl: '',
+    contractStart: '', contractEnd: '', signatoryName: '', signatoryRank: '', companyContacts: '',
+  },
 };
 
 interface DataContextType {
@@ -226,6 +254,9 @@ interface DataContextType {
   toggleMPCScreen: () => void;
   updateDPInfo: (info: DPScreenInfo) => void;
   updateDPDays: (days: DPDayRecord[]) => void;
+  toggleCraneScreen: () => void;
+  updateCraneInfo: (info: CraneLogInfo) => void;
+  updateCraneDays: (days: DPDayRecord[]) => void;
   exportData: () => string;
   importData: (data: string) => Promise<boolean>;
   clearAllData: () => Promise<void>;
@@ -250,6 +281,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           ...parsed,
           personal: { ...defaultState.personal, ...parsed.personal },
           dpInfo:   { ...defaultState.dpInfo,   ...parsed.dpInfo },
+          craneInfo: { ...defaultState.craneInfo, ...parsed.craneInfo },
           seaService: Array.isArray(parsed.seaService) ? parsed.seaService : [],
           documents: Array.isArray(parsed.documents) ? parsed.documents : [],
         });
@@ -309,6 +341,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const toggleMPCScreen = () => setState(prev => ({ ...prev, showMPCScreen: !prev.showMPCScreen }));
   const updateDPInfo = (dpInfo: DPScreenInfo) => setState(prev => ({ ...prev, dpInfo }));
   const updateDPDays = (dpDays: DPDayRecord[]) => setState(prev => ({ ...prev, dpDays }));
+  const toggleCraneScreen = () => setState(prev => ({ ...prev, showCraneScreen: !prev.showCraneScreen }));
+  const updateCraneInfo = (craneInfo: CraneLogInfo) => setState(prev => ({ ...prev, craneInfo }));
+  const updateCraneDays = (craneDays: DPDayRecord[]) => setState(prev => ({ ...prev, craneDays }));
 
   const exportData = () => JSON.stringify(state);
 
@@ -320,6 +355,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ...parsed,
         personal: { ...defaultState.personal, ...parsed.personal },
         dpInfo:   { ...defaultState.dpInfo,   ...parsed.dpInfo },
+          craneInfo: { ...defaultState.craneInfo, ...parsed.craneInfo },
       });
       if (parsed.documents && Array.isArray(parsed.documents)) {
         try {
@@ -349,7 +385,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateSeaService, addSeaService, updateSeaServiceItem, deleteSeaService,
       updatePersonal, updateBiometrics, updateEducation, updateNextOfKin,
       updateNotes, toggleIncludeNotesInCV, setTheme,
-      toggleDPScreen, updateDPInfo, updateDPDays, toggleMPCScreen,
+      toggleDPScreen, updateDPInfo, updateDPDays,
+      toggleCraneScreen, updateCraneInfo, updateCraneDays, toggleMPCScreen,
       exportData, importData, clearAllData,
     }}>
       {children}

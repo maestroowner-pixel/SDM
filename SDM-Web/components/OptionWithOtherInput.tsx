@@ -58,6 +58,17 @@ export const SAILING_AREAS = [
   'Coastal / Near-Coastal',
 ] as const;
 
+export const CRANE_TYPES = [
+  'Offshore Pedestal Crane',
+  'Knuckle Boom Crane',
+  'AHC (Active Heave Compensated)',
+  'Lattice Boom Crane',
+  'Telescopic Boom Crane',
+  'Provision / Hose Handling Crane',
+  'Gantry Crane',
+  'A-Frame',
+] as const;
+
 export const OptionWithOtherInput: React.FC<OptionWithOtherInputProps> = ({
   value,
   onChangeText,

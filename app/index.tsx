@@ -89,6 +89,7 @@ import { CVScreen } from '../screens/CVScreen';
 import { ScansScreen } from '../screens/ScansScreen';
 import { SettingsScreen }  from '../screens/SettingsScreen';
 import DPScreen from '../screens/DPScreen';
+import CraneScreen from '../screens/CraneScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import * as Application from 'expo-application';
@@ -112,7 +113,7 @@ if (isTestVisible) {
   TestingScreen = require('../screens/TestingScreen').TestingScreen;
 }
 
-type TabType = 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'settings' | 'test' | 'dp';
+type TabType = 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education' | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'settings' | 'test' | 'dp' | 'crane';
 
 const allTabs: { id: TabType; icon: string; label: string }[] = [
   { id: 'personal',   icon: 'person',          label: 'personal.title' },
@@ -126,6 +127,7 @@ const allTabs: { id: TabType; icon: string; label: string }[] = [
   { id: 'cv',         icon: 'document',        label: 'cv.title' },
   { id: 'scans',      icon: 'document-attach', label: 'scans.title' },
   { id: 'dp',         icon: 'compass',         label: 'DP Log' },
+  { id: 'crane',      icon: 'construct',       label: 'Crane Log' },
   { id: 'test',       icon: 'flask',           label: 'Test' },
   { id: 'settings',   icon: 'settings',        label: 'settings.title' },
 ];
@@ -223,8 +225,9 @@ const MainApp: React.FC = () => {
   const tabs = React.useMemo(() => {
     let result = isTestVisible ? allTabs : allTabs.filter(t => t.id !== 'test');
     if (!state.showDPScreen)  result = result.filter(t => t.id !== 'dp');
+    if (!state.showCraneScreen) result = result.filter(t => t.id !== 'crane');
     return result;
-  }, [state.showDPScreen]);
+  }, [state.showDPScreen, state.showCraneScreen]);
 
   React.useEffect(() => {
     if (!tabs.find(t => t.id === activeTab)) setActiveTabSafe('personal');
@@ -342,6 +345,7 @@ const MainApp: React.FC = () => {
       case 'cv':         return <CVScreen         {...screenProps} onDisableSwipe={disableSwipeTemporarily} />;
       case 'scans':      return <ScansScreen />;
       case 'dp':         return <DPScreen />;
+      case 'crane':      return <CraneScreen />;
       case 'test':       return isTestVisible ? <TestingScreen {...screenProps} /> : null;
       case 'settings':   return <SettingsScreen   {...screenProps} />;
       default:           return <PersonalScreen   {...screenProps} />;

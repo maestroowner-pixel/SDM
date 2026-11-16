@@ -299,7 +299,13 @@
       "reeferPower": "Moc instalacji chłodniczej",
       "reeferPowerPlaceholder": "np. 850 kW",
       "teu": "Pojemność kontenerowa (TEU)",
-      "teuPlaceholder": "np. 4500"
+      "teuPlaceholder": "np. 4500",
+      "craneMake": "Marka / model dźwigu",
+      "craneMakePlaceholder": "np. Liebherr RL-K 4200",
+      "craneType": "Typ dźwigu",
+      "craneTypePlaceholder": "Wybierz typ dźwigu",
+      "craneSwl": "SWL dźwigu",
+      "craneSwlPlaceholder": "np. 250 t"
     },
     "alerts": {
       "deleteTitle": "Usuń praktykę",
@@ -416,7 +422,13 @@
       "teu": "TEU",
       "machinery": "Siłownia",
       "area": "Rejon",
-      "reefer": "Chłodnia"
+      "reefer": "Chłodnia",
+      "period": "Okres",
+      "contracts": "kontraktów",
+      "yShort": "l.",
+      "mShort": "mies.",
+      "dShort": "dn.",
+      "crane": "Dźwig"
     },
     "includes": {
       "personalInfo": "Informacje osobiste",

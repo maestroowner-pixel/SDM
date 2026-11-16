@@ -274,7 +274,13 @@
       "reeferPower": "Potencia de la Planta Frigorífica",
       "reeferPowerPlaceholder": "p. ej. 850 kW",
       "teu": "Capacidad de Contenedores (TEU)",
-      "teuPlaceholder": "p. ej. 4500"
+      "teuPlaceholder": "p. ej. 4500",
+      "craneMake": "Marca / modelo de grúa",
+      "craneMakePlaceholder": "p. ej. Liebherr RL-K 4200",
+      "craneType": "Tipo de grúa",
+      "craneTypePlaceholder": "Seleccione el tipo de grúa",
+      "craneSwl": "SWL de la grúa",
+      "craneSwlPlaceholder": "p. ej. 250 t"
     },
     "alerts": {
       "deleteTitle": "Eliminar Servicio Marítimo",
@@ -403,7 +409,13 @@
       "teu": "TEU",
       "machinery": "Maquinaria",
       "area": "Zona",
-      "reefer": "Frigorífica"
+      "reefer": "Frigorífica",
+      "period": "Periodo",
+      "contracts": "contratos",
+      "yShort": "a",
+      "mShort": "m",
+      "dShort": "d",
+      "crane": "Grúa"
     },
     "includes": {
       "personalInfo": "Información Personal",

@@ -299,7 +299,13 @@
       "reeferPower": "Lakas ng Reefer Plant",
       "reeferPowerPlaceholder": "hal. 850 kW",
       "teu": "Kapasidad ng Container (TEU)",
-      "teuPlaceholder": "hal. 4500"
+      "teuPlaceholder": "hal. 4500",
+      "craneMake": "Brand / Modelo ng Crane",
+      "craneMakePlaceholder": "hal. Liebherr RL-K 4200",
+      "craneType": "Uri ng Crane",
+      "craneTypePlaceholder": "Pumili ng uri ng crane",
+      "craneSwl": "SWL ng Crane",
+      "craneSwlPlaceholder": "hal. 250 t"
     },
     "alerts": {
       "deleteTitle": "Burahin ang Sea Service",
@@ -416,7 +422,13 @@
       "teu": "TEU",
       "machinery": "Makinarya",
       "area": "Lugar",
-      "reefer": "Reefer"
+      "reefer": "Reefer",
+      "period": "Panahon",
+      "contracts": "kontrata",
+      "yShort": "t",
+      "mShort": "b",
+      "dShort": "a",
+      "crane": "Crane"
     },
     "includes": {
       "personalInfo": "Personal na Impormasyon",

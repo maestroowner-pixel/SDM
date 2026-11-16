@@ -15,6 +15,8 @@ import { t } from '../utils/i18n';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import qrcode from 'qrcode-generator';
+import { buildPanelsCvHtml, PANELS_ACCENT } from '../utils/cvPanels';
+import { buildSeaServiceSection } from '../utils/cvSeaService';
 
 const GHOST_ROSE_IMAGE = require('../assets/images/ghost-rose.png');
 
@@ -102,13 +104,14 @@ const CV_DESIGNS = [
   { id: 2, name: 'Executive', accent: '#002147', bg: '#e8edf2' },
   { id: 3, name: 'Minimal',   accent: '#00796b', bg: '#e0f2f1' },
   { id: 4, name: 'Offshore',  accent: '#e23a2e', bg: '#ececee' },
+  { id: 5, name: 'Panels',    accent: PANELS_ACCENT, bg: '#e8eaf6' },
 ] as const;
 
 export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableSwipe }) => {
   const { state, updatePersonal } = useData();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(false);
-  const [cvDesign, setCvDesign] = useState<1|2|3|4>(1);
+  const [cvDesign, setCvDesign] = useState<1|2|3|4|5>(1);
   const isDark = state.theme === 'dark';
   const isTablet = useTablet();
 
@@ -120,7 +123,7 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
     }
   }, [state.personal.lastCVGeneratedDate]);
 
-  const generateHTML = (design: 1|2|3|4 = 1) => {
+  const generateHTML = (design: 1|2|3|4|5 = 1) => {
     const { personal, biometrics, seaService, documents, nextOfKin, notes, includeNotesInCV, education } = state;
     // Main phone plus the extra mobiles, e.g. «+380 50 111 22 33, +44 7700 900123».
     const phones = allPhones(personal).join(', ');
@@ -184,75 +187,10 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       return timeB - timeA;
     });
 
-    // Engine, power, propulsion and reefer plant share one «Machinery» cell with
-    // only the filled parts: separate columns made up to 11 columns, which don't
-    // fit A4. Every optional column appears only when filled in at least one
-    // record, so a deck officer's CV keeps the short table.
-    const machinery = (s: SeaService) => {
-      const reefer = withUnit(s.reeferPower, 'kW');
-      return [
-        String(s.engineType || '').trim(),
-        withUnit(s.enginePower, 'kW'),
-        String(s.propulsionType || '').trim(),
-        reefer ? `${t('cv.table.reefer')} ${reefer}` : '',
-      ].filter(Boolean).join(' · ');
-    };
-    const showMachinery = sortedSeaService.some(s => machinery(s));
-    const showTeu = sortedSeaService.some(s => String(s.teu || '').trim());
-    const showSailingArea = sortedSeaService.some(s => String(s.sailingArea || '').trim());
-
-    const seaServiceHtml = sortedSeaService.length > 0 ? `
-      <div class="section">
-        <h2>${t('cv.sections.seaService')}</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>${t('seaService.form.vesselName')}</th>
-              <th>${t('seaService.form.position')}</th>
-              <th>${t('seaService.form.vesselType')}</th>
-              ${showTeu ? `<th>${t('cv.table.teu')}</th>` : ''}
-              ${showMachinery ? `<th>${t('cv.table.machinery')}</th>` : ''}
-              ${showSailingArea ? `<th>${t('cv.table.area')}</th>` : ''}
-              <th>${t('seaService.form.signOn')}</th>
-              <th>${t('seaService.form.signOff')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${sortedSeaService.map(s => `
-            <tr>
-              <td>${s.vesselName || '-'}</td>
-              <td>${s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-')}</td>
-              <td>${s.vesselType === 'Other' ? (s.customVesselType || '-') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '-')}</td>
-              ${showTeu ? `<td style="white-space:nowrap">${withUnit(s.teu, 'TEU') || '-'}</td>` : ''}
-              ${showMachinery ? `<td>${machinery(s) || '-'}</td>` : ''}
-              ${showSailingArea ? `<td>${String(s.sailingArea || '').trim() || '-'}</td>` : ''}
-              <td style="white-space:nowrap">${formatDate(s.signOn)}</td>
-              <td style="white-space:nowrap">${formatDate(s.signOff)}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>` : '';
-
-    // Layouts with a left sidebar leave the main column ~⅔ of A4: an 8-column
-    // table there is unreadable, so they get one block per contract instead.
-    const voyageBlocksHtml = sortedSeaService.length > 0 ? `
-      <div class="section">
-        <h2>${t('cv.sections.seaService')}</h2>
-        ${sortedSeaService.map(s => {
-          const position = s.position === 'Other' ? (s.customPosition || '-') : (s.position || '-');
-          const vesselType = s.vesselType === 'Other' ? (s.customVesselType || '') : (s.vesselType ? getVesselTypeLabel(s.vesselType) : '');
-          const sub = [vesselType, withUnit(s.teu, 'TEU')].filter(Boolean).join(' · ');
-          const mach = machinery(s);
-          const area = String(s.sailingArea || '').trim();
-          return `
-        <div class="voyage">
-          <div class="v-top"><span class="v-vessel">${s.vesselName || '-'}</span><span class="v-dates">${formatDate(s.signOn)} — ${formatDate(s.signOff)}</span></div>
-          <div class="v-pos">${position}${sub ? ` <span class="v-sub">· ${sub}</span>` : ''}</div>
-          ${mach ? `<div class="v-line"><span class="v-label">${t('cv.table.machinery')}:</span> ${mach}</div>` : ''}
-          ${area ? `<div class="v-line"><span class="v-label">${t('cv.table.area')}:</span> ${area}</div>` : ''}
-        </div>`;
-        }).join('')}
-      </div>` : '';
+    // Table for full-width designs, one card per contract for the sidebar one.
+    const seaOpts = { accent: CV_DESIGNS.find(d => d.id === design)?.accent || '#1976d2', zebra: design === 2 };
+    const seaServiceHtml = buildSeaServiceSection(sortedSeaService, seaOpts);
+    const voyageBlocksHtml = buildSeaServiceSection(sortedSeaService, { ...seaOpts, compact: true });
 
     // ── Ближайший родственник ─────────────────────────────────────────────────
     const nextOfKinHtml = (nextOfKin && nextOfKin.name) ? `
@@ -290,6 +228,12 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
 
     // ── Контактный vCard-QR (отсканировать → сохранить контакт в телефон) ──────
     const contactQrUrl = makeQrDataUrl(buildVCard(personal, positionLine));
+
+    // ── Design 5: Panels (every field, own builder) ──────────────────────────
+    if (design === 5) return buildPanelsCvHtml({
+      state, isPremium, fullName, positionLine, vesselTypeLine, dayRateLine, phones,
+      appQrUrl: qrCodeUrl, contactQrUrl, sortedSeaService, sortedDocuments, getVesselTypeLabel, withUnit,
+    });
     // Ячейка QR рядом (справа) с блоком Education — для светлых дизайнов 1, 2, 3
     const contactQrCell = contactQrUrl ? `
       <div style="flex-shrink:0;text-align:center;width:120px;page-break-inside:avoid;">

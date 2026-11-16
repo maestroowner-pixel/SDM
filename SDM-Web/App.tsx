@@ -37,14 +37,15 @@ import { NotesScreen } from './screens/NotesScreen';
 import { QRScreen } from './screens/QRScreen';
 import { CVScreen } from './screens/CVScreen';
 import DPScreen from './screens/DPScreen';
+import CraneScreen from './screens/CraneScreen';
 import { ScansScreen } from './screens/ScansScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 
 type TabType =
   | 'personal' | 'documents' | 'seaService' | 'biometrics' | 'education'
-  | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'dp' | 'settings';
+  | 'nextOfKin' | 'notes' | 'qr' | 'cv' | 'scans' | 'dp' | 'crane' | 'settings';
 
-const NAV_TABS: { id: TabType; icon: string; label: string; dpOnly?: boolean }[] = [
+const NAV_TABS: { id: TabType; icon: string; label: string; dpOnly?: boolean; craneOnly?: boolean }[] = [
   { id: 'personal',   icon: 'person',          label: 'personal.title' },
   { id: 'documents',  icon: 'document-text',   label: 'documents.title' },
   { id: 'seaService', icon: 'boat',            label: 'seaService.title' },
@@ -56,6 +57,7 @@ const NAV_TABS: { id: TabType; icon: string; label: string; dpOnly?: boolean }[]
   { id: 'cv',         icon: 'document',        label: 'cv.title' },
   { id: 'scans',      icon: 'document-attach', label: 'scans.title' },
   { id: 'dp',         icon: 'compass',         label: 'DP Log', dpOnly: true },
+  { id: 'crane',      icon: 'construct',       label: 'Crane Log', craneOnly: true },
   { id: 'settings',   icon: 'settings',        label: 'settings.title' },
 ];
 
@@ -78,8 +80,8 @@ const Shell: React.FC = () => {
   const theme = isDark ? UI_THEME.colors.dark : UI_THEME.colors.light;
 
   const tabs = React.useMemo(
-    () => NAV_TABS.filter(tab => !tab.dpOnly || state.showDPScreen),
-    [state.showDPScreen]
+    () => NAV_TABS.filter(tab => (!tab.dpOnly || state.showDPScreen) && (!tab.craneOnly || state.showCraneScreen)),
+    [state.showDPScreen, state.showCraneScreen]
   );
 
   useEffect(() => {
@@ -104,6 +106,7 @@ const Shell: React.FC = () => {
       case 'cv':         return <CVScreen onOpenPaywall={openPaywall} />;
       case 'scans':      return <ScansScreen />;
       case 'dp':         return <DPScreen />;
+      case 'crane':      return <CraneScreen />;
       case 'settings':   return <SettingsScreen onOpenPaywall={openPaywall} />;
       default:           return <Placeholder title={activeLabel()} theme={theme} />;
     }

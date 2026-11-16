@@ -72,7 +72,7 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall }) => {
-  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen } = useData();
+  const { state, setTheme, exportData, importData, clearAllData, toggleDPScreen, toggleCraneScreen } = useData();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { isPremium, subscriptionType, loading: subscriptionLoading, refreshStatus: refreshSubscription } = useSubscription();
   const { user, logout, isConfigured: authConfigured } = useAuth();
@@ -775,6 +775,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                     onValueChange={toggleDPScreen}
                     trackColor={{ false: '#767577', true: '#64b5f6' }}
                     thumbColor={state.showDPScreen ? '#1976d2' : '#f4f3f4'}
+                  />
+                }
+              />
+              <SettingRow
+                icon="construct"
+                title="Crane Log (english only)"
+                subtitle={state.showCraneScreen ? 'Enabled — restart app to apply' : 'Disabled'}
+                rightElement={
+                  <Switch
+                    value={state.showCraneScreen}
+                    onValueChange={toggleCraneScreen}
+                    trackColor={{ false: '#767577', true: '#64b5f6' }}
+                    thumbColor={state.showCraneScreen ? '#1976d2' : '#f4f3f4'}
                   />
                 }
               />

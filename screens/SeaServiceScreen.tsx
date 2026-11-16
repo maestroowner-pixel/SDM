@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useData, SeaService } from '../contexts/DataContext';
 import SimpleDatePicker from '../components/SimpleDatePicker';
 import { VesselTypeInput, VESSEL_TYPES } from '../components/VesselTypeInput';
-import { OptionWithOtherInput, PROPULSION_TYPES, SAILING_AREAS } from '../components/OptionWithOtherInput';
+import { OptionWithOtherInput, PROPULSION_TYPES, SAILING_AREAS, CRANE_TYPES } from '../components/OptionWithOtherInput';
 
 const getVesselTypeLabel = (value: string): string => {
   const found = VESSEL_TYPES.find(t => t.value === value);
@@ -135,14 +135,14 @@ export const SeaServiceScreen: React.FC = () => {
 
   const [formData, setFormData] = useState({
     vesselName: '', vesselType: '', customVesselType: '', flag: '', grossTonnage: '',
-    engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', position: '', customPosition: '', signOn: '',
+    engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', craneMake: '', craneType: '', craneSwl: '', position: '', customPosition: '', signOn: '',
     signOff: '', company: '', dpClass: '', dpSystem: '', comments: '',
   });
 
   const resetForm = () => {
     setFormData({
       vesselName: '', vesselType: '', customVesselType: '', flag: '', grossTonnage: '',
-      engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', position: '', customPosition: '', signOn: '',
+      engineType: '', enginePower: '', propulsionType: '', sailingArea: '', reeferPower: '', teu: '', craneMake: '', craneType: '', craneSwl: '', position: '', customPosition: '', signOn: '',
       signOff: '', company: '', dpClass: '', dpSystem: '', comments: '',
     });
     setEditingService(null);
@@ -168,6 +168,9 @@ export const SeaServiceScreen: React.FC = () => {
       sailingArea: service.sailingArea || '',
       reeferPower: service.reeferPower || '',
       teu: service.teu || '',
+      craneMake: service.craneMake || '',
+      craneType: service.craneType || '',
+      craneSwl: service.craneSwl || '',
       position: service.position,
       customPosition: service.customPosition || '',
       signOn: service.signOn,
@@ -223,6 +226,9 @@ export const SeaServiceScreen: React.FC = () => {
       sailingArea: formData.sailingArea || undefined,
       reeferPower: formData.reeferPower || undefined,
       teu: formData.teu || undefined,
+      craneMake: formData.craneMake || undefined,
+      craneType: formData.craneType || undefined,
+      craneSwl: formData.craneSwl || undefined,
       // FIX: явно переносим optional-поля, чтобы они не потерялись
       customPosition: formData.customPosition || undefined,
       customVesselType: formData.customVesselType || undefined,
@@ -702,6 +708,35 @@ export const SeaServiceScreen: React.FC = () => {
                   style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
                   value={formData.dpSystem}
                   onChangeText={(v) => setFormData({ ...formData, dpSystem: v })}
+                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.craneMake')}</Text>
+                <TextInput
+                  style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
+                  value={formData.craneMake}
+                  onChangeText={(v) => setFormData({ ...formData, craneMake: v })}
+                  placeholder={t('seaService.form.craneMakePlaceholder')}
+                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.craneType')}</Text>
+                <OptionWithOtherInput
+                  value={formData.craneType}
+                  onChangeText={(v) => setFormData({ ...formData, craneType: v })}
+                  isDark={isDark}
+                  options={CRANE_TYPES}
+                  placeholder={t('seaService.form.craneTypePlaceholder')}
+                  otherLabel={t('seaService.form.otherOption')}
+                  clearLabel={t('seaService.form.clearSelection')}
+                />
+
+                <Text style={[styles.label, isDark ? styles.textLight : styles.textDark]}>{t('seaService.form.craneSwl')}</Text>
+                <TextInput
+                  style={[styles.input, isDark ? styles.inputDark : styles.inputLight, isDark ? styles.textLight : styles.textDark]}
+                  value={formData.craneSwl}
+                  onChangeText={(v) => setFormData({ ...formData, craneSwl: v })}
+                  placeholder={t('seaService.form.craneSwlPlaceholder')}
                   placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                 />
 
