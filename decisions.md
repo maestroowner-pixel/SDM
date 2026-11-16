@@ -193,3 +193,9 @@
 - Сайт и QR в CV (mobile + SDM-Web) ведут на `https://sdm.kuka-soft.com` напрямую, без редиректа.
 - Смежные: исправление попадает в iOS 3.2.1 (архив ещё не собран) и в пересобранный AAB 3.2.1. На сайте — с деплоем 1.0.6.
 - **Лендинг** (`~/Desktop/Landings/kuka-soft-sites/sdm/site`, Cloudflare Workers, `npx wrangler@4.148.0 deploy`): карточка «Desktop — Windows» заменена на «SDM Web → https://web.kuka-soft.com», в подзаголовке Windows убран. `404.html` — копия главной, обновлён так же. Выложено 2026-11-16. Карточки Mac не тронуты: статус macOS Desktop не подтверждён.
+
+## 2026-11-16 — Версия 3.2.2 (302021)
+
+- AAB 3.2.1 (302011) уже был загружен в Google Play, потом отозван. Номер versionCode повторно использовать нельзя, поэтому 3.2.2 (302021). Поднято в app.json, android/app/build.gradle, iOS Info.plist и pbxproj, в запасном значении SplashScreen.
+- В 3.2.2 по сравнению с отозванной 3.2.1: рабочие ссылки на Terms/Privacy (раньше 404 и мёртвый sdm.free.nf), силуэт крюка на фоне журнала крана, на iOS — ExpoCrypto (pod install).
+- iOS тоже 3.2.2, чтобы номер совпадал на обеих платформах. Архив для App Store собирать заново.
