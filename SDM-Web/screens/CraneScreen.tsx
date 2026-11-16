@@ -26,7 +26,8 @@ import SimpleDatePicker from '../components/SimpleDatePicker';
 import { OptionWithOtherInput, CRANE_TYPES } from '../components/OptionWithOtherInput';
 import { t } from '../utils/i18n';
 
-const GHOST_DIVER_BG = require('../assets/images/ghost-diver.png');
+// A full photo, not a silhouette PNG like the other screens, so it isn't tinted.
+const CRANE_HOOK_BG = require('../assets/images/ghost-crane-hook.jpg');
 
 type Day = DPDayRecord;
 
@@ -300,9 +301,10 @@ const CraneScreen: React.FC = () => {
   return (
     <LinearGradient colors={tc.bg} style={s.container}>
       <ImageBackground
-        source={GHOST_DIVER_BG}
+        source={CRANE_HOOK_BG}
         style={s.container}
-        imageStyle={[s.bgImage, { opacity: isDark ? 0.15 : 0.08, tintColor: isDark ? '#ffcc80' : '#c77700' }]}
+        resizeMode="cover"
+        imageStyle={{ opacity: isDark ? 0.32 : 0.12 }}
       >
       <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
         <ScrollView showsVerticalScrollIndicator={false}
@@ -549,7 +551,6 @@ const CraneScreen: React.FC = () => {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  bgImage: { resizeMode: 'contain', width: '100%', height: '-120%', position: 'absolute', left: 0, right: 0, bottom: 0 },
   scroll: { padding: 14, paddingTop: 10 },
   scrollTablet: { alignItems: 'center' },
   center: { width: '100%', maxWidth: 720 },
