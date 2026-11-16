@@ -21,7 +21,7 @@ import { buildSeaServiceSection } from '../utils/cvSeaService';
 const GHOST_ROSE_IMAGE = require('../assets/images/ghost-rose.png');
 
 // Ссылка, зашитая в QR-код на CV.
-const CV_QR_TARGET = 'https://sdm.kuka-lab.com';
+const CV_QR_TARGET = 'https://sdm.kuka-soft.com';
 
 // Локальная (оффлайн) генерация QR как data-URL — без обращения к внешнему сервису.
 const makeQrDataUrl = (data: string): string => {

@@ -23,9 +23,9 @@ import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
-const TERMS_URL = 'https://sdm.kuka-lab.com/terms-of-service';
-const PRIVACY_URL = 'https://sdm.kuka-lab.com/privacy-policy';
-const WEBSITE_URL = 'https://sdm.kuka-lab.com';
+const TERMS_URL = 'https://sdm.kuka-soft.com/terms-of-service';
+const PRIVACY_URL = 'https://sdm.kuka-soft.com/privacy-policy';
+const WEBSITE_URL = 'https://sdm.kuka-soft.com';
 
 // Flags come from utils/flags.ts (real images) — emoji flags render as empty boxes on
 // Windows, which ships no glyphs for them.

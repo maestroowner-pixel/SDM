@@ -22,8 +22,8 @@ const APP_VERSION = Constants.expoConfig?.version ?? '3.2.1';
 
 const { width } = Dimensions.get('window');
 
-const TERMS_URL = 'https://sdm.free.nf/terms-of-service.php';
-const PRIVACY_URL = 'https://sdm.free.nf/privacy-policy.php';
+const TERMS_URL = 'https://sdm.kuka-soft.com/terms-of-service';
+const PRIVACY_URL = 'https://sdm.kuka-soft.com/privacy-policy';
 const AGREEMENT_KEY = '@sdm_agreement_accepted';
 const SDM_LOGO = require('../assets/images/sdm_adaptive-icon.png');
 const SPLASH_ICON = require('../assets/images/sdm_splash-icon.png');

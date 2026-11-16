@@ -44,9 +44,9 @@ import { NotificationService } from '../utils/NotificationService';
 import Purchases from 'react-native-purchases';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
-const TERMS_URL = 'https://sdm.kuka-lab.com/terms-of-service.php';
-const PRIVACY_URL = 'https://sdm.kuka-lab.com/privacy-policy.php';
-const WEBSITE_URL = 'https://sdm.kuka-lab.com';
+const TERMS_URL = 'https://sdm.kuka-soft.com/terms-of-service';
+const PRIVACY_URL = 'https://sdm.kuka-soft.com/privacy-policy';
+const WEBSITE_URL = 'https://sdm.kuka-soft.com';
 
 // 🛡️ Новые константы
 const SDM_EXTENSION = '.sdm';

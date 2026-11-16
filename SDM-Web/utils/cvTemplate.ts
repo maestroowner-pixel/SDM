@@ -116,7 +116,7 @@ export const normalizeCvConfig = (raw: any): CvDesignConfig => {
   };
 };
 
-const CV_QR_TARGET = 'https://sdm.kuka-lab.com';
+const CV_QR_TARGET = 'https://sdm.kuka-soft.com';
 
 const hexToRgba = (hex: string, alpha: number): string => {
   const h = hex.replace('#', '');
