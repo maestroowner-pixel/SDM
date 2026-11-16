@@ -17,8 +17,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { UI_THEME } from './utils/theme';
 import { t } from './utils/i18n';
-import { checkForUpdateSilently } from './utils/updateCheck';
-import { runUpdateFlow } from './utils/updateFlow';
 import { DataProvider, useData } from './contexts/DataContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -170,15 +168,6 @@ const Shell: React.FC = () => {
   );
 };
 
-// Desktop build: tell the user when a newer release is out (browser users just reload).
-// Sits outside the auth gate — an update matters whether or not anyone is signed in.
-const UpdateWatcher: React.FC = () => {
-  useEffect(() => {
-    checkForUpdateSilently().then((info) => { if (info) runUpdateFlow(info); });
-  }, []);
-  return null;
-};
-
 // Auth gate: when Firebase is configured, require a signed-in + verified user;
 // otherwise (no config yet) the app runs without a gate.
 const AuthGate: React.FC = () => {
@@ -194,7 +183,6 @@ export default function App() {
       <LanguageProvider>
         <DataProvider>
           <DialogProvider>
-            <UpdateWatcher />
             <AuthProvider>
               <SubscriptionProvider>
                 <SyncProvider>

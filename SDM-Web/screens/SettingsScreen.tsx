@@ -17,8 +17,6 @@ import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
 import { BackupChoice, BackupCryptoModal } from '../components/BackupCryptoModal';
 import { decryptSdm, encryptSdm, isEncryptedSdm, isVesselFile, vesselFile } from '../utils/sdmCrypto';
-import { isDesktop, currentVersion, checkForUpdate } from '../utils/updateCheck';
-import { runUpdateFlow } from '../utils/updateFlow';
 import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
 
@@ -61,7 +59,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const [cryptoError, setCryptoError] = useState('');
   const [pendingImport, setPendingImport] = useState('');
   const [importing, setImporting] = useState(false);
-  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   const cardStyle = [styles.card, isDark ? styles.cardDark : styles.cardLight];
   const titleColor = isDark ? '#fff' : '#1A3A5C';
@@ -223,23 +220,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       { confirmText: t('settings.alerts.deleteEverything'), destructive: true }
     );
     if (ok) await clearAllData();
-  };
-
-  const handleCheckUpdate = async () => {
-    setCheckingUpdate(true);
-    try {
-      const info = await checkForUpdate();
-      if (!info) {
-        alertMsg(t('update.upToDate'), t('update.upToDateBody', { version: currentVersion() || version }));
-        return;
-      }
-      await runUpdateFlow(info);
-    } catch (e: any) {
-      alertMsg(t('common.error'), t('update.failed'));
-      console.warn('manual update check failed:', e);
-    } finally {
-      setCheckingUpdate(false);
-    }
   };
 
   const openUrl = (url: string) => Linking.openURL(url).catch(() => {});
@@ -434,24 +414,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               <View style={styles.rowLeft}><Ionicons name="shield-checkmark-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} /><Text style={[styles.rowLabel, { color: titleColor }]}>{t('settings.privacy') !== 'settings.privacy' ? t('settings.privacy') : 'Privacy Policy'}</Text></View>
               <Ionicons name="open-outline" size={18} color={mutedColor} />
             </TouchableOpacity>
-            {isDesktop() && (
-              <>
-                <View style={styles.divider} />
-                <TouchableOpacity style={styles.actionRow} onPress={handleCheckUpdate} disabled={checkingUpdate}>
-                  <View style={styles.rowLeft}>
-                    <Ionicons name="cloud-download-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} />
-                    <Text style={[styles.rowLabel, { color: titleColor }]}>{t('update.check')}</Text>
-                  </View>
-                  {checkingUpdate
-                    ? <ActivityIndicator size="small" color="#1976d2" />
-                    : <Ionicons name="chevron-forward" size={20} color={mutedColor} />}
-                </TouchableOpacity>
-              </>
-            )}
           </View>
 
           <Text style={[styles.version, { color: mutedColor }]}>
-            {isDesktop() ? 'SDM Desktop' : 'SDM Web'} v{currentVersion() || version}
+            SDM Web v{version}
           </Text>
         </View>
       </ScrollView>

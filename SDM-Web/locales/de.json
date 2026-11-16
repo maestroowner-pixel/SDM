@@ -779,29 +779,5 @@
     "cropTitle": "Ecken ziehen zum Zuschneiden",
     "cropDone": "Fertig",
     "cropCancel": "Abbrechen"
-  },
-  "update": {
-    "check": "Nach Updates suchen",
-    "available": "Update verfügbar",
-    "availableBody": "Version {{version}} ist erschienen. Sie verwenden {{current}}.\n\nLaden Sie sie von der Release-Seite herunter und installieren Sie sie über die aktuelle Version — Ihre Daten bleiben erhalten.",
-    "download": "Herunterladen",
-    "later": "Später",
-    "upToDate": "Aktuell",
-    "upToDateBody": "Sie verwenden die neueste Version ({{version}}).",
-    "failed": "Suche nach Updates fehlgeschlagen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "availableAutoBody": "Version {{version}} ist erschienen. Sie verwenden {{current}}.\n\nJetzt herunterladen? Sie wird beim Neustart der App installiert — Ihre Daten bleiben erhalten.",
-    "downloading": "Update wird geladen",
-    "downloadingBody": "Version {{version}} wird im Hintergrund geladen. Arbeiten Sie weiter — sobald sie bereit ist, werden Sie zum Neustart aufgefordert.",
-    "ready": "Update bereit",
-    "readyBody": "Version {{version}} kann installiert werden. App jetzt neu starten?",
-    "restart": "Neu starten",
-    "notNow": "Später"
-  },
-  "print": {
-    "title": "Dokument drucken",
-    "message": "Das Dokument als PDF speichern oder an einen Drucker senden.",
-    "savePdf": "Als PDF speichern",
-    "toPrinter": "Drucken",
-    "saved": "Gespeichert"
   }
 }

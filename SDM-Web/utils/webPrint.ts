@@ -1,22 +1,7 @@
 // Web replacement for expo-print + Sharing.
 //
-// Браузер: HTML рендерится в скрытом iframe и печатается через window.print() —
+// HTML рендерится в скрытом iframe и печатается через window.print() —
 // пользователь сам выбирает «Сохранить как PDF» или принтер.
-//
-// Десктоп (Electron): тот же приём не работает. window.print() уходит в webContents
-// верхнего фрейма, то есть печатается интерфейс приложения, а не документ в iframe.
-// Поэтому там документ отдаётся главному процессу, и он рендерит его в отдельном
-// скрытом окне — либо в PDF через диалог сохранения, либо в системный диалог печати.
-import { alertMsg, chooseAsync } from './webAlert';
-import { t } from './i18n';
-
-interface DesktopPrinter {
-  savePdf: (html: string, fileName?: string) => Promise<{ saved: boolean; path?: string }>;
-  toPrinter: (html: string) => Promise<{ printed: boolean; reason?: string }>;
-}
-
-const desktopPrinter = (): DesktopPrinter | null =>
-  (typeof window !== 'undefined' && (window as any).sdmDesktop?.printer) || null;
 
 /**
  * Печать или сохранение документа. Имя файла передаётся БЕЗ расширения ".pdf" —
@@ -24,42 +9,7 @@ const desktopPrinter = (): DesktopPrinter | null =>
  * приложении: `CV_<lastName>_<YYYYMMDD>.pdf`.
  */
 export const printHtml = (html: string, fileName?: string): void => {
-  const printer = desktopPrinter();
-  if (printer) {
-    void printViaDesktop(printer, html, fileName);
-    return;
-  }
   printViaIframe(html, fileName);
-};
-
-// ── Десктоп ──────────────────────────────────────────────────────────────────
-
-const printViaDesktop = async (
-  printer: DesktopPrinter,
-  html: string,
-  fileName?: string
-): Promise<void> => {
-  const choice = await chooseAsync(t('print.title'), t('print.message'), [
-    { text: t('common.cancel'), value: 'cancel', style: 'ghost' },
-    { text: t('print.toPrinter'), value: 'printer' },
-    { text: t('print.savePdf'), value: 'pdf', style: 'primary' },
-  ]);
-
-  try {
-    if (choice === 'pdf') {
-      const res = await printer.savePdf(html, fileName);
-      if (res.saved && res.path) alertMsg(t('print.saved'), res.path);
-    } else if (choice === 'printer') {
-      const res = await printer.toPrinter(html);
-      // Отмена в системном диалоге тоже приходит как printed:false — про неё молчим.
-      if (!res.printed && res.reason && !/cancell?ed/i.test(res.reason)) {
-        alertMsg(t('common.error'), res.reason);
-      }
-    }
-  } catch (e) {
-    console.error('print failed', e);
-    alertMsg(t('common.error'), (e as Error)?.message || String(e));
-  }
 };
 
 // ── Браузер ──────────────────────────────────────────────────────────────────

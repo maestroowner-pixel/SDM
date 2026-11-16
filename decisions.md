@@ -206,4 +206,8 @@
 
 - Решение пользователя: поддерживаем только мобильные приложения (iOS, Android) и SDM Web. SDM Desktop (Electron, `SDM-Desktop/`) не собираем и не выпускаем ни для Windows, ни для macOS. Последняя версия 1.0.3.
 - Лендинг: убраны обе карточки «Desktop — Mac» (.dmg), из подзаголовка убран macOS («SDM Web in your browser on any computer»). Выложено, `404.html` синхронизирован.
-- Остатки, можно почистить отдельно: `SDM-Web/utils/updateCheck.ts` и `updateFlow.ts` (обновление Electron, в браузере ничего не делают), ветка `isDesktop()` в SettingsScreen, папка `SDM-Desktop/`, релизы на GitHub (старые установщики ещё скачиваются по прямым ссылкам), `DISTRIBUTION.md`.
+- Остатки Desktop удалены (с согласия пользователя):
+  - GitHub: релизы v1.0.0–v1.0.3 удалены вместе с установщиками и git-тегами (необратимо). Установленные копии Desktop продолжают работать, но обновлений больше не найдут.
+  - Репозиторий: удалены папка `SDM-Desktop/` (с диска тоже, 1,8 ГБ вместе со сборками) и `DISTRIBUTION.md`.
+  - SDM-Web: удалены `utils/updateCheck.ts` и `utils/updateFlow.ts`, `UpdateWatcher` в App.tsx, кнопка проверки обновлений и надпись «SDM Desktop» в Настройках, ветка печати через Electron в `webPrint.ts`, разделы переводов `update` и `print` во всех 10 языках. Печать в браузере (скрытый iframe) не изменилась.
+  - Смежные: в `utils/sdmCrypto.ts` (mobile + SDM-Web) убрано упоминание Desktop в комментарии; третья копия в ISM AI Pilot отличается только этим комментарием, код одинаковый.
