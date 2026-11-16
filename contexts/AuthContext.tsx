@@ -13,6 +13,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../utils/firebase';
+import { SubscriptionService } from '../services/subscriptionService';
 
 interface AuthContextType {
   user: User | null;
@@ -53,6 +54,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setInitializing(false);
+      // Same rule as sync: only a verified account. Lets SDM Web see Premium.
+      if (u?.emailVerified) void SubscriptionService.linkAccount(u.uid);
     });
     return unsub;
   }, []);
@@ -87,6 +90,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!auth?.currentUser) return false;
     await reload(auth.currentUser);
     setUser({ ...auth.currentUser });
+    // Verification doesn't fire onAuthStateChanged, so link here too.
+    if (auth.currentUser.emailVerified) void SubscriptionService.linkAccount(auth.currentUser.uid);
     return auth.currentUser.emailVerified;
   }, []);
 

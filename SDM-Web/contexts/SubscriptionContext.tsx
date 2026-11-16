@@ -22,6 +22,7 @@ import {
   getStoredLicense, setStoredLicense, revalidateLicense, deactivateLicense,
   type StoredLicense,
 } from '../utils/lemon';
+import { hasMobilePremium } from '../utils/revenuecat';
 
 const TRIAL_DAYS = 14;
 const TRIAL_MS = TRIAL_DAYS * 24 * 60 * 60 * 1000;
@@ -34,7 +35,7 @@ interface CloudSubscription {
 
 interface SubscriptionContextType {
   isPremium: boolean;
-  subscriptionType: string;   // 'free' | 'trial' | premium type
+  subscriptionType: string;   // 'free' | 'trial' | 'mobile' | premium type
   loading: boolean;
   isTrial: boolean;
   trialDaysLeft: number;      // 0 when not on trial / expired
@@ -101,6 +102,9 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         }
       }
 
+      // Premium bought in the mobile app, found in RevenueCat by the same uid.
+      const mobileActive = uid ? await hasMobilePremium(uid) : false;
+
       // ── Trial: the cloud value wins, so a reinstall can't restart it ───────
       const localStart = Number(await AsyncStorage.getItem(TRIAL_KEY)) || 0;
       let start = cloud?.trialStart || localStart || Date.now();
@@ -120,12 +124,13 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
       const trialActive = remaining > 0;
       const daysLeft = trialActive ? Math.ceil(remaining / (24 * 60 * 60 * 1000)) : 0;
 
-      const premium = licenseActive || trialActive;
+      const paid = licenseActive || mobileActive;
+      const premium = paid || trialActive;
       const type = licenseActive
         ? ((await AsyncStorage.getItem('premium_type')) || 'premium')
-        : (trialActive ? 'trial' : 'free');
+        : mobileActive ? 'mobile' : (trialActive ? 'trial' : 'free');
 
-      setIsTrial(trialActive && !licenseActive);
+      setIsTrial(trialActive && !paid);
       setTrialDaysLeft(daysLeft);
       setIsPremium(premium);
       setSubscriptionType(type);

@@ -19,15 +19,19 @@ const KEYS = {
 export class SubscriptionService {
   private static initialized = false;
   private static isConfigured = false;
+  private static initPromise: Promise<void> | null = null;
 
   // Геттер для проверки готовности SDK
   static get configured(): boolean {
     return this.isConfigured;
   }
 
-  static async initialize(): Promise<void> {
-    if (this.initialized) return;
-    
+  static initialize(): Promise<void> {
+    if (!this.initPromise) this.initPromise = this.doInitialize();
+    return this.initPromise;
+  }
+
+  private static async doInitialize(): Promise<void> {
     try {
       // Dev mode - пропускаем
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
@@ -60,6 +64,30 @@ export class SubscriptionService {
       console.error('❌ [SubscriptionService] Configuration failed:', e);
     } finally {
       this.initialized = true;
+    }
+  }
+
+  // Ties the RevenueCat customer to the signed-in Firebase account, so SDM Web
+  // can find this Premium by the same uid. A new uid aliases the anonymous
+  // customer; a uid already known (signed in on another phone) is switched to,
+  // and this store account's purchases are synced onto it without any UI.
+  // The local flag is only ever raised here: sign-in must not take away a
+  // purchase made on this device. Sign-out doesn't log out for the same reason.
+  static async linkAccount(uid: string): Promise<void> {
+    await this.initialize();
+    if (!this.isConfigured || !uid) return;
+    try {
+      if ((await Purchases.getAppUserID()) === uid) return;
+      let { customerInfo } = await Purchases.logIn(uid);
+      if (!customerInfo.entitlements.active['premium']) {
+        await Purchases.syncPurchases();
+        customerInfo = await Purchases.getCustomerInfo();
+      }
+      if (customerInfo.entitlements.active['premium']) {
+        await AsyncStorage.setItem('premium_status', 'active');
+      }
+    } catch (e) {
+      console.error('❌ [SubscriptionService] Account link failed:', e);
     }
   }
 
