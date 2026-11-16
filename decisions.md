@@ -199,3 +199,5 @@
 - AAB 3.2.1 (302011) уже был загружен в Google Play, потом отозван. Номер versionCode повторно использовать нельзя, поэтому 3.2.2 (302021). Поднято в app.json, android/app/build.gradle, iOS Info.plist и pbxproj, в запасном значении SplashScreen.
 - В 3.2.2 по сравнению с отозванной 3.2.1: рабочие ссылки на Terms/Privacy (раньше 404 и мёртвый sdm.free.nf), силуэт крюка на фоне журнала крана, на iOS — ExpoCrypto (pod install).
 - iOS тоже 3.2.2, чтобы номер совпадал на обеих платформах. Архив для App Store собирать заново.
+- 2026-11-16: пользователь загрузил 3.2.2 (302021) в Google Play и App Store. AAB `outputs/SDM-v3.2.2-302021-2026-11-16-production.aab`, подпись = upload key (9F:90:F3…). iOS-архив собран пользователем в Xcode после `pod install`.
+- После выхода обновления: войти в приложении под подтверждённым email → Premium перенесётся на аккаунт и появится в SDM Web (https://web.kuka-soft.com).
