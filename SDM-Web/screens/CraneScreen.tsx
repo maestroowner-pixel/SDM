@@ -302,7 +302,7 @@ const CraneScreen: React.FC = () => {
       <ImageBackground
         source={CRANE_HOOK_BG}
         style={s.container}
-        imageStyle={[s.bgImage, { opacity: isDark ? 0.15 : 0.08, tintColor: isDark ? '#ffcc80' : '#c77700' }]}
+        imageStyle={[s.bgImage, { opacity: isDark ? 0.15 : 0.08, tintColor: isDark ? '#64b5f6' : '#2B7CC1' }]}
       >
       <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
         <ScrollView showsVerticalScrollIndicator={false}
