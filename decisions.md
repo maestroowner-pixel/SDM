@@ -192,4 +192,4 @@
 - Сломанные ссылки: в мобильных Настройках Terms/Privacy вели на `sdm.kuka-lab.com/*.php` (редирект → `sdm.kuka-soft.com/*.php` → 404), на экране соглашения (SplashScreen) — на `sdm.free.nf/*.php` (не отвечает). Теперь все ведут на `https://sdm.kuka-soft.com/terms-of-service` и `/privacy-policy` (200).
 - Сайт и QR в CV (mobile + SDM-Web) ведут на `https://sdm.kuka-soft.com` напрямую, без редиректа.
 - Смежные: исправление попадает в iOS 3.2.1 (архив ещё не собран) и в пересобранный AAB 3.2.1. На сайте — с деплоем 1.0.6.
-- **Лендинг (исходников в репозитории нет):** нет ссылки «Open SDM Web» → https://web.kuka-soft.com, и всё ещё висит кнопка скачивания Windows-версии, которая закрыта. Править на стороне лендинга.
+- **Лендинг** (`~/Desktop/Landings/kuka-soft-sites/sdm/site`, Cloudflare Workers, `npx wrangler@4.148.0 deploy`): карточка «Desktop — Windows» заменена на «SDM Web → https://web.kuka-soft.com», в подзаголовке Windows убран. `404.html` — копия главной, обновлён так же. Выложено 2026-11-16. Карточки Mac не тронуты: статус macOS Desktop не подтверждён.
