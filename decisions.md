@@ -236,3 +236,10 @@
 - `utils/storeUpdate.ts`: версия в сторе. iOS берёт её из iTunes lookup API (`bundleId=seafarer.documents.manager`, App ID 6758860675). Android читает страницу Google Play: публичного API нет, версия ищется регуляркой `[[["x.y.z"]]`. Если Google поменяет разметку, проверка ничего не найдёт и напоминание просто не покажется. 2026-11-17 обе платформы отдают 3.2.2.
 - `components/UpdatePrompt.tsx` (подключён в `app/index.tsx`): через 3 с после запуска сравнивает версию в сторе с `nativeApplicationVersion`. Если в сторе новее, показывает диалог «Доступно обновление» с кнопками «Обновить» (`itms-apps://` / `market://`, запасной вариант https) и «Позже». Спрашивает не чаще раза в сутки. Работает только в production-сборке (`applicationId === seafarer.documents.manager`, не `__DEV__`). Тексты `update.*` переведены на 10 языков.
 - Смежные: попадёт к пользователям со следующей сборкой после 3.2.2, и напоминание сработает, только когда выйдет версия новее неё. На SDM Web не влияет.
+
+## 2026-11-17 — Сборка 3.2.3 (302031)
+
+- Версия поднята в app.json, android/app/build.gradle, iOS Info.plist и pbxproj, в запасном значении SplashScreen. В 3.2.3 вошли: пример данных при первом запуске с плашкой «Удалить», необязательное приглашение войти, напоминание о новой версии в сторе.
+- Android: `outputs/SDM-v3.2.3-302031-2026-11-17-production.aab`. Подпись = upload key (9F:90:F3…, совпадает с `upload_certificate.pem`). В бандле есть новый код.
+- iOS: архив `~/Library/Developer/Xcode/Archives/2026-11-17/SeafarerDocumentsManager 3.2.3 (302031).xcarchive` собран через `xcodebuild archive -allowProvisioningUpdates` (Team VL4B4R8D84, подписан development-сертификатом). Загружать через Xcode → Organizer → Distribute App → App Store Connect; при выгрузке Xcode переподпишет архив для App Store.
+- Вживую на устройствах 3.2.3 не запускалась.
