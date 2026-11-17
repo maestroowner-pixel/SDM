@@ -685,5 +685,11 @@
     "optional": "Facultatif : connectez-vous pour ouvrir vos données sur d'autres appareils et les synchroniser.",
     "signIn": "Se connecter",
     "later": "Pas maintenant"
+  },
+  "update": {
+    "title": "Mise à jour disponible",
+    "message": "La version {{version}} de Seafarer Documents Manager est disponible. Mettez à jour pour obtenir les dernières corrections et fonctionnalités.",
+    "update": "Mettre à jour",
+    "later": "Plus tard"
   }
 }

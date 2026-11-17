@@ -703,5 +703,11 @@
     "optional": "Optional: sign in to open your data on other devices and keep them in sync.",
     "signIn": "Sign in",
     "later": "Not now"
+  },
+  "update": {
+    "title": "Update available",
+    "message": "Version {{version}} of Seafarer Documents Manager is available. Update to get the latest fixes and features.",
+    "update": "Update",
+    "later": "Later"
   }
 }

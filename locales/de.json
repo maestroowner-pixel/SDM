@@ -701,5 +701,11 @@
     "optional": "Optional: Melde dich an, um deine Daten auf anderen Geräten zu öffnen und zu synchronisieren.",
     "signIn": "Anmelden",
     "later": "Nicht jetzt"
+  },
+  "update": {
+    "title": "Update verfügbar",
+    "message": "Version {{version}} von Seafarer Documents Manager ist verfügbar. Aktualisiere, um die neuesten Korrekturen und Funktionen zu erhalten.",
+    "update": "Aktualisieren",
+    "later": "Später"
   }
 }

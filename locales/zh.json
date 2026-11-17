@@ -655,5 +655,11 @@
     "optional": "可选：登录后可在其他设备上打开数据并保持同步。",
     "signIn": "登录",
     "later": "以后再说"
+  },
+  "update": {
+    "title": "有可用更新",
+    "message": "Seafarer Documents Manager {{version}} 版已发布。更新以获取最新修复和功能。",
+    "update": "更新",
+    "later": "稍后"
   }
 }

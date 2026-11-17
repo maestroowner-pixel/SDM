@@ -691,5 +691,11 @@
     "optional": "Opcional: inicia sesión para abrir tus datos en otros dispositivos y sincronizarlos.",
     "signIn": "Iniciar sesión",
     "later": "Ahora no"
+  },
+  "update": {
+    "title": "Actualización disponible",
+    "message": "La versión {{version}} de Seafarer Documents Manager está disponible. Actualiza para obtener las últimas correcciones y funciones.",
+    "update": "Actualizar",
+    "later": "Más tarde"
   }
 }

@@ -703,5 +703,11 @@
     "optional": "Opsyonal: mag-sign in para mabuksan ang data mo sa ibang device at ma-sync ito.",
     "signIn": "Mag-sign in",
     "later": "Hindi muna"
+  },
+  "update": {
+    "title": "May bagong update",
+    "message": "Available na ang bersyon {{version}} ng Seafarer Documents Manager. Mag-update para makuha ang pinakabagong ayos at feature.",
+    "update": "I-update",
+    "later": "Mamaya"
   }
 }
