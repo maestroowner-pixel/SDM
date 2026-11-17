@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { buildSampleData } from '../utils/sampleData';
 
 // Ленивый импорт NotificationService - загружается только когда нужен
 let NotificationServiceModule: any = null;
@@ -157,6 +158,15 @@ export interface AppState {
   showCraneScreen: boolean;
   craneInfo: CraneLogInfo;
   craneDays: DPDayRecord[];  // same day grid as DP; slot 1 = crane operation
+  // True while the records are still the example set seeded on first launch;
+  // the first user edit clears it. Sync lets cloud data replace such records silently.
+  sampleData?: boolean;
+  // True from the first-launch seed until the user removes the example via the banner;
+  // once false the example and the banner never come back.
+  sampleSeeded?: boolean;
+  // Optional sign-in invitation (SyncPrompt): armed when the example is removed,
+  // due after the user's first own save, done once shown.
+  syncPrompt?: 'afterFirstSave' | 'due' | 'done';
 }
 
 // ─── DP типы ─────────────────────────────────────────────────────────────────
@@ -260,6 +270,8 @@ interface DataContextType {
   exportData: () => string;
   importData: (data: string) => Promise<boolean>;
   clearAllData: () => Promise<void>;
+  removeSampleData: () => Promise<void>;
+  dismissSyncPrompt: () => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -285,6 +297,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           seaService: Array.isArray(parsed.seaService) ? parsed.seaService : [],
           documents: Array.isArray(parsed.documents) ? parsed.documents : [],
         });
+      } else {
+        // First launch: start with an editable example instead of empty screens.
+        setState({ ...defaultState, ...buildSampleData(), sampleData: true, sampleSeeded: true });
       }
     } catch (error) { console.error('Error loading data:', error); } finally { setIsLoaded(true); }
   };
@@ -294,56 +309,63 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try { await AsyncStorage.setItem('seafarer_data', JSON.stringify(currentState)); } catch (error) { console.error('Error saving data:', error); }
   };
 
+  // Any user edit turns the seeded example into the user's own data.
+  const edit = (fn: (prev: AppState) => AppState) => setState(prev => {
+    const next = fn(prev);
+    return { ...next, sampleData: false, syncPrompt: prev.syncPrompt === 'afterFirstSave' ? 'due' : next.syncPrompt };
+  });
+  const dismissSyncPrompt = () => setState(prev => ({ ...prev, syncPrompt: 'done' }));
+
   const updateDocuments = async (docs: Document[]) => {
-    setState(prev => ({ ...prev, documents: docs }));
+    edit(prev => ({ ...prev, documents: docs }));
     const service = await getNotificationService();
     await service.scheduleNotificationsForAllDocuments(docs);
   };
   
   const addDocument = async (doc: Document) => {
     const newDocs = [...state.documents, doc];
-    setState(prev => ({ ...prev, documents: newDocs }));
+    edit(prev => ({ ...prev, documents: newDocs }));
     const service = await getNotificationService();
     await service.scheduleNotificationsForDocument(doc);
   };
   
   const updateDocument = async (doc: Document) => {
     const updatedDocs = state.documents.map(d => d.id === doc.id ? doc : d);
-    setState(prev => ({ ...prev, documents: updatedDocs }));
+    edit(prev => ({ ...prev, documents: updatedDocs }));
     const service = await getNotificationService();
     await service.scheduleNotificationsForAllDocuments(updatedDocs);
   };
   
   const deleteDocument = async (id: string) => {
     const remainingDocs = state.documents.filter(d => d.id !== id);
-    setState(prev => ({ ...prev, documents: remainingDocs }));
+    edit(prev => ({ ...prev, documents: remainingDocs }));
     const service = await getNotificationService();
     await service.scheduleNotificationsForAllDocuments(remainingDocs);
   };
 
-  const updateSeaService = (services: SeaService[]) => setState(prev => ({ ...prev, seaService: services }));
-  const addSeaService = (service: SeaService) => setState(prev => ({ ...prev, seaService: [...prev.seaService, service] }));
-  const updateSeaServiceItem = (service: SeaService) => setState(prev => ({
+  const updateSeaService = (services: SeaService[]) => edit(prev => ({ ...prev, seaService: services }));
+  const addSeaService = (service: SeaService) => edit(prev => ({ ...prev, seaService: [...prev.seaService, service] }));
+  const updateSeaServiceItem = (service: SeaService) => edit(prev => ({
     ...prev, seaService: prev.seaService.map(s => s.id === service.id ? service : s)
   }));
-  const deleteSeaService = (id: string) => setState(prev => ({
+  const deleteSeaService = (id: string) => edit(prev => ({
     ...prev, seaService: prev.seaService.filter(s => s.id !== id)
   }));
 
-  const updatePersonal = (personal: PersonalInfo) => setState(prev => ({ ...prev, personal }));
-  const updateBiometrics = (bio: Biometrics) => setState(prev => ({ ...prev, biometrics: bio }));
-  const updateEducation = (edu: Education) => setState(prev => ({ ...prev, education: edu }));
-  const updateNextOfKin = (kin: NextOfKin) => setState(prev => ({ ...prev, nextOfKin: kin }));
-  const updateNotes = (notes: string) => setState(prev => ({ ...prev, notes }));
-  const toggleIncludeNotesInCV = () => setState(prev => ({ ...prev, includeNotesInCV: !prev.includeNotesInCV }));
+  const updatePersonal = (personal: PersonalInfo) => edit(prev => ({ ...prev, personal }));
+  const updateBiometrics = (bio: Biometrics) => edit(prev => ({ ...prev, biometrics: bio }));
+  const updateEducation = (edu: Education) => edit(prev => ({ ...prev, education: edu }));
+  const updateNextOfKin = (kin: NextOfKin) => edit(prev => ({ ...prev, nextOfKin: kin }));
+  const updateNotes = (notes: string) => edit(prev => ({ ...prev, notes }));
+  const toggleIncludeNotesInCV = () => edit(prev => ({ ...prev, includeNotesInCV: !prev.includeNotesInCV }));
   const setTheme = (theme: 'light' | 'dark') => setState(prev => ({ ...prev, theme }));
-  const toggleDPScreen = () => setState(prev => ({ ...prev, showDPScreen: !prev.showDPScreen }));
-  const toggleMPCScreen = () => setState(prev => ({ ...prev, showMPCScreen: !prev.showMPCScreen }));
-  const updateDPInfo = (dpInfo: DPScreenInfo) => setState(prev => ({ ...prev, dpInfo }));
-  const updateDPDays = (dpDays: DPDayRecord[]) => setState(prev => ({ ...prev, dpDays }));
-  const toggleCraneScreen = () => setState(prev => ({ ...prev, showCraneScreen: !prev.showCraneScreen }));
-  const updateCraneInfo = (craneInfo: CraneLogInfo) => setState(prev => ({ ...prev, craneInfo }));
-  const updateCraneDays = (craneDays: DPDayRecord[]) => setState(prev => ({ ...prev, craneDays }));
+  const toggleDPScreen = () => edit(prev => ({ ...prev, showDPScreen: !prev.showDPScreen }));
+  const toggleMPCScreen = () => edit(prev => ({ ...prev, showMPCScreen: !prev.showMPCScreen }));
+  const updateDPInfo = (dpInfo: DPScreenInfo) => edit(prev => ({ ...prev, dpInfo }));
+  const updateDPDays = (dpDays: DPDayRecord[]) => edit(prev => ({ ...prev, dpDays }));
+  const toggleCraneScreen = () => edit(prev => ({ ...prev, showCraneScreen: !prev.showCraneScreen }));
+  const updateCraneInfo = (craneInfo: CraneLogInfo) => edit(prev => ({ ...prev, craneInfo }));
+  const updateCraneDays = (craneDays: DPDayRecord[]) => edit(prev => ({ ...prev, craneDays }));
 
   const exportData = () => JSON.stringify(state);
 
@@ -372,6 +394,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Ends the first-launch example for good: records emptied, settings kept, banner gone.
+  const removeSampleData = async () => {
+    setState(prev => ({ ...defaultState, theme: prev.theme, showDPScreen: prev.showDPScreen, showCraneScreen: prev.showCraneScreen, showMPCScreen: prev.showMPCScreen, sampleSeeded: false, syncPrompt: 'afterFirstSave' }));
+    await AsyncStorage.removeItem('cv_versions').catch(() => {});
+    const service = await getNotificationService();
+    await service.cancelAllNotifications();
+  };
+
   const clearAllData = async () => {
     setState(defaultState);
     await AsyncStorage.multiRemove(['cv_versions', 'cv_design_config']).catch(() => {});
@@ -387,7 +417,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateNotes, toggleIncludeNotesInCV, setTheme,
       toggleDPScreen, updateDPInfo, updateDPDays,
       toggleCraneScreen, updateCraneInfo, updateCraneDays, toggleMPCScreen,
-      exportData, importData, clearAllData,
+      exportData, importData, clearAllData, removeSampleData, dismissSyncPrompt,
     }}>
       {children}
     </DataContext.Provider>

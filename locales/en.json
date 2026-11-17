@@ -691,5 +691,17 @@
     "cropTitle": "Drag the corners to crop",
     "cropDone": "Done",
     "cropCancel": "Cancel"
+  },
+  "sample": {
+    "banner": "This is example data so you can try the app. Edit it freely or delete it when you're ready.",
+    "confirmTitle": "Delete example data?",
+    "confirmMessage": "All example records will be removed and the app will be empty, ready for your own data. Any changes you made to the example are removed too. The example won't come back."
+  },
+  "syncPrompt": {
+    "title": "Use your data on other devices?",
+    "message": "Your data is saved on this device. Signing in is optional, but with an account you can open your data on your other devices (phone, SDM Web) and keep them in sync.",
+    "optional": "Optional: sign in to open your data on other devices and keep them in sync.",
+    "signIn": "Sign in",
+    "later": "Not now"
   }
 }

@@ -144,6 +144,11 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Nothing in the cloud yet → seed it from this browser.
         if (!remote?.json) { await takeLocal(); return; }
 
+        // Untouched example data from first launch never competes with real cloud records.
+        let localIsSample = false;
+        try { localIsSample = JSON.parse(localJson).sampleData === true; } catch {}
+        if (localIsSample) { await takeCloud(remote.json); return; }
+
         // Same content, or this browser already reconciled with this account.
         if (remote.json === localJson) { lastSyncedJson.current = remote.json; await finish(); return; }
         if (alreadyInitialized) { await takeCloud(remote.json); return; }

@@ -691,5 +691,17 @@
     "cropTitle": "I-drag ang mga sulok para i-crop",
     "cropDone": "Tapos",
     "cropCancel": "Kanselahin"
+  },
+  "sample": {
+    "banner": "Ito ay halimbawang data para masubukan mo ang app. Maaari mo itong i-edit o burahin kapag handa ka na.",
+    "confirmTitle": "Burahin ang halimbawang data?",
+    "confirmMessage": "Mabubura ang lahat ng halimbawang record at magiging walang laman ang app, handa para sa sarili mong data. Mabubura rin ang mga binago mo sa halimbawa. Hindi na babalik ang halimbawa."
+  },
+  "syncPrompt": {
+    "title": "Gamitin ang data sa ibang device?",
+    "message": "Naka-save ang data mo sa device na ito. Hindi kailangan ang pag-sign in, pero sa account ay mabubuksan mo ang data mo sa ibang device (phone, SDM Web) at mapapanatiling naka-sync.",
+    "optional": "Opsyonal: mag-sign in para mabuksan ang data mo sa ibang device at ma-sync ito.",
+    "signIn": "Mag-sign in",
+    "later": "Hindi muna"
   }
 }

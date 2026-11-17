@@ -17,11 +17,12 @@ import { useData } from '../contexts/DataContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import { SubscriptionService } from '../services/subscriptionService';
+import { buildSampleData } from '../utils/sampleData';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
 
 export const TestingScreen: React.FC = () => {
-  const { state } = useData();
+  const { state, importData } = useData();
   // Убрали refreshStatus, чтобы не было ошибки undefined
   const { isPremium, subscriptionType, expirationDate } = useSubscription() as any;
   const isDark = state.theme === 'dark';
@@ -79,6 +80,18 @@ export const TestingScreen: React.FC = () => {
     alertMsg("Статус сброшен", "Вы снова обычный моряк.");
   };
 
+  // Replaces all local data (and the cloud copy when signed in) with one fictional seafarer.
+  const loadSampleData = async () => {
+    const ok = await confirmAsync(
+      'Загрузить тестовые данные?',
+      'Все текущие данные будут заменены тестовыми. Если вы вошли в аккаунт, они синхронизируются и в облако.',
+      { confirmText: 'Заменить', destructive: true }
+    );
+    if (!ok) return;
+    const success = await importData(JSON.stringify({ ...buildSampleData(), sampleData: true, sampleSeeded: true, theme: state.theme }));
+    alertMsg(success ? 'Готово' : 'Ошибка', success ? 'Тестовые данные загружены на все экраны.' : 'Не удалось загрузить тестовые данные.');
+  };
+
   const checkStatus = async () => {
     await (SubscriptionService as any).forceRefresh?.();
     await loadStorageStatus();
@@ -133,6 +146,17 @@ export const TestingScreen: React.FC = () => {
                 <Ionicons name="trash" size={20} color="#fff" />
               </View>
               <Text style={[styles.testButtonText, isDark ? styles.textLight : styles.textDark]}>Reset All (Free Mode)</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ТЕСТОВЫЕ ДАННЫЕ */}
+          <View style={[styles.section, isDark ? styles.sectionDark : styles.sectionLight]}>
+            <Text style={[styles.sectionTitle, isDark ? styles.textLight : styles.textDark]}>Sample Data</Text>
+            <TouchableOpacity style={styles.testButton} onPress={loadSampleData}>
+              <View style={[styles.testButtonIcon, { backgroundColor: '#4CAF50' }]}>
+                <Ionicons name="flask" size={20} color="#fff" />
+              </View>
+              <Text style={[styles.testButtonText, isDark ? styles.textLight : styles.textDark]}>Fill All Screens</Text>
             </TouchableOpacity>
           </View>
 

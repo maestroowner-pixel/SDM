@@ -673,5 +673,17 @@
     "cropTitle": "Faites glisser les coins pour recadrer",
     "cropDone": "Terminé",
     "cropCancel": "Annuler"
+  },
+  "sample": {
+    "banner": "Ce sont des données d'exemple pour essayer l'application. Vous pouvez les modifier ou les supprimer quand vous voulez.",
+    "confirmTitle": "Supprimer les données d'exemple ?",
+    "confirmMessage": "Tous les enregistrements d'exemple seront supprimés et l'application sera vide, prête pour vos propres données. Vos modifications de l'exemple seront aussi supprimées. L'exemple ne reviendra pas."
+  },
+  "syncPrompt": {
+    "title": "Utiliser vos données sur d'autres appareils ?",
+    "message": "Vos données sont enregistrées sur cet appareil. La connexion est facultative, mais avec un compte vous pouvez ouvrir vos données sur vos autres appareils (téléphone, SDM Web) et les garder synchronisées.",
+    "optional": "Facultatif : connectez-vous pour ouvrir vos données sur d'autres appareils et les synchroniser.",
+    "signIn": "Se connecter",
+    "later": "Pas maintenant"
   }
 }

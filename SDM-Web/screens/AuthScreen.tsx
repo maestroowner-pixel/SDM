@@ -1,7 +1,7 @@
 // Auth screen: login / register / forgot-password, plus an email-verification
 // pending state. Shown by the app gate when Firebase is configured and the user
 // is signed out or unverified.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, ScrollView,
 } from 'react-native';
@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../contexts/DataContext';
 import { useAuth, authErrorMessage } from '../contexts/AuthContext';
 import { UI_THEME } from '../utils/theme';
+import { t } from '../utils/i18n';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -45,7 +46,8 @@ const PasswordField: React.FC<{
   );
 };
 
-export const AuthScreen: React.FC = () => {
+// Opened from Settings or the post-example invitation (SyncPrompt); sign-in is optional.
+export const AuthScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { state } = useData();
   const isDark = state.theme === 'dark';
   const theme = isDark ? UI_THEME.colors.dark : UI_THEME.colors.light;
@@ -65,6 +67,11 @@ export const AuthScreen: React.FC = () => {
   ];
 
   const reset = () => { setError(''); setInfo(''); };
+
+  // Signed in and verified → done; closing lets the sync reconciliation run.
+  useEffect(() => {
+    if (user && user.emailVerified) onClose();
+  }, [user]);
 
   const submit = async () => {
     reset();
@@ -132,7 +139,7 @@ export const AuthScreen: React.FC = () => {
       <Text style={[styles.title, { color: theme.text }]}>
         {mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : 'Reset password'}
       </Text>
-      <Text style={[styles.sub, { color: theme.textSecondary }]}>Seafarer Documents Manager</Text>
+      <Text style={[styles.sub, { color: theme.textSecondary }]}>{t('syncPrompt.optional')}</Text>
 
       {!!error && <Text style={styles.error}>{error}</Text>}
       {!!info && <Text style={[styles.info, { color: theme.primary }]}>{info}</Text>}
@@ -202,6 +209,9 @@ export const AuthScreen: React.FC = () => {
 
   return (
     <LinearGradient colors={theme.background as any} style={styles.root}>
+      <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <Ionicons name="close" size={28} color={theme.text} />
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.75)', borderColor: theme.iconInactive }]}>
           {user && !user.emailVerified ? renderVerify() : renderForm()}
@@ -213,6 +223,7 @@ export const AuthScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  closeBtn: { position: 'absolute', top: 24, right: 24, zIndex: 1 },
   scroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   card: { width: '100%', maxWidth: 420, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, padding: 32 },
   logo: { width: 64, height: 64, borderRadius: 14, alignSelf: 'center', marginBottom: 16 },

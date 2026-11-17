@@ -779,5 +779,17 @@
     "cropTitle": "Ecken ziehen zum Zuschneiden",
     "cropDone": "Fertig",
     "cropCancel": "Abbrechen"
+  },
+  "sample": {
+    "banner": "Dies sind Beispieldaten zum Ausprobieren der App. Du kannst sie bearbeiten oder löschen, wenn du bereit bist.",
+    "confirmTitle": "Beispieldaten löschen?",
+    "confirmMessage": "Alle Beispieleinträge werden entfernt und die App ist leer und bereit für deine eigenen Daten. Deine Änderungen am Beispiel werden ebenfalls entfernt. Das Beispiel erscheint nicht wieder."
+  },
+  "syncPrompt": {
+    "title": "Daten auf anderen Geräten nutzen?",
+    "message": "Deine Daten sind auf diesem Gerät gespeichert. Die Anmeldung ist optional, aber mit einem Konto kannst du deine Daten auf anderen Geräten (Handy, SDM Web) öffnen und synchron halten.",
+    "optional": "Optional: Melde dich an, um deine Daten auf anderen Geräten zu öffnen und zu synchronisieren.",
+    "signIn": "Anmelden",
+    "later": "Nicht jetzt"
   }
 }

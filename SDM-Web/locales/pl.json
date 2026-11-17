@@ -781,5 +781,17 @@
     "cropTitle": "Przeciągnij rogi, aby przyciąć",
     "cropDone": "Gotowe",
     "cropCancel": "Anuluj"
+  },
+  "sample": {
+    "banner": "To przykładowe dane, abyś mógł wypróbować aplikację. Możesz je edytować lub usunąć, gdy będziesz gotowy.",
+    "confirmTitle": "Usunąć przykładowe dane?",
+    "confirmMessage": "Wszystkie przykładowe wpisy zostaną usunięte, a aplikacja będzie pusta i gotowa na Twoje dane. Twoje zmiany w przykładzie również zostaną usunięte. Przykład już się nie pojawi."
+  },
+  "syncPrompt": {
+    "title": "Dane na innych urządzeniach?",
+    "message": "Twoje dane są zapisane na tym urządzeniu. Logowanie nie jest wymagane, ale z kontem możesz otworzyć swoje dane na innych urządzeniach (telefon, SDM Web) i je synchronizować.",
+    "optional": "Opcjonalnie: zaloguj się, aby otwierać dane na innych urządzeniach i je synchronizować.",
+    "signIn": "Zaloguj się",
+    "later": "Nie teraz"
   }
 }

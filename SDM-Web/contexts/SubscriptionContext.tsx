@@ -3,7 +3,7 @@
 // document/sea-service limits, Settings).
 //
 // Premium is true when EITHER a valid Lemon Squeezy license is active OR the
-// 14-day free trial is still running.
+// 14-day free trial is still running. The trial needs a signed-in account.
 //
 // The subscription lives in the CLOUD (Firestore `subscriptions/{uid}`), not just
 // in localStorage — otherwise clearing browser data or using another browser
@@ -105,24 +105,31 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
       // Premium bought in the mobile app, found in RevenueCat by the same uid.
       const mobileActive = uid ? await hasMobilePremium(uid) : false;
 
-      // ── Trial: the cloud value wins, so a reinstall can't restart it ───────
-      const localStart = Number(await AsyncStorage.getItem(TRIAL_KEY)) || 0;
-      let start = cloud?.trialStart || localStart || Date.now();
+      // ── Trial: only for a signed-in account (sign-in is optional, but a trial kept
+      // just in localStorage would restart on every cleared browser). Without
+      // Firebase configured there is no account at all, so the local clock is used.
+      let trialActive = false;
+      let daysLeft = 0;
+      if (uid || !db) {
+        // ── Trial: the cloud value wins, so a reinstall can't restart it ───────
+        const localStart = Number(await AsyncStorage.getItem(TRIAL_KEY)) || 0;
+        let start = cloud?.trialStart || localStart || Date.now();
 
-      // Guard against a device clock/localStorage giving a *later* start than the
-      // account already recorded — always keep the earliest known start.
-      if (cloud?.trialStart && localStart && localStart < cloud.trialStart) {
-        start = localStart;
+        // Guard against a device clock/localStorage giving a *later* start than the
+        // account already recorded — always keep the earliest known start.
+        if (cloud?.trialStart && localStart && localStart < cloud.trialStart) {
+          start = localStart;
+        }
+
+        await AsyncStorage.setItem(TRIAL_KEY, String(start));
+        if (cloudRef && cloud?.trialStart !== start) {
+          try { await setDoc(cloudRef, { trialStart: start }, { merge: true }); } catch {}
+        }
+
+        const remaining = start + TRIAL_MS - Date.now();
+        trialActive = remaining > 0;
+        daysLeft = trialActive ? Math.ceil(remaining / (24 * 60 * 60 * 1000)) : 0;
       }
-
-      await AsyncStorage.setItem(TRIAL_KEY, String(start));
-      if (cloudRef && cloud?.trialStart !== start) {
-        try { await setDoc(cloudRef, { trialStart: start }, { merge: true }); } catch {}
-      }
-
-      const remaining = start + TRIAL_MS - Date.now();
-      const trialActive = remaining > 0;
-      const daysLeft = trialActive ? Math.ceil(remaining / (24 * 60 * 60 * 1000)) : 0;
 
       const paid = licenseActive || mobileActive;
       const premium = paid || trialActive;

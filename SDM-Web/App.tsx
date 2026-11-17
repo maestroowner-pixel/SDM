@@ -23,7 +23,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { SyncProvider } from './contexts/SyncContext';
 import { DialogProvider } from './contexts/DialogContext';
-import { AuthScreen } from './screens/AuthScreen';
+import { SampleDataBanner } from './components/SampleDataBanner';
+import { SyncPrompt } from './components/SyncPrompt';
 import { PaywallScreen } from './screens/PaywallScreen';
 import { PersonalScreen } from './screens/PersonalScreen';
 import { DocumentsScreen } from './screens/DocumentsScreen';
@@ -157,6 +158,8 @@ const Shell: React.FC = () => {
           <View style={[styles.header, { backgroundColor: theme.headerBg }]}>
             <Text style={[styles.headerTitle, { color: theme.text }]}>{activeLabel()}</Text>
           </View>
+          <SampleDataBanner />
+          <SyncPrompt />
           <View style={styles.content}>{renderContent()}</View>
         </View>
       </View>
@@ -168,12 +171,11 @@ const Shell: React.FC = () => {
   );
 };
 
-// Auth gate: when Firebase is configured, require a signed-in + verified user;
-// otherwise (no config yet) the app runs without a gate.
+// No sign-in gate: the app works locally; signing in (Settings or SyncPrompt)
+// only adds sync across devices and the free trial.
 const AuthGate: React.FC = () => {
-  const { initializing, isConfigured, user } = useAuth();
+  const { initializing } = useAuth();
   if (initializing) return null;
-  if (isConfigured && (!user || !user.emailVerified)) return <AuthScreen />;
   return <Shell />;
 };
 

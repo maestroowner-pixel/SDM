@@ -3,7 +3,7 @@
 // data, premium status (Lemon Squeezy wiring comes in Phase 6), and about links.
 import React, { useState } from 'react';
 import {
-  StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Image, Linking, ActivityIndicator,
+  StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Image, Linking, ActivityIndicator, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,9 +16,11 @@ import { useSync } from '../contexts/SyncContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
 import { BackupChoice, BackupCryptoModal } from '../components/BackupCryptoModal';
+import { AuthScreen } from './AuthScreen';
 import { decryptSdm, encryptSdm, isEncryptedSdm, isVesselFile, vesselFile } from '../utils/sdmCrypto';
 import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
+import { buildSampleData } from '../utils/sampleData';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
 const TERMS_URL = 'https://sdm.kuka-soft.com/terms-of-service';
@@ -55,6 +57,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   const [exporting, setExporting] = useState(false);
   // The password dialog: saving a file, or opening an encrypted one.
   const [cryptoMode, setCryptoMode] = useState<'export' | 'import' | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
   const [cryptoBusy, setCryptoBusy] = useState(false);
   const [cryptoError, setCryptoError] = useState('');
   const [pendingImport, setPendingImport] = useState('');
@@ -222,6 +225,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
     if (ok) await clearAllData();
   };
 
+  // Testing only: visible in the dev server or with ?sample in the URL.
+  const showSampleData = __DEV__ || (typeof window !== 'undefined' && /[?&]sample\b/.test(window.location.search));
+  const handleLoadSample = async () => {
+    const ok = await confirmAsync(
+      'Load sample data?',
+      'All current data will be replaced with a fictional test seafarer. If you are signed in, it will also be synced to the cloud.',
+      { confirmText: 'Replace', destructive: true }
+    );
+    if (!ok) return;
+    const success = await importData(JSON.stringify({ ...buildSampleData(), sampleData: true, sampleSeeded: true, theme: state.theme }));
+    if (!success) alertMsg('Error', 'Could not load sample data.');
+  };
+
   const openUrl = (url: string) => Linking.openURL(url).catch(() => {});
 
   const version = (Constants.expoConfig?.version as string) || '1.0.0';
@@ -232,8 +248,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.centered}>
 
-          {/* Account */}
-          {authConfigured && user && (
+          {/* Account — optional: sync across devices and the free trial */}
+          {authConfigured && !user?.emailVerified && (
+            <>
+              <Text style={[styles.sectionTitle, { color: mutedColor, marginTop: 0 }]}>Account & Sync</Text>
+              <View style={cardStyle}>
+                <TouchableOpacity style={styles.actionRow} onPress={() => setShowAuth(true)}>
+                  <View style={styles.rowLeft}>
+                    <Ionicons name="cloud-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} />
+                    <View style={{ flexShrink: 1 }}>
+                      <Text style={[styles.rowLabel, { color: titleColor }]}>{user ? 'Verify your email' : 'Sign in to sync'}</Text>
+                      <Text style={{ color: mutedColor, fontSize: 13, marginTop: 2 }}>{t('syncPrompt.optional')}</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={mutedColor} />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+          {authConfigured && user?.emailVerified && (
             <>
               <View style={styles.sectionTitleRow}>
                 <Text style={[styles.sectionTitle, { color: mutedColor, marginTop: 0, marginBottom: 0 }]}>Account & Sync</Text>
@@ -355,7 +388,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
                       ? `Free trial · ${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left`
                       : isPremium
                         ? (t('settings.premiumActive') !== 'settings.premiumActive' ? t('settings.premiumActive') : 'Premium active')
-                        : 'Free plan'}
+                        : authConfigured && !user?.emailVerified ? 'Free plan · sign in for a 14-day free trial' : 'Free plan'}
                 </Text>
               </View>
               {(!isPremium || isTrial) && (
@@ -395,6 +428,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
               </View>
               <Ionicons name="chevron-forward" size={20} color={mutedColor} />
             </TouchableOpacity>
+            {showSampleData && (
+              <>
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.actionRow} onPress={handleLoadSample}>
+                  <View style={styles.rowLeft}>
+                    <Ionicons name="flask-outline" size={22} color="#4CAF50" />
+                    <Text style={[styles.rowLabel, { color: titleColor }]}>Load sample data (testing)</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={mutedColor} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
           {/* About */}
@@ -421,6 +466,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           </Text>
         </View>
       </ScrollView>
+      <Modal visible={showAuth} animationType="fade" transparent={false} onRequestClose={() => setShowAuth(false)}>
+        <AuthScreen onClose={() => setShowAuth(false)} />
+      </Modal>
+
       <BackupCryptoModal
         mode={cryptoMode}
         isDark={isDark}
