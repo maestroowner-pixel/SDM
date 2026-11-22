@@ -22,6 +22,8 @@ const OPTIONAL_FEATURES = [
   'android.hardware.location.gps',
   'android.hardware.location.network',
   'android.hardware.microphone',
+  // ACCESS_WIFI_STATE (pulled in by a library) implies Wi-Fi hardware.
+  'android.hardware.wifi',
 ];
 
 function withOptionalHardwareFeatures(config) {
