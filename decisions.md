@@ -251,3 +251,11 @@
 - `components/ManualSteps.tsx` — первая вкладка «Step by step» в `screens/ManualScreen.tsx` (Settings → Seafarer Documents Manager Manual).
 - В старых разделах мануала исправлено: аккаунт теперь необязательный (раньше было написано «no cloud, no account»), дизайнов CV пять (добавлен Panels), в модули добавлен Crane Log.
 - Смежные: в SDM Web мануала нет. Мобильная версия получит мануал со следующей сборкой после 3.2.3.
+
+## 2026-11-22 — Мануал «Step by step» для SDM Web; версии 3.2.4 / Web 1.0.7
+
+- SDM Web: `utils/manualSteps.ts` — свой контент, потому что шаги в Web другие. Меню слева; файлы только загрузкой с компьютера, без камеры; конструктор CV с вкладками Design / Content и версиями; PDF через окно печати (Save as PDF); Premium по лицензионному ключу (Get Premium → Activate), пробный период только со входом; модули включаются в Settings → Modules. 7 групп, 16 экранов. `components/ManualSteps.tsx` — копия мобильного компонента. Открывается из Настроек: About → «Manual — step by step» (модальное окно, ширина до 820 px).
+- Если меняется общий сценарий (вход, пример данных, резервная копия), править оба файла `utils/manualSteps.ts`: мобильный и веб.
+- Версии подняты по просьбе пользователя: мобильная 3.2.4 (302041) — в app.json, android/app/build.gradle, iOS Info.plist и pbxproj, в запасном значении SplashScreen; SDM Web 1.0.7 (SDM-Web/app.json). Сборки не делались, Web не выложен.
+- 2026-11-22: собран AAB 3.2.4 (302041) — `outputs/SDM-v3.2.4-302041-2026-11-22-production.aab`, копия на рабочем столе. Подпись = upload key (9F:90:F3…). В бандле есть мануал «Step by step» и напоминание об обновлении. iOS 3.2.4 не собиралась.
+- 2026-11-22: пользователь залил 3.2.4 (302041) в Google Play и App Store.

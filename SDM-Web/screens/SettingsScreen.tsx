@@ -17,6 +17,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/webAlert';
 import { BackupChoice, BackupCryptoModal } from '../components/BackupCryptoModal';
 import { AuthScreen } from './AuthScreen';
+import { ManualSteps } from '../components/ManualSteps';
 import { decryptSdm, encryptSdm, isEncryptedSdm, isVesselFile, vesselFile } from '../utils/sdmCrypto';
 import { FLAGS } from '../utils/flags';
 import { t, getSystemLanguage } from '../utils/i18n';
@@ -58,6 +59,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
   // The password dialog: saving a file, or opening an encrypted one.
   const [cryptoMode, setCryptoMode] = useState<'export' | 'import' | null>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [cryptoBusy, setCryptoBusy] = useState(false);
   const [cryptoError, setCryptoError] = useState('');
   const [pendingImport, setPendingImport] = useState('');
@@ -445,6 +447,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           {/* About */}
           <Text style={[styles.sectionTitle, { color: mutedColor }]}>{t('settings.about') !== 'settings.about' ? t('settings.about') : 'About'}</Text>
           <View style={cardStyle}>
+            <TouchableOpacity style={styles.actionRow} onPress={() => setShowManual(true)}>
+              <View style={styles.rowLeft}><Ionicons name="list-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} /><Text style={[styles.rowLabel, { color: titleColor }]}>Manual — step by step</Text></View>
+              <Ionicons name="chevron-forward" size={20} color={mutedColor} />
+            </TouchableOpacity>
+            <View style={styles.divider} />
             <TouchableOpacity style={styles.actionRow} onPress={() => openUrl(WEBSITE_URL)}>
               <View style={styles.rowLeft}><Ionicons name="globe-outline" size={22} color={isDark ? '#64b5f6' : '#1976d2'} /><Text style={[styles.rowLabel, { color: titleColor }]}>Website</Text></View>
               <Ionicons name="open-outline" size={18} color={mutedColor} />
@@ -466,6 +473,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
           </Text>
         </View>
       </ScrollView>
+      <Modal visible={showManual} animationType="fade" transparent={false} onRequestClose={() => setShowManual(false)}>
+        <View style={[styles.manualRoot, { backgroundColor: isDark ? '#0a1628' : '#f5f8ff' }]}>
+          <View style={styles.manualHeader}>
+            <Text style={[styles.manualTitle, { color: titleColor }]}>Step by step</Text>
+            <TouchableOpacity onPress={() => setShowManual(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={28} color={titleColor} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={styles.manualScroll}>
+            <View style={styles.manualBody}>
+              <ManualSteps isDark={isDark} />
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
       <Modal visible={showAuth} animationType="fade" transparent={false} onRequestClose={() => setShowAuth(false)}>
         <AuthScreen onClose={() => setShowAuth(false)} />
       </Modal>
@@ -483,6 +505,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenPaywall })
 };
 
 const styles = StyleSheet.create({
+  manualRoot: { flex: 1 },
+  manualHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 32, paddingVertical: 20, maxWidth: 820, width: '100%', alignSelf: 'center' },
+  manualTitle: { fontSize: 26, fontWeight: '700' },
+  manualScroll: { paddingHorizontal: 32, paddingBottom: 48 },
+  manualBody: { maxWidth: 820, width: '100%', alignSelf: 'center' },
   bg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
   scroll: { padding: 24, paddingBottom: 60 },
   centered: { width: '100%', maxWidth: 760, alignSelf: 'center' },

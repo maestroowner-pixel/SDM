@@ -18,7 +18,7 @@ import { playShipBellSound } from '../utils/sound';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import Constants from 'expo-constants';
 
-const APP_VERSION = Constants.expoConfig?.version ?? '3.2.3';
+const APP_VERSION = Constants.expoConfig?.version ?? '3.2.4';
 
 const { width } = Dimensions.get('window');
 
