@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../contexts/DataContext';
+import { ManualSteps } from '../components/ManualSteps';
 
 const GHOST_STARFISH_BG = require('../assets/images/ghost-starfish.png');
 
@@ -28,12 +29,14 @@ type ContentBlock =
 // ─── Контент мануала ──────────────────────────────────────────────────────────
 
 const SECTIONS: Section[] = [
+  // Rendered by components/ManualSteps (content in utils/manualSteps.ts), not by ContentRenderer.
+  { id: 'steps', title: 'Step by step', icon: 'list-outline', content: [] },
   {
     id: 'overview',
     title: 'Overview',
     icon: 'compass-outline',
     content: [
-      { type: 'paragraph', text: 'Seafarer Documents Manager (SDM) is a personal organiser for maritime professionals. It keeps all your certificates, sea service records, and personal details in one secure place on your device — no cloud, no account required.' },
+      { type: 'paragraph', text: 'Seafarer Documents Manager (SDM) is a personal organiser for maritime professionals. It keeps all your certificates, sea service records, and personal details in one place on your device. An account is optional: sign in only to sync with your other devices and SDM Web.' },
       { type: 'heading', text: 'Navigation' },
       { type: 'list', items: [
         'Documents — certificate and document storage',
@@ -45,6 +48,7 @@ const SECTIONS: Section[] = [
       { type: 'heading', text: 'Optional modules (Settings → Modules)' },
       { type: 'list', items: [
         'DP Log — Dynamic Positioning hours tracker',
+        'Crane Log — crane operator hours tracker',
       ]},
       { type: 'tip', text: 'All data is stored locally on your device. Use Settings → Export Backup regularly to keep a copy.' },
     ],
@@ -135,7 +139,7 @@ const SECTIONS: Section[] = [
         'Notes (if "Include in CV" is enabled in the Notes screen)',
       ]},
       { type: 'heading', text: 'Choosing a design' },
-      { type: 'paragraph', text: 'Pick one of four résumé styles in the CV Design selector: Classic, Executive, Minimal, or Offshore (dark sidebar with vessel and certificate tables). The selected style is used for the generated PDF.' },
+      { type: 'paragraph', text: 'Pick one of five résumé styles in the CV Design selector: Classic, Executive, Minimal, Offshore (dark sidebar with vessel and certificate tables) or Panels. The selected style is used for the generated PDF.' },
       { type: 'heading', text: 'Generating the PDF' },
       { type: 'steps', items: [
         'Fill in your Personal Info, Sea Service, and Documents first.',
@@ -522,6 +526,7 @@ export const ManualScreen: React.FC<ManualScreenProps> = ({ visible, onClose }) 
           contentContainerStyle={s.bodyContent}
           showsVerticalScrollIndicator={false}
         >
+          {current.id === 'steps' ? <ManualSteps isDark={isDark} /> : (
           <View style={[s.sectionCard, { backgroundColor: tc.surface, borderColor: tc.border }]}>
             <View style={s.sectionTitleRow}>
               <View style={[s.sectionIconBox, { backgroundColor: tc.chipActiveBg, borderColor: tc.chipActive }]}>
@@ -531,6 +536,7 @@ export const ManualScreen: React.FC<ManualScreenProps> = ({ visible, onClose }) 
             </View>
             <ContentRenderer blocks={current.content} isDark={isDark} />
           </View>
+          )}
 
           {/* Bottom pagination */}
           <View style={s.pagination}>

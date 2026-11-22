@@ -243,3 +243,11 @@
 - Android: `outputs/SDM-v3.2.3-302031-2026-11-17-production.aab`. Подпись = upload key (9F:90:F3…, совпадает с `upload_certificate.pem`). В бандле есть новый код.
 - iOS: архив `~/Library/Developer/Xcode/Archives/2026-11-17/SeafarerDocumentsManager 3.2.3 (302031).xcarchive` собран через `xcodebuild archive -allowProvisioningUpdates` (Team VL4B4R8D84, подписан development-сертификатом). Загружать через Xcode → Organizer → Distribute App → App Store Connect; при выгрузке Xcode переподпишет архив для App Store.
 - Вживую на устройствах 3.2.3 не запускалась.
+
+## 2026-11-22 — Мануал «Step by step» (мобильное)
+
+- По образцу ISM Pilot (`ManualStepsSc`): у каждого экрана указано, где он находится, и каждое действие на нём расписано нумерованной цепочкой нажатий, а **Label** выделяется как кнопка. Есть поиск по действиям, разделы раскрываются.
+- Контент в `utils/manualSteps.ts`, по-английски, как весь мануал. 6 групп, 15 экранов, 50 действий: первый запуск и пример данных, аккаунт и синхронизация, профиль, документы, стаж, сканы, CV, QR, журналы DP и крана, настройки. Подписи кнопок сверены с кодом экранов. Когда меняется подпись кнопки или порядок действий, файл нужно править вручную, генератора нет.
+- `components/ManualSteps.tsx` — первая вкладка «Step by step» в `screens/ManualScreen.tsx` (Settings → Seafarer Documents Manager Manual).
+- В старых разделах мануала исправлено: аккаунт теперь необязательный (раньше было написано «no cloud, no account»), дизайнов CV пять (добавлен Panels), в модули добавлен Crane Log.
+- Смежные: в SDM Web мануала нет. Мобильная версия получит мануал со следующей сборкой после 3.2.3.
