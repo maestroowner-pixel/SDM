@@ -215,7 +215,8 @@ export const buildPanelsCvHtml = (c: PanelsCvContext): string => {
           : '<th style="text-align:center;">Available in Unlimited version</th>'}</tr></thead>
         <tbody>${g.items.map(d => `<tr><td class="d-name">${esc(d.name)}</td>${isPremium
           ? docCols.map(([, cell]) => `<td>${cell(d)}</td>`).join('')
-          : '<td style="text-align:center;color:#d32f2f;">***</td>'}</tr>`).join('')}</tbody>
+          : '<td style="text-align:center;color:#d32f2f;">***</td>'}</tr>${isPremium && String(d.notes || '').trim()
+          ? `<tr class="d-note"><td colspan="${docCols.length + 1}">${escLines(d.notes)}</td></tr>` : ''}`).join('')}</tbody>
       </table>
     </div>`).join('');
   const documentsPanel = panel(t('cv.sections.documents'), documentsBody, true,
@@ -293,6 +294,7 @@ export const buildPanelsCvHtml = (c: PanelsCvContext): string => {
     table.docs td { overflow:hidden; text-overflow:ellipsis; }
     table.docs td.d-name { overflow-wrap:anywhere; }
     .notes { line-height:1.6; }
+    tr.d-note td { padding-top:0; color:#555; font-style:italic; }
   </style></head><body>
     ${hero}
     <div class="grid">

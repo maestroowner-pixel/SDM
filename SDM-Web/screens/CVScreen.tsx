@@ -57,6 +57,7 @@ const COLUMN_LABELS: { group: CvSectionId; items: [CvColumnId, string][] }[] = [
     ['docIssueDate', 'cv.table.issueDate'],
     ['docExpiryDate', 'cv.table.expiryDate'],
     ['docIssuePlace', 'documents.form.issuePlace'],
+    ['docNotes', 'navigation.notes'],
   ] },
 ];
 

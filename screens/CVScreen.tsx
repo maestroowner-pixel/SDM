@@ -145,6 +145,10 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
       return orderA - orderB;
     });
 
+    // Document notes print as a row of their own under the document.
+    const docNote = (v: any) => String(v ?? '').trim()
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').split('\n').join('<br/>');
+
     const documentsHtml = sortedDocuments.length > 0 ? `
       <div class="section">
         <h2>${t('cv.sections.documents')}</h2>
@@ -168,7 +172,8 @@ export const CVScreen: React.FC<{ onDisableSwipe?: () => void }> = ({ onDisableS
                 <td>${formatDate(d.issueDate)}</td>
                 <td>${formatDate(d.expiryDate)}</td>
               ` : `<td style="text-align:center;color:#d32f2f;">***</td>`}
-            </tr>`).join('')}
+            </tr>${isPremium && String(d.notes || '').trim() ? `
+            <tr><td colspan="4" style="padding-top:0;font-size:9px;font-style:italic;color:#555;">${docNote(d.notes)}</td></tr>` : ''}`).join('')}
           </tbody>
         </table>
       </div>` : '';

@@ -19,7 +19,7 @@ export type CvSectionId =
 export type CvColumnId =
   | 'vesselType' | 'teu' | 'machinery' | 'area'
   | 'flag' | 'grossTonnage' | 'company' | 'dp' | 'crane' | 'comments'
-  | 'docNumber' | 'docIssueDate' | 'docExpiryDate' | 'docIssuePlace';
+  | 'docNumber' | 'docIssueDate' | 'docExpiryDate' | 'docIssuePlace' | 'docNotes';
 
 // Fields only the panels layout prints; the document table has no room for them.
 export const PANELS_ONLY_COLUMNS: CvColumnId[] = ['docIssuePlace'];
@@ -264,7 +264,8 @@ const buildBlocks = (state: any, isPremium: boolean, cfg: CvDesignConfig) => {
             ${isPremium
               ? `${hasColumn('docNumber') ? `<td>${d.number || '-'}</td>` : ''}${hasColumn('docIssueDate') ? `<td>${formatDate(d.issueDate)}</td>` : ''}${hasColumn('docExpiryDate') ? `<td>${formatDate(d.expiryDate)}</td>` : ''}`
               : `<td style="text-align:center;color:#d32f2f;">***</td>`}
-          </tr>`).join('')}
+          </tr>${isPremium && hasColumn('docNotes') && String(d.notes || '').trim() ? `
+          <tr><td colspan="${1 + ['docNumber', 'docIssueDate', 'docExpiryDate'].filter(c => hasColumn(c as CvColumnId)).length}" style="padding-top:0;font-size:9px;font-style:italic;color:#555;">${escLines(d.notes)}</td></tr>` : ''}`).join('')}
         </tbody>
       </table>
     </div>` : '';
@@ -773,7 +774,8 @@ const panelsLayout = (state: any, b: any, isPremium: boolean, cfg: CvDesignConfi
           : '<th style="text-align:center;">Available in Unlimited version</th>'}</tr></thead>
         <tbody>${g.items.map(d => `<tr><td class="d-name">${esc(d.name)}</td>${isPremium
           ? shownCols.map(([, , cell]) => `<td>${cell(d)}</td>`).join('')
-          : '<td style="text-align:center;color:#d32f2f;">***</td>'}</tr>`).join('')}</tbody>
+          : '<td style="text-align:center;color:#d32f2f;">***</td>'}</tr>${isPremium && hasColumn('docNotes') && String(d.notes || '').trim()
+          ? `<tr class="d-note"><td colspan="${shownCols.length + 1}">${escLines(d.notes)}</td></tr>` : ''}`).join('')}</tbody>
       </table>
     </div>`).join('');
   const documentsPanel = panel(t('cv.sections.documents'), documentsBody, true,
@@ -851,6 +853,7 @@ const panelsLayout = (state: any, b: any, isPremium: boolean, cfg: CvDesignConfi
     table.docs td.d-name { overflow-wrap:anywhere; }
     ${cfg.zebra ? `tr:nth-child(even) td { background:${hexToRgba(accent, 0.04)}; }` : ''}
     .notes { line-height:1.6; }
+    tr.d-note td { padding-top:0; color:#555; font-style:italic; }
   </style></head><body>
     ${hero}
     <div class="grid">
