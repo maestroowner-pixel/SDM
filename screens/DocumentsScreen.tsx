@@ -8,6 +8,7 @@ import { DialogHost } from '../contexts/DialogContext';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadFileMap } from '../utils/fileUri';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -139,10 +140,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
 
   const loadDocumentAttachments = async () => {
     try {
-      const stored = await AsyncStorage.getItem('document_attachments');
-      if (stored) {
-        setDocumentAttachments(JSON.parse(stored));
-      }
+      const map = await loadFileMap<{ [key: string]: AttachedFile[] }>('document_attachments');
+      if (map) setDocumentAttachments(map);
     } catch (error) {
       console.error('Failed to load attachments:', error);
     }

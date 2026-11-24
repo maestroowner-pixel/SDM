@@ -19,6 +19,7 @@ import {
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadFileMap } from '../utils/fileUri';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -122,9 +123,8 @@ export const ScansScreen: React.FC = () => {
       const allScans: ScanFile[] = [];
 
       // Загружаем вложения документов
-      const storedAttachments = await AsyncStorage.getItem('document_attachments');
-      if (storedAttachments) {
-        const attachments = JSON.parse(storedAttachments);
+      const attachments = await loadFileMap('document_attachments');
+      if (attachments) {
         Object.entries(attachments).forEach(([docId, files]: [string, any]) => {
           files.forEach((file: any) => {
             allScans.push({
@@ -138,9 +138,9 @@ export const ScansScreen: React.FC = () => {
       }
 
       // Загружаем вложения Sea Service
-      const serviceAttachments = await AsyncStorage.getItem('service_attachments');
+      const serviceAttachments = await loadFileMap('service_attachments');
       if (serviceAttachments) {
-        const attachments = JSON.parse(serviceAttachments);
+        const attachments = serviceAttachments;
         Object.entries(attachments).forEach(([serviceId, files]: [string, any]) => {
           files.forEach((file: any) => {
             allScans.push({

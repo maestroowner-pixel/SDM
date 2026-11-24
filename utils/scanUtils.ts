@@ -5,6 +5,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadFileMap } from './fileUri';
 
 export interface AttachedFile {
   fileName: string;
@@ -118,9 +119,8 @@ export const captureScanToPdf = async (destDir: string, fileName?: string, crop?
 // Список уже созданных камерой сканов (корзина standalone_scans), только реально существующие файлы.
 export const loadStandaloneScans = async (): Promise<AttachedFile[]> => {
   try {
-    const stored = await AsyncStorage.getItem('document_attachments');
-    if (!stored) return [];
-    const att = JSON.parse(stored);
+    const att = await loadFileMap<{ [key: string]: AttachedFile[] }>('document_attachments');
+    if (!att) return [];
     const list: AttachedFile[] = att['standalone_scans'] || [];
     const out: AttachedFile[] = [];
     for (const f of list) {

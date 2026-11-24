@@ -28,6 +28,7 @@ import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/sc
 import { ScanPickerModal } from '../components/ScanPickerModal';
 import { useImageCropper } from '../components/ImageCropModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadFileMap } from '../utils/fileUri';
 import { PositionInput } from '@/components/PositionInput';
 
 const GHOST_SHIP_IMAGE = require('../assets/images/ghost-ship.png');
@@ -103,10 +104,8 @@ export const SeaServiceScreen: React.FC = () => {
 
   const loadServiceAttachments = async () => {
     try {
-      const stored = await AsyncStorage.getItem('service_attachments');
-      if (stored) {
-        setServiceAttachments(JSON.parse(stored));
-      }
+      const map = await loadFileMap<{ [key: string]: AttachedFile[] }>('service_attachments');
+      if (map) setServiceAttachments(map);
     } catch (error) {
       console.error('Failed to load attachments:', error);
     }
