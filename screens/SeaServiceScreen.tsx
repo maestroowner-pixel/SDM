@@ -3,6 +3,7 @@ import {
   StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
   Alert, Modal, Image, Platform, KeyboardAvoidingView, Animated,
 } from 'react-native';
+import { GlassFill, glassEdge } from '../components/GlassFill';
 import { DialogHost } from '../contexts/DialogContext';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { FormModal } from '../components/FormModal';
@@ -789,18 +790,20 @@ export const SeaServiceScreen: React.FC = () => {
                 {/* Кнопки Cancel и Save внизу */}
                 <View style={styles.modalButtons}>
                   <TouchableOpacity 
-                    style={[styles.modalButton, styles.cancelButton]} 
+                    style={[styles.modalButton, styles.cancelButton, glassEdge('clear', isDark)]} 
                     onPress={() => { setShowModal(false); resetForm(); }}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
+                    <GlassFill tone="clear" isDark={isDark} />
+                    <Text style={[styles.cancelButtonText, { color: isDark ? '#90CAF9' : '#1565C0' }]}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity 
-                    style={[styles.modalButton, styles.saveButton]} 
+                    style={[styles.modalButton, styles.saveButton, glassEdge('blue', isDark)]} 
                     onPress={handleSave}
                     activeOpacity={0.7}
                   >
+                    <GlassFill tone="blue" isDark={isDark} />
                     <Text style={styles.saveButtonText}>{t('common.save')}</Text>
                   </TouchableOpacity>
                 </View>

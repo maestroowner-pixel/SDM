@@ -38,9 +38,19 @@ export const uniqueDest = async (destDir: string, fileName: string): Promise<str
 };
 
 // Имя файла документа: «Basic Training - 05.07.2027.pdf», «Medical Care - no expiry.pdf».
+// Общее начало у всех CoP / CoC ничего не различает — в имени файла его убираем:
+// «Certificate of Proficiency in Medical Care» → «Medical Care».
+// Если после него ничего не остаётся, имя не трогаем.
+const COMMON_PREFIX = /^\s*(?:STCW\s+)?certificates?\s+of\s+(?:proficiency|competency|competence)\b[\s,:–—-]*(?:(?:in|for|as|on|of)\s+)?/i;
+export const shortDocName = (name: string): string => {
+  const rest = name.replace(COMMON_PREFIX, '').trim();
+  return rest ? rest.charAt(0).toUpperCase() + rest.slice(1) : name.trim();
+};
+
 export const docFileName = (name: string, expiryIso?: string, noExpiry?: boolean): string => {
   const exp = noExpiry ? 'no expiry' : expiryIso ? expiryIso.split('-').reverse().join('.') : '';
-  return ensurePdfName(exp ? `${name || 'Document'} - ${exp}` : name || 'Document');
+  const base = shortDocName(name || '') || 'Document';
+  return ensurePdfName(exp ? `${base} - ${exp}` : base);
 };
 
 export interface ScanImage { base64: string; width: number; height: number; uri?: string; }
@@ -96,14 +106,21 @@ export const buildPdfFromImages = async (
   const pageH = single
     ? Math.max(1, Math.round((pageW * images[0].height) / images[0].width))
     : 842; // A4 для многостраничных
-  const fit = single ? 'cover' : 'contain'; // single: заполнить без полей; multi: вписать без обрезки
+  // Всегда contain: у одностраничного страница и так в пропорциях снимка, полей не будет,
+  // а если WebKit всё же ошибётся с размером — картинка не обрежется.
+  const fit = 'contain';
 
   const pages = images
     .map((im, i) => `<div class="pg" style="page-break-after:${i === images.length - 1 ? 'auto' : 'always'}"><img src="data:image/jpeg;base64,${im.base64}"/></div>`)
     .join('');
-  const html = `<html><head><meta charset="utf-8"/><style>` +
-    `*{margin:0;padding:0;box-sizing:border-box}@page{margin:0}html,body{width:100%}` +
-    `.pg{width:100%;height:${pageH}px;overflow:hidden;display:flex;align-items:center;justify-content:center}` +
+  // iOS WebKit без viewport раскладывает страницу на 980 px и потом ужимает до 595:
+  // блок .pg получался шире и ниже снимка → cover обрезал верх/низ, а под картинкой
+  // оставалась белая полоса. Поэтому viewport и ширины — явно в px страницы.
+  const html = `<html><head><meta charset="utf-8"/>` +
+    `<meta name="viewport" content="width=${pageW}, initial-scale=1"/><style>` +
+    `*{margin:0;padding:0;box-sizing:border-box}@page{margin:0;size:${pageW}px ${pageH}px}` +
+    `html,body{width:${pageW}px;background:#fff}` +
+    `.pg{width:${pageW}px;height:${pageH}px;overflow:hidden;display:flex;align-items:center;justify-content:center}` +
     `img{width:100%;height:100%;object-fit:${fit};display:block}` +
     `</style></head><body>${pages}</body></html>`;
 

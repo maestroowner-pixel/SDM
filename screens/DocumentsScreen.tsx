@@ -4,6 +4,7 @@ import {
   StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, 
   Alert, Modal, ImageBackground, Platform, KeyboardAvoidingView, Animated, Share
 } from 'react-native';
+import { GlassFill, glassEdge } from '../components/GlassFill';
 import { DialogHost } from '../contexts/DialogContext';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -713,7 +714,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
               >
                 {/* Форма добавления/редактирования */}
                 {!isViewMode && Platform.OS !== 'web' && ocrSupported() && (
-                  <TouchableOpacity style={styles.scanFillButton} onPress={handleScanFill} disabled={scanFilling} activeOpacity={0.8}>
+                  <TouchableOpacity style={[styles.scanFillButton, glassEdge('blue', isDark)]} onPress={handleScanFill} disabled={scanFilling} activeOpacity={0.8}>
+                    <GlassFill tone="blue" isDark={isDark} />
                     <Ionicons name={scanFilling ? 'hourglass-outline' : 'scan-outline'} size={20} color="#fff" />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.scanFillText}>{scanFilling ? t('documents.scanFill.working') : t('documents.scanFill.button')}</Text>
@@ -846,24 +848,27 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
                   {!isViewMode && <GlowButton onPress={openAttachMenu} isDark={isDark} />}
                   
                   <TouchableOpacity 
-                    style={[styles.button, styles.buttonSecondary]} 
+                    style={[styles.button, styles.buttonSecondary, glassEdge('clear', isDark)]} 
                     onPress={() => setShowModal(false)}
                   >
-                    <Text style={styles.buttonSecondaryText}>{t('common.cancel')}</Text>
+                    <GlassFill tone="clear" isDark={isDark} />
+                    <Text style={[styles.buttonSecondaryText, { color: isDark ? '#90CAF9' : '#1565C0' }]}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                   
                   {isViewMode ? (
                     <TouchableOpacity 
-                      style={[styles.button, styles.buttonPrimary]} 
+                      style={[styles.button, styles.buttonPrimary, glassEdge('blue', isDark)]} 
                       onPress={() => setIsViewMode(false)}
                     >
+                      <GlassFill tone="blue" isDark={isDark} />
                       <Text style={styles.buttonPrimaryText}>{t('common.edit')}</Text>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity 
-                      style={[styles.button, styles.buttonPrimary]} 
+                      style={[styles.button, styles.buttonPrimary, glassEdge('blue', isDark)]} 
                       onPress={handleSave}
                     >
+                      <GlassFill tone="blue" isDark={isDark} />
                       <Text style={styles.buttonPrimaryText}>{t('common.save')}</Text>
                     </TouchableOpacity>
                   )}

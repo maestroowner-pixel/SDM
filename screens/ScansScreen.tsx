@@ -16,6 +16,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
 } from 'react-native';
+import { GlassFill, glassEdge } from '../components/GlassFill';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -626,12 +627,14 @@ export const ScansScreen: React.FC = () => {
                 <Text style={[styles.renameExt, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }]}>.pdf</Text>
               </View>
               <View style={styles.renameButtons}>
-                <TouchableOpacity style={styles.renameBtn} onPress={() => setRenameTarget(null)}>
+                <TouchableOpacity style={[styles.renameBtn, glassEdge('clear', isDark)]} onPress={() => setRenameTarget(null)}>
+                  <GlassFill tone="clear" isDark={isDark} />
                   <Text style={[styles.renameBtnText, { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }]}>
                     {t('common.cancel')}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.renameBtn, styles.renameBtnSave]} onPress={confirmRename}>
+                <TouchableOpacity style={[styles.renameBtn, styles.renameBtnSave, glassEdge('blue', isDark)]} onPress={confirmRename}>
+                  <GlassFill tone="blue" isDark={isDark} />
                   <Text style={[styles.renameBtnText, { color: '#fff', fontWeight: '700' }]}>{t('common.save')}</Text>
                 </TouchableOpacity>
               </View>
