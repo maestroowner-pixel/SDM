@@ -15,6 +15,7 @@
 // lands inside whatever surface is currently on top.
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState, ReactNode } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { GlassFill, glassEdge, GlassTone } from '../components/GlassFill';
 import { useData } from './DataContext';
 import { setDialogHandler, type DialogRequest, type DialogButtonStyle } from '../utils/dialog';
 
@@ -114,16 +115,16 @@ export const DialogHost: React.FC = () => {
   const textColor = isDark ? '#fff' : '#1A3A5C';
   const mutedColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)';
 
+  // Стеклянные кнопки, как во всём приложении: ghost — прозрачное стекло,
+  // destructive — красное, остальные — синее.
   const btnStyles = (style?: DialogButtonStyle) => {
-    if (style === 'ghost') {
-      return {
-        container: [styles.btn, styles.btnGhost, { borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }],
-        text: [styles.btnText, { color: mutedColor }],
-      };
-    }
+    const tone: GlassTone = style === 'ghost' ? 'clear' : style === 'destructive' ? 'red' : 'blue';
     return {
-      container: [styles.btn, { backgroundColor: style === 'destructive' ? '#f44336' : '#1976d2' }],
-      text: [styles.btnText, { color: '#fff', fontWeight: '700' as const }],
+      tone,
+      container: [styles.btn, glassEdge(tone, isDark)],
+      text: tone === 'clear'
+        ? [styles.btnText, { color: isDark ? '#90CAF9' : '#1565C0' }]
+        : [styles.btnText, { color: '#fff', fontWeight: '700' as const }],
     };
   };
 
@@ -154,6 +155,7 @@ export const DialogHost: React.FC = () => {
                 onPress={() => close(btn.value)}
                 activeOpacity={0.85}
               >
+                <GlassFill tone={s.tone} isDark={isDark} />
                 <Text style={s.text as any}>{btn.text}</Text>
               </TouchableOpacity>
             );
