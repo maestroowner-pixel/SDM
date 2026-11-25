@@ -14,6 +14,7 @@ import {
   ScrollView,
   Keyboard,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 interface OptionWithOtherInputProps {
@@ -140,7 +141,7 @@ export const OptionWithOtherInput: React.FC<OptionWithOtherInputProps> = ({
         presentationStyle="pageSheet"
         onRequestClose={close}
       >
-        <View style={[styles.modalContainer, isDark ? styles.modalDark : styles.modalLight]}>
+        <SafeAreaView edges={['top', 'bottom']} style={[styles.modalContainer, isDark ? styles.modalDark : styles.modalLight]}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={close} style={styles.headerButton}>
               <Ionicons name="close" size={28} color={isDark ? '#FFFFFF' : '#1A3A5C'} />
@@ -219,7 +220,7 @@ export const OptionWithOtherInput: React.FC<OptionWithOtherInputProps> = ({
               )}
             </ScrollView>
           )}
-        </View>
+        </SafeAreaView>
       </Modal>
     </>
   );

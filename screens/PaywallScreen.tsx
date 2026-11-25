@@ -23,7 +23,7 @@ import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 
 const GHOST_ANCHOR_BG = require('../assets/images/ghost-anchor.png');
-const SDM_LOGO = require('../assets/images/sdm_icon.png');
+const SDM_LOGO = require('../assets/images/logo-cube.png');
 
 interface PaywallScreenProps {
   onClose: () => void;

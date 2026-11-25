@@ -24,7 +24,7 @@ import { t } from '../utils/i18n';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/scanUtils';
+import { captureScanToPdf, loadStandaloneScans, copyScanInto, ensurePdfName, uniqueDest } from '../utils/scanUtils';
 import { ScanPickerModal } from '../components/ScanPickerModal';
 import { useImageCropper } from '../components/ImageCropModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -255,9 +255,14 @@ export const SeaServiceScreen: React.FC = () => {
     resetForm();
   };
 
-  // Логичное имя файла под рейс: <Судно>_<Должность>_<N>.pdf
-  const buildAttachName = () =>
-    `${formData.vesselName || 'Vessel'}_${formData.position || 'Position'}_${attachedFiles.length + 1}.pdf`;
+  // Вложение к контракту — обычно appraisal form: <Судно>_<Должность>_<ддммгггг>.pdf,
+  // дата — sign off (appraisal пишут при списании), иначе sign on, иначе сегодня.
+  const buildAttachName = () => {
+    const position = formData.position;
+    const iso = formData.signOff || formData.signOn || new Date().toISOString().slice(0, 10);
+    const date = iso.slice(0, 10).split('-').reverse().join('');
+    return ensurePdfName(`${formData.vesselName || 'Vessel'}_${position || 'Position'}_${date}`);
+  };
 
   // Меню прикрепления: из моих сканов / из файлов телефона / снять камерой
   const openAttachMenu = async () => {
@@ -319,10 +324,8 @@ export const SeaServiceScreen: React.FC = () => {
         return;
       }
 
-      const timestamp = Date.now();
-      const index = attachedFiles.length + 1;
-      const fileName = `${formData.vesselName || 'Vessel'}_${formData.position || 'Position'}_${index}.pdf`;
-      const destinationUri = `${SCANS_DIR}${fileName}`;
+      const destinationUri = await uniqueDest(SCANS_DIR, buildAttachName());
+      const fileName = destinationUri.split('/').pop() as string;
 
       await FileSystem.copyAsync({ from: file.uri, to: destinationUri });
 

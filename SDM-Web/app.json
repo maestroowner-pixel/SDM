@@ -20,7 +20,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/images/sdm_favicon.png",
+      "favicon": "./assets/images/favicon-cube.png",
       "bundler": "metro",
       "output": "single"
     },

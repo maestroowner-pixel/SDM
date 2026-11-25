@@ -11,7 +11,7 @@ export default ({ config }) => {
     slug: 'seafarer-documents-manager',
     version: config.version || '1.0.0',
     orientation: 'default',
-    icon: './assets/images/adaptive-icon.png',
+    icon: './assets/images/icon-cube.png',
     userInterfaceStyle: 'automatic',
 
     plugins: config.plugins,
@@ -23,8 +23,8 @@ export default ({ config }) => {
         : `seafarer.documents.manager.${variant}`,
       versionCode: config.android?.versionCode || 1,
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
-        backgroundColor: '#030f4c',
+        foregroundImage: './assets/images/adaptive-icon-cube.png',
+        backgroundColor: '#FFFFFF',
         ...config.android?.adaptiveIcon,
       }
     },

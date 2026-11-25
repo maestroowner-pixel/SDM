@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import {
   StyleSheet, View, Text, ScrollView, TouchableOpacity,
-  Modal, SafeAreaView, Image, Platform,
+  Modal, Image, Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../contexts/DataContext';
 import { ManualSteps } from '../components/ManualSteps';
@@ -463,7 +464,7 @@ export const ManualScreen: React.FC<ManualScreenProps> = ({ visible, onClose }) 
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <SafeAreaView style={[s.container, { backgroundColor: tc.bg }]}>
+      <SafeAreaView edges={['top', 'bottom']} style={[s.container, { backgroundColor: tc.bg }]}>
         <Image
           source={GHOST_STARFISH_BG}
           style={[s.bgImage, { opacity: isDark ? 0.05 : 0.12, tintColor: isDark ? '#64b5f6' : '#2B7CC1' }]}

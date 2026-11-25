@@ -243,6 +243,25 @@
       "deleteMessage": "Czy na pewno?",
       "errorTitle": "Błąd",
       "requiredFields": "Proszę wypełnić wymagane pola"
+    },
+    "scanFill": {
+      "button": "Wypełnij ze zdjęcia",
+      "hint": "Zdjęcie dokumentu — pola wypełnią się same",
+      "working": "Odczytywanie dokumentu…",
+      "title": "Wypełnij ze zdjęcia",
+      "filled": "Wypełniono ze zdjęcia:",
+      "check": "Sprawdź je przed zapisaniem. Zdjęcie zostanie dołączone jako PDF.",
+      "nothing": "Nie udało się odczytać pól z tego zdjęcia. Zdjęcie zostanie dołączone jako PDF — wypełnij pola ręcznie.",
+      "busy": "Te pola są już wypełnione, ale na zdjęciu jest coś innego:",
+      "keep": "Zostaw moje",
+      "replace": "Zastąp",
+      "sameAsForm": "Zdjęcie zgadza się z tym, co jest już w formularzu — nie ma nic do zmiany. Zdjęcie zostanie dołączone jako PDF.",
+      "ocrFailed": "Rozpoznawanie tekstu nie jest jeszcze gotowe. Przy pierwszym użyciu telefon pobiera moduł rozpoznawania — sprawdź połączenie z internetem i spróbuj ponownie za minutę. Zdjęcie zostanie dołączone jako PDF.",
+      "noText": "Na zdjęciu nie znaleziono tekstu. Zrób je z bliższej odległości, przy dobrym świetle i bez odblasków. Zdjęcie zostanie dołączone jako PDF.",
+      "confirmTitle": "Sprawdź zeskanowane dane",
+      "confirmText": "Te pola zostały wypełnione ze zdjęcia. Rozpoznawanie może się mylić — porównaj je z dokumentem:",
+      "confirmOk": "Wszystko się zgadza, zapisz",
+      "confirmBack": "Sprawdź ponownie"
     }
   },
   "seaService": {

@@ -5,6 +5,7 @@ import {
   StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator,
   ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { DialogHost } from '../contexts/DialogContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../contexts/DataContext';
@@ -178,13 +179,16 @@ export const AuthScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   );
 
   return (
-    <View style={[styles.root, { backgroundColor: isDark ? '#0a1628' : '#F0F7FF' }]}>
+    // Модалка на Android рисуется под строкой состояния (edge-to-edge) — нативный
+    // SafeAreaView даёт отступы и в модалке, и в pageSheet на iOS.
+    <SafeAreaView edges={['top', 'bottom']} style={[styles.root, { backgroundColor: isDark ? '#0a1628' : '#F0F7FF' }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="close" size={26} color={textColor} />
         </TouchableOpacity>
       </View>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      {/* edge-to-edge: adjustResize на Android больше не сжимает окно, поэтому padding и там */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={[styles.card, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.8)' }]}>
             {user && !user.emailVerified ? renderVerify() : renderForm()}
@@ -193,7 +197,7 @@ export const AuthScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       </KeyboardAvoidingView>
       {/* AuthScreen lives inside a Modal → dialogs must render here */}
       <DialogHost />
-    </View>
+    </SafeAreaView>
   );
 };
 

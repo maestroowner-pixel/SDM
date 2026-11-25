@@ -84,7 +84,8 @@
       "personalDetails": "Données Personnelles",
       "contactInformation": "Coordonnées",
       "visaStatus": "Statut de Visa",
-      "careerPreferences": "Préférences de Carrière"
+      "careerPreferences": "Préférences de Carrière",
+      "nearestAirport": "Aéroport le plus proche"
     },
     "fields": {
       "firstName": "Prénom",
@@ -224,7 +225,27 @@
       "deleteMessage": "Êtes-vous sûr ?",
       "errorTitle": "Erreur",
       "requiredFields": "Veuillez remplir les champs obligatoires"
-    }
+    },
+    "scanFill": {
+      "button": "Remplir par photo",
+      "hint": "Photo du document — les champs se remplissent seuls",
+      "working": "Lecture du document…",
+      "title": "Remplir par photo",
+      "filled": "Rempli à partir de la photo :",
+      "check": "Veuillez les vérifier avant d'enregistrer. La photo est jointe en PDF.",
+      "nothing": "Impossible de lire les champs sur cette photo. La photo est jointe en PDF — veuillez remplir les champs à la main.",
+      "busy": "Ces champs sont déjà remplis, mais la photo indique autre chose :",
+      "keep": "Garder le mien",
+      "replace": "Remplacer",
+      "sameAsForm": "La photo correspond déjà au formulaire — rien à changer. La photo est jointe en PDF.",
+      "ocrFailed": "La reconnaissance de texte n'est pas encore prête. À la première utilisation, le téléphone télécharge le module de reconnaissance — vérifiez la connexion Internet et réessayez dans une minute. La photo est jointe en PDF.",
+      "noText": "Aucun texte trouvé sur la photo. Prenez-la de plus près, avec une bonne lumière et sans reflets. La photo est jointe en PDF.",
+      "confirmTitle": "Vérifiez les données scannées",
+      "confirmText": "Ces champs ont été remplis à partir de la photo. La reconnaissance peut se tromper — comparez-les avec le document :",
+      "confirmOk": "Tout est correct, enregistrer",
+      "confirmBack": "Vérifier encore"
+    },
+    "viewDocument": "Voir le document"
   },
   "seaService": {
     "title": "Service Maritime",
@@ -377,7 +398,8 @@
       "physicalData": "Données Physiques",
       "education": "Éducation",
       "seaService": "Service Maritime",
-      "documents": "Documents et Certificats"
+      "documents": "Documents et Certificats",
+      "motivationLetter": "Lettre de motivation"
     },
     "fields": {
       "dateOfBirth": "Date de Naissance",
@@ -392,7 +414,8 @@
       "specialization": "Spécialisation",
       "graduation": "Obtention du Diplôme",
       "languages": "Langues",
-      "skills": "Compétences"
+      "skills": "Compétences",
+      "common.unlimitedOnly ": "Disponible dans la version Unlimited"
     },
     "table": {
       "vessel": "Navire",
@@ -621,7 +644,10 @@
       "unlimitedDocs": "Documents illimités",
       "cloudBackup": "Sauvegarde cloud et synchronisation",
       "cvUnlocked": "CV débloqué",
-      "notifications": "Notifications intelligentes"
+      "notifications": "Notifications intelligentes",
+      "analytics": "Analyses avancées",
+      "unlimitedQR": "QR codes illimités",
+      "support": "Support prioritaire 24h/24, 7j/7"
     },
     "pricing": {
       "lifetime": {
@@ -691,5 +717,49 @@
     "message": "La version {{version}} de Seafarer Documents Manager est disponible. Mettez à jour pour obtenir les dernières corrections et fonctionnalités.",
     "update": "Mettre à jour",
     "later": "Plus tard"
-  }
+  },
+  "App Language": "Langue de l'application",
+  "NOTIFICATIONS": "NOTIFICATIONS",
+  "Document Expiry Alerts": "Alertes d'expiration des documents",
+  "Scheduled": "Planifiées",
+  "Get notified before expiry": "Être averti avant l'expiration",
+  "APPEARANCE": "APPARENCE",
+  "Dark Theme": "Thème sombre",
+  "Switch between light and dark mode": "Basculer entre mode clair et sombre",
+  "STORAGE": "STOCKAGE",
+  "Backup Data": "Sauvegarder les données",
+  "Save your data to a file": "Enregistrer vos données dans un fichier",
+  "Import Data": "Importer des données",
+  "Restore data from a backup file": "Restaurer les données depuis une sauvegarde",
+  "DATA": "DONNÉES",
+  "Clear All Data": "Effacer toutes les données",
+  "Delete all data from the app": "Supprimer toutes les données de l'application",
+  "ABOUT": "À PROPOS",
+  "Privacy Policy": "Politique de confidentialité",
+  "Terms of Service": "Conditions d'utilisation",
+  "Notifications Enabled": "Notifications activées",
+  "Notifications enabled": "Notifications activées",
+  "notifications scheduled": "notifications planifiées",
+  "No documents expire within 90 days": "Aucun document n'expire dans les 90 jours",
+  "Permission Denied": "Autorisation refusée",
+  "Please enable notifications in your device settings": "Veuillez activer les notifications dans les réglages de l'appareil",
+  "Notifications Disabled": "Notifications désactivées",
+  "All scheduled notifications have been cancelled": "Toutes les notifications planifiées ont été annulées",
+  "Failed to update notification settings": "Impossible de mettre à jour les paramètres de notification",
+  "Backup Exported": "Sauvegarde exportée",
+  "File": "Fichier",
+  "Size": "Taille",
+  "Backup file created successfully": "Fichier de sauvegarde créé avec succès",
+  "Data imported successfully": "Données importées avec succès",
+  "Invalid backup file": "Fichier de sauvegarde invalide",
+  "Failed to import backup": "Impossible d'importer la sauvegarde",
+  "Failed to export backup": "Impossible d'exporter la sauvegarde",
+  "No Data": "Aucune donnée",
+  "There is no data to export": "Aucune donnée à exporter",
+  "All data has been cleared": "Toutes les données ont été effacées",
+  "This will permanently delete all your data": "Toutes vos données seront définitivement supprimées",
+  "Delete Everything": "Tout supprimer",
+  "Cancel": "Annuler",
+  "Error": "Erreur",
+  "Success": "Succès"
 }

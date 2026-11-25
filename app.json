@@ -2,9 +2,9 @@
   "expo": {
     "name": "Seafarer Documents Manager",
     "slug": "seafarer.documents.manager",
-    "version": "3.2.4",
+    "version": "3.3.0",
     "orientation": "all",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-cube.png",
     "scheme": "seafarer-docs",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -12,15 +12,16 @@
       "bundleIdentifier": "seafarer.documents.manager",
       "appleTeamId": "VL4B4R8D84",
       "deploymentTarget": "16.4",
-      "buildNumber": "302044",
+      "buildNumber": "303001",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires access to the camera to allow seafarers to take photos of their certificates and documents for digital storage.",
         "NSMicrophoneUsageDescription": "This app does not use the microphone, but it is required by the underlying file picker libraries to ensure full compatibility."
       }
     },
     "android": {
+      "backgroundColor": "#0a1628",
       "package": "seafarer.documents.manager",
-      "versionCode": 302044,
+      "versionCode": 303001,
       "blockedPermissions": [
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -28,14 +29,17 @@
         "android.permission.FOREGROUND_SERVICE_LOCATION"
       ]
     },
+    "web": {
+      "favicon": "./assets/images/favicon-cube.png"
+    },
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-octopus.png",
-          "imageWidth": 220,
+          "image": "./assets/images/splash-cube.png",
+          "imageWidth": 360,
           "resizeMode": "contain",
-          "backgroundColor": "#FAFAFA"
+          "backgroundColor": "#0a1628"
         }
       ],
       [
@@ -71,7 +75,8 @@
       "./plugins/android-artifact-name",
       "./plugins/ios-fix-codegen-cycle",
       "./plugins/android-large-screen-fix",
-      "./plugins/android-device-compat"
+      "./plugins/android-device-compat",
+      "./plugins/android-mlkit-ocr"
     ]
   }
 }

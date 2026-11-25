@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, PanResponder, ActivityIndicator } from 'react-native';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t } from '../utils/i18n';
 
 interface Rect { x: number; y: number; w: number; h: number; }
@@ -14,7 +15,10 @@ interface Props {
 }
 
 const MIN = 60;       // мин. сторона рамки (в координатах экрана)
-const HANDLE = 30;    // визуальный размер уголка
+const HANDLE = 48;    // зона касания уголка (сама точка меньше, см. handleDot)
+// Отступ фото от краёв экрана: уголки рамки не должны попадать под системный
+// жест «назад» Android у края экрана и уходить за экран.
+const PAD = 32;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // Свой экран обрезки (overlay-View, НЕ RN Modal — чтобы показываться поверх
@@ -26,19 +30,22 @@ const ImageCropModal: React.FC<Props> = ({ imageUri, imageWidth, imageHeight, on
   const rectRef = useRef<Rect | null>(null);
   const layoutRef = useRef<Layout>({ imgX: 0, imgY: 0, dispW: 0, dispH: 0 });
   const startRef = useRef<Rect>({ x: 0, y: 0, w: 0, h: 0 });
+  const insets = useSafeAreaInsets();
 
   const setRect = useCallback((r: Rect) => { rectRef.current = r; setRectState(r); }, []);
 
   // Вписать фото в доступную область и инициализировать рамку на всё фото.
   const onAreaLayout = (e: any) => {
     if (rectRef.current) return;
-    const { width: availW, height: availH } = e.nativeEvent.layout;
+    const { width: areaW, height: areaH } = e.nativeEvent.layout;
+    const availW = areaW - PAD * 2;
+    const availH = areaH - PAD * 2;
     const aspect = imageWidth / imageHeight;
     let dispW = availW;
     let dispH = dispW / aspect;
     if (dispH > availH) { dispH = availH; dispW = dispH * aspect; }
-    const imgX = (availW - dispW) / 2;
-    const imgY = (availH - dispH) / 2;
+    const imgX = PAD + (availW - dispW) / 2;
+    const imgY = PAD + (availH - dispH) / 2;
     layoutRef.current = { imgX, imgY, dispW, dispH };
     setRect({ x: imgX, y: imgY, w: dispW, h: dispH });
   };
@@ -118,7 +125,7 @@ const ImageCropModal: React.FC<Props> = ({ imageUri, imageWidth, imageHeight, on
   };
 
   return (
-    <View style={styles.overlay}>
+    <View style={[styles.overlay, { paddingTop: insets.top }]}>
       <View style={styles.area} onLayout={onAreaLayout}>
         {!!layoutRef.current.dispW && (
           <Image
@@ -144,7 +151,7 @@ const ImageCropModal: React.FC<Props> = ({ imageUri, imageWidth, imageHeight, on
 
             {/* уголки */}
             {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
-              <View key={c} {...R[c].panHandlers} style={cornerStyle(rect, c)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <View key={c} {...R[c].panHandlers} style={cornerStyle(rect, c)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                 <View style={styles.handleDot} />
               </View>
             ))}
@@ -173,7 +180,7 @@ const styles = StyleSheet.create({
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000', zIndex: 2000, elevation: 2000 },
   area: { flex: 1, margin: 0 },
   dim: { position: 'absolute', backgroundColor: 'rgba(0,0,0,0.55)' },
-  handleDot: { flex: 1, margin: 8, borderRadius: 999, backgroundColor: '#00bcd4', borderWidth: 2, borderColor: '#fff' },
+  handleDot: { flex: 1, margin: 13, borderRadius: 999, backgroundColor: '#00bcd4', borderWidth: 2, borderColor: '#fff' },
   busy: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 16, paddingBottom: 28, backgroundColor: '#10233b' },
   hint: { color: 'rgba(255,255,255,0.8)', fontSize: 13, flex: 1, textAlign: 'center' },

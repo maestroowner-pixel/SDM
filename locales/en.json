@@ -243,6 +243,25 @@
       "deleteMessage": "Are you sure?",
       "errorTitle": "Error",
       "requiredFields": "Please fill in required fields"
+    },
+    "scanFill": {
+      "button": "Scan to fill",
+      "hint": "Photo of the document — fields fill themselves",
+      "working": "Reading the document…",
+      "title": "Scan to fill",
+      "filled": "Filled from the photo:",
+      "check": "Please check them before saving. The photo is attached as PDF.",
+      "nothing": "Could not read the fields from this photo. The photo is attached as PDF — please fill the fields by hand.",
+      "busy": "These fields are already filled, but the photo reads differently:",
+      "keep": "Keep mine",
+      "replace": "Replace",
+      "sameAsForm": "The photo matches what is already in the form — nothing to change. The photo is attached as PDF.",
+      "ocrFailed": "Text recognition is not ready yet. On first use the phone downloads the recognition module — check the internet connection and try again in a minute. The photo is attached as PDF.",
+      "noText": "No text found on the photo. Take it closer, in good light and without glare. The photo is attached as PDF.",
+      "confirmTitle": "Check the scanned data",
+      "confirmText": "These fields were filled from the photo. Recognition can make mistakes — compare them with the document:",
+      "confirmOk": "All correct, save",
+      "confirmBack": "Check again"
     }
   },
   "seaService": {

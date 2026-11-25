@@ -243,6 +243,25 @@
       "deleteMessage": "Sigurado ka ba?",
       "errorTitle": "Error",
       "requiredFields": "Mangyaring punan ang mga kinakailangang field"
+    },
+    "scanFill": {
+      "button": "Punan gamit ang litrato",
+      "hint": "Litrato ng dokumento — kusang mapupunan ang mga field",
+      "working": "Binabasa ang dokumento…",
+      "title": "Punan gamit ang litrato",
+      "filled": "Napunan mula sa litrato:",
+      "check": "Pakisuri muna bago i-save. Naka-attach ang litrato bilang PDF.",
+      "nothing": "Hindi mabasa ang mga field mula sa litratong ito. Naka-attach ang litrato bilang PDF — pakipunan nang manu-mano ang mga field.",
+      "busy": "May laman na ang mga field na ito, pero iba ang nakasulat sa litrato:",
+      "keep": "Panatilihin ang akin",
+      "replace": "Palitan",
+      "sameAsForm": "Tugma ang litrato sa nasa form na — walang kailangang baguhin. Naka-attach ang litrato bilang PDF.",
+      "ocrFailed": "Hindi pa handa ang pagkilala ng teksto. Sa unang paggamit, dina-download ng telepono ang recognition module — suriin ang koneksyon sa internet at subukang muli pagkalipas ng isang minuto. Naka-attach ang litrato bilang PDF.",
+      "noText": "Walang nakitang teksto sa litrato. Kunan nang mas malapit, sa maliwanag na ilaw at walang silaw. Naka-attach ang litrato bilang PDF.",
+      "confirmTitle": "Suriin ang na-scan na datos",
+      "confirmText": "Napunan ang mga field na ito mula sa litrato. Maaaring magkamali ang pagkilala — ihambing ang mga ito sa dokumento:",
+      "confirmOk": "Tama lahat, i-save",
+      "confirmBack": "Suriin muli"
     }
   },
   "seaService": {

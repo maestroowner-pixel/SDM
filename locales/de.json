@@ -103,7 +103,8 @@
       "personalDetails": "Persönliche Daten",
       "contactInformation": "Kontaktinformationen",
       "visaStatus": "Visumstatus",
-      "careerPreferences": "Karrierepräferenzen"
+      "careerPreferences": "Karrierepräferenzen",
+      "nearestAirport": "Nächster Flughafen"
     },
     "fields": {
       "firstName": "Vorname",
@@ -228,6 +229,25 @@
       "deleteMessage": "Sind Sie sicher?",
       "errorTitle": "Fehler",
       "requiredFields": "Bitte füllen Sie die Pflichtfelder aus"
+    },
+    "scanFill": {
+      "button": "Per Foto ausfüllen",
+      "hint": "Foto des Dokuments — die Felder füllen sich selbst",
+      "working": "Dokument wird gelesen…",
+      "title": "Per Foto ausfüllen",
+      "filled": "Aus dem Foto ausgefüllt:",
+      "check": "Bitte prüfen Sie sie vor dem Speichern. Das Foto wird als PDF angehängt.",
+      "nothing": "Die Felder konnten aus diesem Foto nicht gelesen werden. Das Foto wird als PDF angehängt — bitte füllen Sie die Felder manuell aus.",
+      "busy": "Diese Felder sind bereits ausgefüllt, aber auf dem Foto steht etwas anderes:",
+      "keep": "Meine behalten",
+      "replace": "Ersetzen",
+      "sameAsForm": "Das Foto stimmt mit dem Formular überein — nichts zu ändern. Das Foto wird als PDF angehängt.",
+      "ocrFailed": "Die Texterkennung ist noch nicht bereit. Beim ersten Mal lädt das Telefon das Erkennungsmodul herunter — prüfen Sie die Internetverbindung und versuchen Sie es in einer Minute erneut. Das Foto wird als PDF angehängt.",
+      "noText": "Auf dem Foto wurde kein Text gefunden. Fotografieren Sie näher, bei gutem Licht und ohne Spiegelungen. Das Foto wird als PDF angehängt.",
+      "confirmTitle": "Gescannte Daten prüfen",
+      "confirmText": "Diese Felder wurden aus dem Foto ausgefüllt. Die Erkennung kann Fehler machen — vergleichen Sie sie mit dem Dokument:",
+      "confirmOk": "Alles korrekt, speichern",
+      "confirmBack": "Nochmal prüfen"
     }
   },
   "seaService": {
@@ -397,7 +417,21 @@
       "document": "Dokument",
       "number": "Nummer",
       "issueDate": "Ausstellungsdatum",
-      "expiryDate": "Ablaufdatum"
+      "expiryDate": "Ablaufdatum",
+      "dateOfBirth": "Geburtsdatum",
+      "placeOfBirth": "Geburtsort",
+      "address": "Adresse",
+      "height": "Größe",
+      "weight": "Gewicht",
+      "shoeSize": "Schuhgröße",
+      "bloodType": "Blutgruppe",
+      "institution": "Bildungseinrichtung",
+      "degree": "Abschluss",
+      "specialization": "Fachrichtung",
+      "graduation": "Abschlussjahr",
+      "languages": "Sprachen",
+      "skills": "Fähigkeiten",
+      "common.unlimitedOnly ": "In der Unlimited-Version verfügbar"
     },
     "includes": {
       "personalInfo": "Persönliche Informationen",
@@ -424,7 +458,17 @@
       "yShort": "J.",
       "mShort": "M.",
       "dShort": "T.",
-      "crane": "Kran"
+      "crane": "Kran",
+      "vessel": "Schiff",
+      "type": "Typ",
+      "position": "Position",
+      "company": "Firma",
+      "signOn": "Anmusterung",
+      "signOff": "Abmusterung",
+      "document": "Dokument",
+      "number": "Nummer",
+      "issueDate": "Ausstellungsdatum",
+      "expiryDate": "Ablaufdatum"
     }
   },
   "education": {
@@ -479,7 +523,8 @@
       "step2": "Auf den QR-Code zeigen",
       "step3": "Tippen Sie auf die Benachrichtigung, um den Kontakt zu speichern",
       "step4": "Alle Ihre Kontaktinformationen werden automatisch gespeichert"
-    }
+    },
+    "scanMessage": "Scannen Sie diesen QR-Code, um meine Kontaktdaten zu erhalten"
   },
   "settings": {
     "title": "Einstellungen",
@@ -676,7 +721,24 @@
     "savePdf": "PDF speichern",
     "addPage": "Seite hinzufügen",
     "pages": "Seiten",
-    "pageOne": "Seite"
+    "pageOne": "Seite",
+    "title": "Scan-Manager",
+    "totalFiles": "Dateien gesamt",
+    "selected": "Ausgewählt",
+    "totalSize": "Gesamtgröße",
+    "loading": "Scans werden geladen...",
+    "noScans": "Noch keine Scans",
+    "addScansHint": "Hängen Sie PDF-Dateien an Dokumente an, um sie hier zu sehen",
+    "archiveAndSend": "Archivieren & senden",
+    "archiving": "Archiv wird erstellt...",
+    "noSelection": "Keine Dateien ausgewählt",
+    "selectFilesFirst": "Bitte wählen Sie zuerst Dateien aus",
+    "archiveFailed": "Archiv konnte nicht erstellt werden",
+    "shareFailed": "Dateien konnten nicht geteilt werden",
+    "deleteTitle": "Scans löschen",
+    "deleteMessage": "Möchten Sie wirklich löschen",
+    "deleteSuccess": "Scans erfolgreich gelöscht",
+    "deleteFailed": "Scans konnten nicht gelöscht werden"
   },
   "attach": {
     "title": "Datei anhängen",

@@ -10,6 +10,7 @@ import {
   ScrollView,
   Keyboard,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 interface VesselTypeInputProps {
@@ -120,7 +121,7 @@ export const VesselTypeInput: React.FC<VesselTypeInputProps> = ({
         presentationStyle="pageSheet"
         onRequestClose={handleCancel}
       >
-        <View style={[styles.modalContainer, isDark ? styles.modalDark : styles.modalLight]}>
+        <SafeAreaView edges={['top', 'bottom']} style={[styles.modalContainer, isDark ? styles.modalDark : styles.modalLight]}>
           {/* Header - только крестик и галочка */}
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
@@ -190,7 +191,7 @@ export const VesselTypeInput: React.FC<VesselTypeInputProps> = ({
               ))}
             </ScrollView>
           )}
-        </View>
+        </SafeAreaView>
       </Modal>
     </>
   );

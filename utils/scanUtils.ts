@@ -27,14 +27,23 @@ export const ensurePdfName = (name: string): string => {
   return `${clean || 'Document'}.pdf`;
 };
 
-// Выбрать уникальный путь в destDir (если занят — префикс с таймстампом).
-const uniqueDest = async (destDir: string, fileName: string): Promise<string> => {
+// Выбрать уникальный путь в destDir: «Имя.pdf», затем «Имя (2).pdf», «Имя (3).pdf»…
+export const uniqueDest = async (destDir: string, fileName: string): Promise<string> => {
+  const dot = fileName.lastIndexOf('.');
+  const base = dot > 0 ? fileName.slice(0, dot) : fileName;
+  const ext = dot > 0 ? fileName.slice(dot) : '';
   let dest = `${destDir}${fileName}`;
-  if ((await FileSystem.getInfoAsync(dest)).exists) dest = `${destDir}${Date.now()}_${fileName}`;
+  for (let n = 2; (await FileSystem.getInfoAsync(dest)).exists && n < 1000; n++) dest = `${destDir}${base} (${n})${ext}`;
   return dest;
 };
 
-export interface ScanImage { base64: string; width: number; height: number; }
+// Имя файла документа: «Basic Training - 05.07.2027.pdf», «Medical Care - no expiry.pdf».
+export const docFileName = (name: string, expiryIso?: string, noExpiry?: boolean): string => {
+  const exp = noExpiry ? 'no expiry' : expiryIso ? expiryIso.split('-').reverse().join('.') : '';
+  return ensurePdfName(exp ? `${name || 'Document'} - ${exp}` : name || 'Document');
+};
+
+export interface ScanImage { base64: string; width: number; height: number; uri?: string; }
 
 // Функция обрезки: получает uri+размеры снимка, возвращает uri обрезанного фото
 // или null (пользователь отменил). Реализуется через useImageCropper (UI-кроп).
@@ -67,7 +76,7 @@ export const captureScanImage = async (crop?: CropFn): Promise<ScanImage | null>
     [{ resize: { width: 1500 } }],
     { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
   );
-  return { base64: c.base64 as string, width: c.width || 1500, height: c.height || 2000 };
+  return { base64: c.base64 as string, width: c.width || 1500, height: c.height || 2000, uri: c.uri };
 };
 
 // Собрать PDF из массива изображений и сохранить в destDir.

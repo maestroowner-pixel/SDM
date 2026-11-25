@@ -3,7 +3,7 @@
 // The same file in the app and in SDM-Web.
 
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView } from 'react-native';
 
 import { MIN_PASSWORD } from '../utils/sdmCrypto';
 import { t } from '../utils/i18n';
@@ -61,7 +61,7 @@ export const BackupCryptoModal: React.FC<Props> = ({ mode, isDark, busy, error, 
 
   return (
     <Modal visible={!!mode} transparent animationType="fade" onRequestClose={busy ? undefined : onCancel}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView behavior="padding" style={styles.backdrop}>
         <View style={[styles.card, { backgroundColor: isDark ? '#1C2733' : '#FFFFFF' }]}>
           <Text style={[styles.title, { color: fg }]}>{t(mode === 'import' ? 'settings.crypto.titleImport' : 'settings.crypto.titleExport')}</Text>
           {mode === 'export' ? (
@@ -95,7 +95,7 @@ export const BackupCryptoModal: React.FC<Props> = ({ mode, isDark, busy, error, 
             </View>
           )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

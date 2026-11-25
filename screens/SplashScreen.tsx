@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,9 @@ import {
   Linking,
   Alert,
   Image,
+  Animated,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,48 +21,85 @@ import { playShipBellSound } from '../utils/sound';
 import { useTablet } from '../hooks/useTablet'; // ← ДОБАВЛЕНО
 import Constants from 'expo-constants';
 
-const APP_VERSION = Constants.expoConfig?.version ?? '3.2.4';
-
-const { width } = Dimensions.get('window');
+const APP_VERSION = Constants.expoConfig?.version ?? '3.3.0';
 
 const TERMS_URL = 'https://sdm.kuka-soft.com/terms-of-service';
 const PRIVACY_URL = 'https://sdm.kuka-soft.com/privacy-policy';
 const AGREEMENT_KEY = '@sdm_agreement_accepted';
-const SDM_LOGO = require('../assets/images/sdm_adaptive-icon.png');
-const SPLASH_ICON = require('../assets/images/sdm_splash-icon.png');
+const SDM_LOGO = require('../assets/images/logo-cube.png');
+// Та же картинка, что у нативной заставки (app.json → expo-splash-screen).
+const SPLASH_IMAGE = require('../assets/images/splash-cube.png');
+// Размер, в котором её рисует нативная заставка: Android (12+ и compat) —
+// иконка заставки 288 dp; iOS — imageWidth из app.json (360 pt).
+// Если менять imageWidth или картинку — поменять и здесь.
+const NATIVE_SPLASH_SIZE = Platform.OS === 'android' ? 288 : 360;
+const CUBE_VISIBLE = NATIVE_SPLASH_SIZE * 0.5; // кубик занимает ~половину картинки
+const BG = '#0a1628'; // фон нативной заставки и окна Android
 
 interface Props {
+  // false — приложение ещё грузится: показываем только кубик, как нативная заставка.
+  ready?: boolean;
   onFinish: () => void;
+  // Вызывается, когда кубик уже нарисован — тогда можно убирать нативный
+  // splash: под ним точно такая же картинка, переход незаметен.
+  onReady?: () => void;
 }
 
-export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
+// Вынесено из компонента: иначе каждый ререндер создавал новый тип
+// компонента и весь экран перемонтировался (мигание).
+const GradientWrapper = ({ children }: { children: React.ReactNode }) => (
+  <LinearGradient
+    colors={['#0a1628', '#1a2a4a', '#0d1a2d']}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.container}
+  >
+    <SafeAreaView style={{ flex: 1, width: '100%' }} edges={['top', 'bottom']}>
+      {children}
+    </SafeAreaView>
+  </LinearGradient>
+);
+
+export const SplashScreen: React.FC<Props> = ({ ready = true, onFinish, onReady }) => {
   const [showAgreement, setShowAgreement] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const isTablet = useTablet(); // ← ДОБАВЛЕНО
+  const fade = useRef(new Animated.Value(0)).current;
+  const finishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const readySent = useRef(false);
+  const { width: winW } = useWindowDimensions();
+  const isTablet = useTablet();
+
+  const signalReady = () => {
+    if (readySent.current) return;
+    readySent.current = true;
+    // Ещё один кадр, чтобы кубик точно попал на экран.
+    requestAnimationFrame(() => onReady?.());
+  };
+
+  // Страховка: если картинка почему-то не сообщила о загрузке.
+  useEffect(() => {
+    const id = setTimeout(signalReady, 3000);
+    return () => {
+      clearTimeout(id);
+      if (finishTimer.current) clearTimeout(finishTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
-    checkAgreement();
-  }, []);
+    if (ready) checkAgreement();
+  }, [ready]);
 
   const checkAgreement = async () => {
     try {
       const agreed = await AsyncStorage.getItem(AGREEMENT_KEY);
-      
+      playShipBellSound();
       if (agreed === 'true') {
-        playShipBellSound();
-        setInitialLoading(false);
-        const timer = setTimeout(() => {
-          onFinish();
-        }, 2500);
-        return () => clearTimeout(timer);
+        Animated.timing(fade, { toValue: 1, duration: 450, useNativeDriver: true }).start();
+        finishTimer.current = setTimeout(() => onFinish(), 2500);
       } else {
-        playShipBellSound();
-        setInitialLoading(false);
         setShowAgreement(true);
       }
     } catch (error) {
       console.error('Error checking agreement:', error);
-      setInitialLoading(false);
       setShowAgreement(true);
     }
   };
@@ -87,29 +127,6 @@ export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
       alertMsg('Error', `Failed to open ${title}`);
     }
   };
-
-  // Обертка для сохранения градиента на весь экран
-  const GradientWrapper = ({ children }: { children: React.ReactNode }) => (
-    <LinearGradient
-      colors={['#0a1628', '#1a2a4a', '#0d1a2d']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
-      <SafeAreaView style={{ flex: 1, width: '100%' }} edges={['top', 'bottom']}>
-        {children}
-      </SafeAreaView>
-    </LinearGradient>
-  );
-
-  if (initialLoading) {
-    // Показываем тёмный градиент без текста — нет мигания "Loading..."
-    return (
-      <GradientWrapper>
-        <View style={styles.content} />
-      </GradientWrapper>
-    );
-  }
 
   if (showAgreement) {
     return (
@@ -159,21 +176,64 @@ export const SplashScreen: React.FC<Props> = ({ onFinish }) => {
     );
   }
 
+  // Кубик стоит ровно там и такого же размера, как на нативной заставке,
+  // и не двигается; градиент и надписи плавно проявляются поверх.
   return (
-    <GradientWrapper>
-      <View style={styles.content}>
-        <Image source={SPLASH_ICON} style={{ width: 200, height: 200, marginBottom: 20 }} resizeMode="contain" />
-        <Text style={styles.title}>Seafarer Documents Manager</Text>
-        <Text style={styles.author}>by Mykhaylo Osypov</Text>
-        <Text style={styles.version}>Version {APP_VERSION}</Text>
+    <View style={styles.splashRoot}>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade }]} pointerEvents="none">
+        <LinearGradient
+          colors={['#0a1628', '#1a2a4a', '#0d1a2d']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+      <View style={styles.splashCenter} pointerEvents="none">
+        <View style={{ width: NATIVE_SPLASH_SIZE, height: NATIVE_SPLASH_SIZE }}>
+          <Image
+            source={SPLASH_IMAGE}
+            style={{ width: NATIVE_SPLASH_SIZE, height: NATIVE_SPLASH_SIZE }}
+            resizeMode="contain"
+            fadeDuration={0}
+            onLoad={signalReady}
+            onError={signalReady}
+          />
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: NATIVE_SPLASH_SIZE / 2 + CUBE_VISIBLE / 2 + 24,
+              left: (NATIVE_SPLASH_SIZE - winW) / 2,
+              width: winW,
+              alignItems: 'center',
+              opacity: fade,
+            }}
+          >
+            <Text style={styles.title}>Seafarer Documents Manager</Text>
+            <Text style={styles.author}>by Mykhaylo Osypov</Text>
+            <Text style={styles.version}>Version {APP_VERSION}</Text>
+          </Animated.View>
+        </View>
       </View>
-    </GradientWrapper>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  splashRoot: {
+    flex: 1,
+    backgroundColor: BG,
+  },
+  splashCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,

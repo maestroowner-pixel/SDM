@@ -19,7 +19,7 @@ import { useData } from './DataContext';
 import { setDialogHandler, type DialogRequest, type DialogButtonStyle } from '../utils/dialog';
 
 const APP_NAME = 'Seafarer Documents Manager';
-const SDM_LOGO = require('../assets/images/sdm_icon.png');
+const SDM_LOGO = require('../assets/images/logo-cube.png');
 
 interface PendingDialog extends DialogRequest {
   resolve: (value: string | null) => void;

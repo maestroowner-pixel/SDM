@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, 
-  Alert, Modal, ImageBackground, Platform, KeyboardAvoidingView, Animated
+  Alert, Modal, ImageBackground, Platform, KeyboardAvoidingView, Animated, Share
 } from 'react-native';
 import { DialogHost } from '../contexts/DialogContext';
 import { alertMsg, confirmAsync, chooseAsync } from '../utils/dialog';
@@ -12,7 +12,9 @@ import { loadFileMap } from '../utils/fileUri';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { captureScanToPdf, loadStandaloneScans, copyScanInto } from '../utils/scanUtils';
+import * as Application from 'expo-application';
+import { captureScanToPdf, loadStandaloneScans, copyScanInto, captureScanImage, buildPdfFromImages, docFileName, uniqueDest } from '../utils/scanUtils';
+import { ocrSupported, recogniseLines, parseDocText, DocGuess } from '../utils/docOcr';
 import { useImageCropper } from '../components/ImageCropModal';
 import { ScanPickerModal } from '../components/ScanPickerModal';
 import { useData, Document } from '../contexts/DataContext';
@@ -114,6 +116,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   const [sortMode, setSortMode] = useState<'type' | 'date'>('date');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  // Fields filled by "Scan to fill": the seafarer confirms them before the document is saved.
+  const [scanKeys, setScanKeys] = useState<string[]>([]);
   const [scanPickerItems, setScanPickerItems] = useState<AttachedFile[] | null>(null);
   const { cropImage, cropElement } = useImageCropper();
   const [documentAttachments, setDocumentAttachments] = useState<{ [key: string]: AttachedFile[] }>({});
@@ -193,6 +197,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   });
 
   const resetForm = () => {
+    setScanKeys([]);
     setFormData({
       category: '',
       name: '',
@@ -223,6 +228,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   };
 
   const handleView = (doc: Document) => {
+    setScanKeys([]);
     setEditingDoc(doc);
     setFormData({
       category: doc.category,
@@ -243,6 +249,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
   };
 
   const handleEdit = (doc: Document) => {
+    setScanKeys([]);
     setEditingDoc(doc);
     setFormData({
       category: doc.category,
@@ -291,6 +298,26 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       alertMsg(t('common.error'), t('documents.alerts.requiredFields'));
       return;
     }
+
+    // Fields read from a photo are a guess: the seafarer confirms them before saving.
+    if (scanKeys.length) {
+      const showDate = (iso: string) => (iso ? iso.split('-').reverse().join('.') : '—');
+      const rows: string[] = [];
+      if (scanKeys.includes('category')) rows.push(`${t('documents.form.category')}: ${getCategoryTranslation(formData.category)}`);
+      if (scanKeys.includes('name')) rows.push(`${t('documents.form.documentName')}: ${formData.name || '—'}`);
+      if (scanKeys.includes('number')) rows.push(`${t('documents.form.documentNumber')}: ${formData.number || '—'}`);
+      if (scanKeys.includes('issueDate')) rows.push(`${t('documents.form.issueDate')}: ${showDate(formData.issueDate)}`);
+      if (scanKeys.includes('expiryDate') || scanKeys.includes('noExpiryDate')) {
+        rows.push(`${t('documents.form.expiryDate')}: ${formData.noExpiryDate ? t('documents.form.noExpiryDate') : showDate(formData.expiryDate)}`);
+      }
+      const ok = await confirmAsync(
+        t('documents.scanFill.confirmTitle'),
+        `${t('documents.scanFill.confirmText')}\n\n• ${rows.join('\n• ')}`,
+        { confirmText: t('documents.scanFill.confirmOk'), cancelText: t('documents.scanFill.confirmBack') }
+      );
+      if (!ok) return;
+      setScanKeys([]);
+    }
     
     const docId = editingDoc?.id || Date.now().toString();
     const docData = { id: docId, ...formData };
@@ -314,7 +341,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
 
   // Логичное имя файла под документ: <Имя>_<СрокДействия>_<N>.pdf
   const buildAttachName = () =>
-    `${formData.name || 'Document'}_${formData.expiryDate || 'NoExpiry'}_${attachedFiles.length + 1}.pdf`;
+    docFileName(formData.name, formData.expiryDate, formData.noExpiryDate);
 
   // Меню прикрепления: из моих сканов / из файлов телефона / снять камерой
   const openAttachMenu = async () => {
@@ -360,6 +387,114 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
     }
   };
 
+  // Scan → fill: one photo fills the empty fields (on-device OCR) and is attached as PDF.
+  const [scanFilling, setScanFilling] = useState(false);
+  const handleScanFill = async () => {
+    let img;
+    try {
+      img = await captureScanImage(cropImage);
+    } catch (error: any) {
+      alertMsg(t('common.error'), error?.message === 'camera-permission-denied' ? t('scans.cameraPermissionDenied') : t('attach.attachFailed'));
+      return;
+    }
+    if (!img) return;
+    setScanFilling(true);
+    try {
+      let guess: DocGuess = {};
+      let lines: string[] = [];
+      let ocrFailed = false;
+      try {
+        if (img.uri) { lines = await recogniseLines(img.uri); guess = parseDocText(lines); }
+      } catch (e) {
+        ocrFailed = true;
+        console.warn('OCR failed:', e);
+      }
+
+      // What was read, field by field (label, form key, value as shown to the seafarer).
+      const showDate = (iso: string) => iso.split('-').reverse().join('.');
+      const found: { key: 'category' | 'name' | 'number' | 'issueDate' | 'expiryDate' | 'noExpiryDate'; label: string; value: string }[] = [];
+      if (guess.category) found.push({ key: 'category', label: t('documents.form.category'), value: getCategoryTranslation(guess.category) });
+      if (guess.name) found.push({ key: 'name', label: t('documents.form.documentName'), value: guess.name });
+      if (guess.number) found.push({ key: 'number', label: t('documents.form.documentNumber'), value: guess.number });
+      if (guess.issueDate) found.push({ key: 'issueDate', label: t('documents.form.issueDate'), value: showDate(guess.issueDate) });
+      if (guess.expiryDate) found.push({ key: 'expiryDate', label: t('documents.form.expiryDate'), value: showDate(guess.expiryDate) });
+      if (guess.noExpiry) found.push({ key: 'noExpiryDate', label: t('documents.form.expiryDate'), value: t('documents.form.noExpiryDate') });
+
+      // Only empty fields are filled: what the seafarer typed is never overwritten without asking.
+      const next: any = { ...formData };
+      const filled: string[] = [];
+      const applied: string[] = [];
+      const busy: typeof found = [];
+      // Expiry is one field in two shapes: a date, or the "no expiry" tick.
+      const formValue = (k: string) => k === 'noExpiryDate' ? (next.noExpiryDate ? true : next.expiryDate || '') : k === 'expiryDate' ? (next.noExpiryDate ? true : next.expiryDate) : next[k];
+      const guessValue = (k: string) => k === 'noExpiryDate' ? true : (guess as any)[k];
+      const apply = (k: string) => {
+        if (k === 'noExpiryDate') { next.noExpiryDate = true; next.expiryDate = ''; }
+        else { next[k] = (guess as any)[k]; if (k === 'expiryDate') next.noExpiryDate = false; }
+      };
+      for (const f of found) {
+        const cur = formValue(f.key);
+        if (!cur) { apply(f.key); filled.push(`${f.label}: ${f.value}`); applied.push(f.key); }
+        else if (cur !== guessValue(f.key)) busy.push(f);
+      }
+
+      // Already filled fields that read differently: offer to replace them.
+      if (busy.length) {
+        const choice = await chooseAsync(
+          t('documents.scanFill.title'),
+          `${filled.length ? `${t('documents.scanFill.filled')}\n• ${filled.join('\n• ')}\n\n` : ''}${t('documents.scanFill.busy')}\n• ${busy.map(f => `${f.label}: ${f.value}`).join('\n• ')}`,
+          [
+            { text: t('documents.scanFill.keep'), value: 'keep', style: 'ghost' },
+            { text: t('documents.scanFill.replace'), value: 'replace', style: 'primary' },
+          ]
+        );
+        if (choice === 'replace') {
+          for (const f of busy) {
+            apply(f.key);
+            filled.push(`${f.label}: ${f.value}`);
+            applied.push(f.key);
+          }
+        }
+      }
+      setFormData(next);
+      if (applied.length) setScanKeys(prev => Array.from(new Set([...prev, ...applied])));
+
+      const pdfName = docFileName(next.name, next.expiryDate, next.noExpiryDate);
+      const f = await buildPdfFromImages(SCANS_DIR, [img], pdfName);
+      if (f) setAttachedFiles(prev => [...prev, f]);
+
+      // Test builds (.preview / dev) show what the phone actually read, to tune the parser.
+      if (__DEV__ || (Application.applicationId || '').endsWith('.preview')) {
+        const raw = lines.length ? lines.join('\n') : (ocrFailed ? 'OCR error' : '(empty)');
+        const dbg = await chooseAsync('OCR text (test build)', raw.slice(0, 3000), [
+          { text: 'Share', value: 'share', style: 'ghost' },
+          { text: 'OK', value: 'ok', style: 'primary' },
+        ]);
+        if (dbg === 'share') await Share.share({ message: `SDM OCR\n${raw}\n\n${JSON.stringify(guess)}` }).catch(() => {});
+      }
+
+      if (!busy.length || filled.length) {
+        alertMsg(
+          t('documents.scanFill.title'),
+          filled.length
+            ? `${t('documents.scanFill.filled')}\n• ${filled.join('\n• ')}\n\n${t('documents.scanFill.check')}`
+            : found.length
+              ? t('documents.scanFill.sameAsForm')
+              : ocrFailed
+                ? t('documents.scanFill.ocrFailed')
+                : lines.length
+                  ? t('documents.scanFill.nothing')
+                  : t('documents.scanFill.noText')
+        );
+      }
+    } catch (error) {
+      console.error('Scan fill failed:', error);
+      alertMsg(t('common.error'), t('attach.attachFailed'));
+    } finally {
+      setScanFilling(false);
+    }
+  };
+
   const handleAttachFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -383,10 +518,8 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
       }
 
       // Генерируем имя файла
-      const timestamp = Date.now();
-      const index = attachedFiles.length + 1;
-      const fileName = `${formData.name || 'Document'}_${formData.expiryDate || 'NoExpiry'}_${index}.pdf`;
-      const destinationUri = `${SCANS_DIR}${fileName}`;
+      const destinationUri = await uniqueDest(SCANS_DIR, docFileName(formData.name, formData.expiryDate, formData.noExpiryDate));
+      const fileName = destinationUri.split('/').pop() as string;
 
       // Копируем файл в директорию приложения
       await FileSystem.copyAsync({
@@ -579,6 +712,15 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ onOpenPaywall 
                 contentContainerStyle={{ paddingBottom: 100 }}
               >
                 {/* Форма добавления/редактирования */}
+                {!isViewMode && Platform.OS !== 'web' && ocrSupported() && (
+                  <TouchableOpacity style={styles.scanFillButton} onPress={handleScanFill} disabled={scanFilling} activeOpacity={0.8}>
+                    <Ionicons name={scanFilling ? 'hourglass-outline' : 'scan-outline'} size={20} color="#fff" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.scanFillText}>{scanFilling ? t('documents.scanFill.working') : t('documents.scanFill.button')}</Text>
+                      <Text style={styles.scanFillHint}>{t('documents.scanFill.hint')}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
                 <Text style={[styles.label, isDark ? styles.textMuted : styles.textMutedLight]}>{t('documents.form.category')}</Text>
                 <ScrollView 
                   horizontal 
@@ -828,6 +970,9 @@ const styles = StyleSheet.create({
   modalForm: { paddingHorizontal: 20, paddingTop: 10 },
   closeBtn: { padding: 4 },
   label: { fontSize: 13, marginBottom: 8, marginTop: 12 },
+  scanFillButton: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#1976d2', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 14, marginTop: 4, marginBottom: 4 },
+  scanFillText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  scanFillHint: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 },
   input: { borderRadius: 12, padding: 14, fontSize: 16, borderWidth: 1 },
   inputDark: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: '#fff' },
   inputLight: { backgroundColor: '#f9f9f9', borderColor: 'rgba(0,0,0,0.1)', color: '#333' },

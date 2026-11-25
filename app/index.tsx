@@ -65,6 +65,12 @@ export const UI_THEME = {
       iconInactive: '#6B9CC8',
       card: rgba('#FFFFFF', 0.5),
       navBg: rgba('#E1EFFD', 0.95),
+      // «Стеклянные» шапка и нижняя панель
+      glassHeader: [rgba('#FFFFFF', 0.92), rgba('#E1EFFD', 0.86)],
+      glassNav: [rgba('#E1EFFD', 0.86), rgba('#FFFFFF', 0.92)],
+      glassSheen: [rgba('#FFFFFF', 0.7), rgba('#FFFFFF', 0)],
+      glassBorder: rgba('#FFFFFF', 0.95),
+      glassShadow: rgba('#1565C0', 0.18),
     },
     dark: {
       primary: '#00BFFF',
@@ -76,6 +82,11 @@ export const UI_THEME = {
       iconInactive: '#556B8D',
       card: rgba('#1a2a4a', 0.4),
       navBg: rgba('#1a2a4a', 0.95),
+      glassHeader: [rgba('#2E4470', 0.94), rgba('#1a2a4a', 0.88)],
+      glassNav: [rgba('#1a2a4a', 0.88), rgba('#2E4470', 0.94)],
+      glassSheen: [rgba('#FFFFFF', 0.12), rgba('#FFFFFF', 0)],
+      glassBorder: rgba('#FFFFFF', 0.14),
+      glassShadow: rgba('#000000', 0.45),
     }
   }
 };
@@ -145,6 +156,22 @@ type NavCarouselProps = {
   theme: typeof UI_THEME.colors.dark;
 };
 
+// Иконка вкладки; активная — в светящейся стеклянной «капсуле»
+const NavIcon: React.FC<{ icon: string; isActive: boolean; theme: typeof UI_THEME.colors.dark }> = ({ icon, isActive, theme }) => (
+  <View
+    style={[
+      styles.navPill,
+      isActive && {
+        backgroundColor: rgba(theme.primary, 0.16),
+        borderColor: rgba(theme.primary, 0.4),
+        boxShadow: `0 0 12px ${rgba(theme.primary, 0.35)}`,
+      },
+    ]}
+  >
+    <Ionicons name={icon as any} size={ICON_SIZE} color={isActive ? theme.primary : theme.iconInactive} />
+  </View>
+);
+
 const NavCarousel: React.FC<NavCarouselProps> = ({ tabs, activeTab, onTabPress, theme }) => {
   const flatListRef = useRef<FlatList>(null);
   const REPEAT = 3;
@@ -178,14 +205,7 @@ const NavCarousel: React.FC<NavCarouselProps> = ({ tabs, activeTab, onTabPress, 
         onPress={() => onTabPress(item.id)}
         activeOpacity={0.6}
       >
-        <Ionicons
-          name={item.icon as any}
-          size={ICON_SIZE}
-          color={isActive ? theme.primary : theme.iconInactive}
-        />
-        {isActive && (
-          <View style={[styles.activeIndicator, { backgroundColor: theme.primary }]} />
-        )}
+        <NavIcon icon={item.icon} isActive={isActive} theme={theme} />
       </TouchableOpacity>
     );
   };
@@ -277,16 +297,17 @@ const MainApp: React.FC = () => {
     }
   }, [isReady, showSplash]);
 
-  // Пока данные не готовы, мы ничего не рендерим (висит нативный Splash)
-  if (!isReady) {
-    return null;
-  }
-
-  // Показываем ваш кастомный SplashScreen.tsx
-  if (showSplash) {
+  // Пока данные грузятся, SplashScreen показывает только кубик — точную копию
+  // нативной заставки, поэтому нативную можно снять сразу, без пустого кадра.
+  // Дерево не меняется между «грузится» и «готово», картинка не перемонтируется.
+  if (!isReady || showSplash) {
     return (
-      <View style={{ flex: 1 }} onLayout={() => SplashScreenNative.hideAsync().catch(()=>{})}>
-        <SplashScreen onFinish={() => setShowSplash(false)} />
+      <View style={{ flex: 1, backgroundColor: '#0a1628' }}>
+        <SplashScreen
+          ready={isReady}
+          onReady={() => SplashScreenNative.hideAsync().catch(() => {})}
+          onFinish={() => setShowSplash(false)}
+        />
       </View>
     );
   }
@@ -361,7 +382,18 @@ const MainApp: React.FC = () => {
         <StatusBar style={isDark ? 'light' : 'dark'} />
         
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-          <LinearGradient colors={theme.headerGradient as any} style={styles.headerGradient}>
+          <LinearGradient
+            colors={theme.glassHeader as any}
+            style={[styles.headerGradient, styles.glassHeaderEdge, {
+              borderColor: theme.glassBorder,
+              boxShadow: `0 6px 18px ${theme.glassShadow}`,
+            }]}
+          >
+            <LinearGradient
+              colors={theme.glassSheen as any}
+              style={styles.glassSheen}
+              pointerEvents="none"
+            />
             <View style={isTablet ? styles.headerContentTablet : undefined}>
               <Animated.Text style={[styles.headerTitle, { color: theme.text, opacity: fadeAnim }]}>
                 {getTabTitle()}
@@ -386,10 +418,23 @@ const MainApp: React.FC = () => {
         </PanGestureHandler>
 
         <View style={styles.bottomNav}>
-          <View style={[
-            styles.navContainerBackground,
-            { backgroundColor: theme.navBg, paddingBottom: insets.bottom || 12 }
-          ]}>
+          <LinearGradient
+            colors={theme.glassNav as any}
+            style={[
+              styles.navContainerBackground,
+              styles.glassNavEdge,
+              {
+                borderColor: theme.glassBorder,
+                boxShadow: `0 -6px 18px ${theme.glassShadow}`,
+                paddingBottom: insets.bottom || 12,
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={theme.glassSheen as any}
+              style={styles.glassSheen}
+              pointerEvents="none"
+            />
             {isTablet ? (
               <View style={styles.navTabletRow}>
                 {tabs.map((tab) => (
@@ -399,14 +444,7 @@ const MainApp: React.FC = () => {
                     style={styles.navItemTablet}
                     activeOpacity={0.6}
                   >
-                    <Ionicons
-                      name={tab.icon as any}
-                      size={ICON_SIZE}
-                      color={activeTab === tab.id ? theme.primary : theme.iconInactive}
-                    />
-                    {activeTab === tab.id && (
-                      <View style={[styles.activeIndicator, { backgroundColor: theme.primary }]} />
-                    )}
+                    <NavIcon icon={tab.icon} isActive={activeTab === tab.id} theme={theme} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -418,7 +456,7 @@ const MainApp: React.FC = () => {
                 theme={theme}
               />
             )}
-          </View>
+          </LinearGradient>
         </View>
 
         <Modal
@@ -481,7 +519,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
     minWidth: 44,
   },
   navPhoneRow: {
@@ -490,9 +528,35 @@ const styles = StyleSheet.create({
   navPhoneItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   navPhoneItemCenter: {},
+  // Стеклянная кромка: светлая обводка, у шапки — снизу, у панели — сверху
+  glassHeaderEdge: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 0,
+    overflow: 'hidden',
+  },
+  glassNavEdge: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: 0,
+    overflow: 'hidden',
+  },
+  // Блик в верхней половине стекла
+  glassSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '55%',
+  },
+  navPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
   activeIndicator: {
     marginTop: 4,
     width: 4,

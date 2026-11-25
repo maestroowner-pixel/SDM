@@ -51,7 +51,8 @@ export const ManualSteps: React.FC<{ isDark: boolean }> = ({ isDark }) => {
           style={[st.search, { color: tc.text }]}
           value={q}
           onChangeText={setQ}
-          placeholder="Find an action — “PDF”, “backup”…"
+          placeholder="Find an action…"
+          numberOfLines={1}
           placeholderTextColor={tc.sub}
           autoCorrect={false}
           autoCapitalize="none"
