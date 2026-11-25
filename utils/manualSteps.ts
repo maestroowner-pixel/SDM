@@ -235,6 +235,18 @@ export const MANUAL_STEPS: StepGroup[] = [
             note: 'Free plan: up to 5 documents.',
           },
           {
+            t: 'Fill a document from a photo',
+            steps: [
+              '**+** (or open a document → **Edit**)',
+              '**Scan to fill** at the top of the form',
+              'Take a photo of the document, crop it → **Done**',
+              'Name, number and dates fill themselves; the photo is attached as PDF',
+              'A field already filled differently? **Keep mine** or **Replace**',
+              '**Save** → compare the listed fields with the document → **All correct, save**',
+            ],
+            note: 'Close-up, good light, no glare. Only Latin text is filled in.',
+          },
+          {
             t: 'Attach a scan or a PDF',
             steps: [
               'Open the document → paperclip',
@@ -242,7 +254,7 @@ export const MANUAL_STEPS: StepGroup[] = [
               'For a camera scan: take the photo, drag the corners to crop → **Done**',
               '**Save**',
             ],
-            note: 'The file is renamed after the document automatically.',
+            note: 'The file is named after the document and its expiry date, e.g. "Medical Care - no expiry.pdf".',
           },
           {
             t: 'Find a document',
