@@ -729,5 +729,27 @@
   "Delete Everything": "全部删除",
   "Cancel": "取消",
   "Error": "错误",
-  "Success": "成功"
+  "Success": "成功",
+  "whatsNew": {
+    "title": "{{version}} 新功能",
+    "ok": "知道了",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "拍照填写",
+        "text": "在证书表单中点 Scan to fill 并拍照——名称、编号和日期会自动填写。保存前请您核对。"
+      },
+      "fileNames": {
+        "title": "清晰的文件名",
+        "text": "扫描件以证书名称和到期日命名，例如“Medical Care - 30.01.2029.pdf”。海上资历文件按船名、职务和日期命名。"
+      },
+      "design": {
+        "title": "全新外观",
+        "text": "新图标，玻璃质感的标题栏、标签栏和按钮，启动更流畅。"
+      },
+      "fixes": {
+        "title": "问题修复",
+        "text": "键盘不再遮挡登录按钮，窗口不再被状态栏遮住，扫描件不再被裁切，iPhone 更新后附件可以正常打开。"
+      }
+    }
+  }
 }

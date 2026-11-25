@@ -728,5 +728,27 @@
     "message": "Dostępna jest wersja {{version}} Seafarer Documents Manager. Zaktualizuj, aby otrzymać najnowsze poprawki i funkcje.",
     "update": "Aktualizuj",
     "later": "Później"
+  },
+  "whatsNew": {
+    "title": "Co nowego w {{version}}",
+    "ok": "Rozumiem",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Wypełnianie ze zdjęcia",
+        "text": "W formularzu dokumentu stuknij Scan to fill i zrób zdjęcie — nazwa, numer i daty wypełnią się same. Przed zapisem je sprawdzasz."
+      },
+      "fileNames": {
+        "title": "Czytelne nazwy plików",
+        "text": "Skany nazywają się jak dokument i data ważności, np. „Medical Care - 30.01.2029.pdf”. Pliki stażu morskiego — według statku, stanowiska i daty."
+      },
+      "design": {
+        "title": "Nowy wygląd",
+        "text": "Nowa ikona, szklany nagłówek, pasek kart i przyciski, płynniejsze uruchamianie."
+      },
+      "fixes": {
+        "title": "Poprawki",
+        "text": "Klawiatura nie zasłania już przycisku logowania, okna nie wchodzą pod pasek stanu, skany nie są przycinane, załączniki na iPhonie otwierają się po aktualizacji."
+      }
+    }
   }
 }

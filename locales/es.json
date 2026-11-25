@@ -764,5 +764,27 @@
   "Delete Everything": "Eliminar todo",
   "Cancel": "Cancelar",
   "Error": "Error",
-  "Success": "Listo"
+  "Success": "Listo",
+  "whatsNew": {
+    "title": "Novedades de la {{version}}",
+    "ok": "Entendido",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Rellenar con una foto",
+        "text": "En el formulario del documento pulse Scan to fill y haga una foto: el nombre, el número y las fechas se rellenan solos. Los revisa antes de guardar."
+      },
+      "fileNames": {
+        "title": "Nombres de archivo claros",
+        "text": "Los escaneos se llaman como el documento y su fecha de caducidad, p. ej. «Medical Care - 30.01.2029.pdf». Los de servicio en el mar, por buque, cargo y fecha."
+      },
+      "design": {
+        "title": "Nuevo aspecto",
+        "text": "Nuevo icono, cabecera, barra de pestañas y botones de estilo cristal, y un arranque más suave."
+      },
+      "fixes": {
+        "title": "Correcciones",
+        "text": "El teclado ya no tapa el botón de inicio de sesión, las ventanas no quedan bajo la barra de estado, los escaneos ya no se recortan y los adjuntos en iPhone se abren tras actualizar."
+      }
+    }
+  }
 }

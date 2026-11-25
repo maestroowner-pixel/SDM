@@ -40,6 +40,7 @@ import { DialogProvider } from '../contexts/DialogContext';
 import { SampleDataBanner } from '../components/SampleDataBanner';
 import { SyncPrompt } from '../components/SyncPrompt';
 import { UpdatePrompt } from '../components/UpdatePrompt';
+import { WhatsNew } from '../components/WhatsNew';
 
 // Удерживаем заставку до команды
 SplashScreenNative.preventAutoHideAsync().catch(() => {});
@@ -405,6 +406,7 @@ const MainApp: React.FC = () => {
         <SampleDataBanner />
         <SyncPrompt />
         <UpdatePrompt />
+        <WhatsNew />
 
         <PanGestureHandler
           onHandlerStateChange={onGestureEvent}

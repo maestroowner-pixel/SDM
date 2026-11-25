@@ -761,5 +761,27 @@
   "Delete Everything": "Tout supprimer",
   "Cancel": "Annuler",
   "Error": "Erreur",
-  "Success": "Succès"
+  "Success": "Succès",
+  "whatsNew": {
+    "title": "Nouveautés de la {{version}}",
+    "ok": "Compris",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Remplir par photo",
+        "text": "Dans le formulaire du document, touchez Scan to fill et prenez une photo : le nom, le numéro et les dates se remplissent seuls. Vous les vérifiez avant d’enregistrer."
+      },
+      "fileNames": {
+        "title": "Noms de fichiers clairs",
+        "text": "Les scans portent le nom du document et sa date d’expiration, p. ex. « Medical Care - 30.01.2029.pdf ». Ceux du service en mer : navire, poste et date."
+      },
+      "design": {
+        "title": "Nouveau look",
+        "text": "Nouvelle icône, en-tête, barre d’onglets et boutons effet verre, démarrage plus fluide."
+      },
+      "fixes": {
+        "title": "Corrections",
+        "text": "Le clavier ne cache plus le bouton de connexion, les fenêtres ne passent plus sous la barre d’état, les scans ne sont plus rognés, les pièces jointes s’ouvrent sur iPhone après une mise à jour."
+      }
+    }
+  }
 }

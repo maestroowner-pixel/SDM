@@ -728,5 +728,27 @@
     "message": "Version {{version}} of Seafarer Documents Manager is available. Update to get the latest fixes and features.",
     "update": "Update",
     "later": "Later"
+  },
+  "whatsNew": {
+    "title": "What's new in {{version}}",
+    "ok": "Got it",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Fill from photo",
+        "text": "Tap Scan to fill in a document form and take a picture — the name, number and dates fill themselves. You check them before saving."
+      },
+      "fileNames": {
+        "title": "Clear file names",
+        "text": "Scans are named after the document and its expiry date, e.g. \"Medical Care - 30.01.2029.pdf\". Sea service files — after the vessel, position and date."
+      },
+      "design": {
+        "title": "New look",
+        "text": "A new app icon, glass-style header, tab bar and buttons, and a smoother start-up."
+      },
+      "fixes": {
+        "title": "Fixes",
+        "text": "The keyboard no longer covers the sign-in button, windows stay clear of the status bar, scans are no longer cut off, attachments on iPhone open after updates."
+      }
+    }
   }
 }

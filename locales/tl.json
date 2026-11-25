@@ -728,5 +728,27 @@
     "message": "Available na ang bersyon {{version}} ng Seafarer Documents Manager. Mag-update para makuha ang pinakabagong ayos at feature.",
     "update": "I-update",
     "later": "Mamaya"
+  },
+  "whatsNew": {
+    "title": "Bago sa {{version}}",
+    "ok": "Sige",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Punan mula sa larawan",
+        "text": "Sa form ng dokumento, i-tap ang Scan to fill at kunan ito ng larawan — kusang napupunan ang pangalan, numero at mga petsa. Sinusuri mo ang mga ito bago i-save."
+      },
+      "fileNames": {
+        "title": "Malinaw na pangalan ng file",
+        "text": "Ang mga scan ay pinangangalanan ayon sa dokumento at petsa ng pag-expire, hal. \"Medical Care - 30.01.2029.pdf\". Ang sea service — ayon sa barko, posisyon at petsa."
+      },
+      "design": {
+        "title": "Bagong itsura",
+        "text": "Bagong icon, glass-style na header, tab bar at mga button, at mas maayos na pagbukas."
+      },
+      "fixes": {
+        "title": "Mga ayos",
+        "text": "Hindi na tinatakpan ng keyboard ang sign-in button, hindi na napupunta ang mga window sa ilalim ng status bar, hindi na naputol ang mga scan, at bumubukas ang attachments sa iPhone pagkatapos mag-update."
+      }
+    }
   }
 }

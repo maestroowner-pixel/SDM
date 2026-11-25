@@ -769,5 +769,27 @@
     "message": "Version {{version}} von Seafarer Documents Manager ist verfügbar. Aktualisiere, um die neuesten Korrekturen und Funktionen zu erhalten.",
     "update": "Aktualisieren",
     "later": "Später"
+  },
+  "whatsNew": {
+    "title": "Neu in {{version}}",
+    "ok": "Verstanden",
+    "v3_3_0": {
+      "fillPhoto": {
+        "title": "Per Foto ausfüllen",
+        "text": "Tippen Sie im Dokumentformular auf Scan to fill und fotografieren Sie das Dokument — Name, Nummer und Daten werden automatisch ausgefüllt. Vor dem Speichern prüfen Sie sie."
+      },
+      "fileNames": {
+        "title": "Klare Dateinamen",
+        "text": "Scans heißen wie das Dokument plus Ablaufdatum, z. B. „Medical Care - 30.01.2029.pdf“. Seefahrtszeit-Dateien — nach Schiff, Position und Datum."
+      },
+      "design": {
+        "title": "Neues Aussehen",
+        "text": "Neues App-Symbol, Kopfzeile, Tab-Leiste und Schaltflächen im Glas-Stil, flüssigerer Start."
+      },
+      "fixes": {
+        "title": "Korrekturen",
+        "text": "Die Tastatur verdeckt die Anmeldetaste nicht mehr, Fenster rutschen nicht unter die Statusleiste, Scans werden nicht mehr abgeschnitten, Anhänge auf dem iPhone öffnen sich nach Updates."
+      }
+    }
   }
 }
